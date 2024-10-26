@@ -4,6 +4,8 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import User from '$lib/components/ui/User.svelte';
+    import Icon from '@iconify/svelte';
 
 	const { data: propsData, children } = $props();
 
@@ -34,13 +36,27 @@
 <div class="flex min-h-screen flex-col">
 	<nav class="border-b p-2">
 		<div class="mx-auto flex w-full max-w-2xl items-center justify-between">
-			<a href="/" class="text-2xl font-bold">App</a>
+			<a href="/" class="text-2xl font-bold">Junowot</a>
+
+            <div class="flex items-center justify-center gap-2">
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-sky-400" />
+                <div>|</div>                    
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-emerald-400" />
+                <div>|</div>
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-yellow-400" />
+                <div>|</div>
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-pink-500" />
+                <div>|</div>
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-rose-700" />
+            </div>
 
 			<div class="flex gap-2">
 				<ThemeToggle />
 				{#if session !== null}
 					<Button href="/auth/logout">logout</Button>
 				{/if}
+
+                <User session={session} />
 			</div>
 		</div>
 	</nav>
@@ -51,7 +67,7 @@
 
 	<footer class="w-full border-t py-5">
 		<div class="mx-auto flex w-full max-w-2xl items-center justify-center">
-			<a href="https://github.com/engageintellect" class="text-sm">@engageintellect</a>
+			<a href="https://github.com/swopsyapp" class="text-sm">Swopsy</a>
 		</div>
 	</footer>
 </div>

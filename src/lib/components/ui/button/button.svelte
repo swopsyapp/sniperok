@@ -7,15 +7,18 @@
 	type $$Events = Events;
 
 	let className: $$Props["class"] = undefined;
+    let disabled: $$Props["disabled"] = undefined;
 	export let variant: $$Props["variant"] = "default";
 	export let size: $$Props["size"] = "default";
 	export let builders: $$Props["builders"] = [];
 	export { className as class };
+    export { disabled };
 </script>
 
 <ButtonPrimitive.Root
 	{builders}
 	class={cn(buttonVariants({ variant, size, className }))}
+    disabled={disabled}
 	type="button"
 	{...$$restProps}
 	on:click
