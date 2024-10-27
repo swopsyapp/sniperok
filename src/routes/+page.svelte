@@ -5,22 +5,12 @@
 
     let { userProfile } = $props();
 
-	// export let data;
-    // let userProfile = $state(data.userProfile);
-
-	// let avatar: string;
-
-	// Reactive statement to update avatar when data changes
-	// $: userProfile = data?.userProfile || '';
-	// $: avatar = data?.user?.user_metadata?.avatar_url || '';
 </script>
 
 <div>
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
-            <Card.Title class="text-4xl font-thin text-center">
-                Welcome to Junowot
-            </Card.Title>
+            <Card.Title class="text-center text-4xl font-thin">Welcome to Junowot</Card.Title>
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
@@ -45,9 +35,9 @@
                     </div>
                 </Button>
             {/if}
-            <br>
-            <br>
-            <Button href="/auth/login" class="group/loginButton w-full">
+            <br />
+            <br />
+            <Button href="/game/list" class="group/loginButton w-full">
                 <div class="flex items-center gap-2">
                     <Icon
                         icon="mdi:format-list-checkbox"
