@@ -21,7 +21,7 @@
                             icon="mdi:add-bold"
                             class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
                         />
-                        <div>Create game</div>
+                        <span>Create game</span>
                     </div>
                 </Button>
             {:else}
@@ -31,7 +31,7 @@
                             icon="mdi:add-bold"
                             class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
                         />
-                        <div>Create game</div>
+                        <span>Create game</span>
                     </div>
                 </Button>
             {/if}
@@ -43,7 +43,7 @@
                         icon="mdi:format-list-checkbox"
                         class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
                     />
-                    <div>List Games</div>
+                    <span>List Games</span>
                 </div>
             </Button>
         </Card.Content>

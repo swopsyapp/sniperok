@@ -1,7 +1,8 @@
 <script lang="ts">
-    import UserRound from 'lucide-svelte/icons/user-round';
+    import Icon from '@iconify/svelte';
 
     import { Button } from '$lib/components/ui/button/index.js';
+    import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
 
     let { session } = $props();
 
@@ -9,28 +10,36 @@
 
     const menuItems = session
         ? [
-              { name: 'Profile', url: '/' },
-              { name: 'Logout', url: '/' }
+              { name: 'Profile', url: '/', icon: 'lucide:user-round' },
+              { name: 'Logout', url: '/', icon: 'mdi:logout' }
           ]
         : [
-              { name: 'Login', url: '/auth/login' },
-              { name: 'Register', url: '/auth/register' }
+              { name: 'Login', url: '/auth/login', icon: 'mdi:login' },
+              { name: 'Register', url: '/auth/register', icon: 'mdi:register-outline' }
           ];
 </script>
 
 <section class="dropdown">
     <Button on:click={() => (menuOpen = !menuOpen)} variant="outline" size="icon">
-        <UserRound class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
+        <Icon icon="lucide:user-round" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
         <span class="sr-only">User</span>
     </Button>
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
         {#each menuItems as item}
-            <Button href={item.url} class="justify-start w-1/2">
+            <Button href={item.url} class="w-1/2 justify-start">
+                {#if item.icon != null}
+                    <Icon
+                        icon={item.icon}
+                        class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
+                    />
+                    &nbsp;&nbsp;
+                {/if}
                 <span>{item.name}</span>
             </Button>
             <br />
         {/each}
+        <ThemeToggle />
     </div>
 </section>
 
