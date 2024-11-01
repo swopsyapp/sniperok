@@ -3,7 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import Icon from '@iconify/svelte';
 
-    let { userProfile } = $props();
+    let { user } = $props();
 
 </script>
 
@@ -14,7 +14,7 @@
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
-            {#if userProfile == null}
+            {#if user == null}
                 <Button class="w-full" disabled={true}>
                     <div class="flex items-center gap-2">
                         <Icon
