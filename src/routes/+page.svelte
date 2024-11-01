@@ -15,7 +15,7 @@
         </Card.Header>
         <Card.Content>
             {#if userProfile == null}
-                <Button class="group/loginButton w-full" disabled={true}>
+                <Button class="w-full" disabled={true}>
                     <div class="flex items-center gap-2">
                         <Icon
                             icon="mdi:add-bold"
@@ -25,7 +25,7 @@
                     </div>
                 </Button>
             {:else}
-                <Button href="/auth/login" class="group/loginButton w-full">
+                <Button href="/auth/login" class="w-full">
                     <div class="flex items-center gap-2">
                         <Icon
                             icon="mdi:add-bold"
@@ -37,7 +37,7 @@
             {/if}
             <br />
             <br />
-            <Button href="/game/list" class="group/loginButton w-full">
+            <Button href="/game/list" class="w-full">
                 <div class="flex items-center gap-2">
                     <Icon
                         icon="mdi:format-list-checkbox"

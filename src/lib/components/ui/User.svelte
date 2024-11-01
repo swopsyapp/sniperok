@@ -26,7 +26,7 @@
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
         {#each menuItems as item}
-            <Button href={item.url}>
+            <Button href={item.url} class="justify-start w-1/2">
                 <span>{item.name}</span>
             </Button>
             <br />
