@@ -27,7 +27,7 @@
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
         {#each menuItems as item}
-            <Button href={item.url} class="w-1/2 justify-start">
+            <Button href={item.url} on:click={() => (menuOpen = !menuOpen)} class="w-1/2 justify-start">
                 {#if item.icon != null}
                     <Icon
                         icon={item.icon}
