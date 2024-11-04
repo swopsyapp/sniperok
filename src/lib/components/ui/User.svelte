@@ -33,9 +33,8 @@
                         icon={item.icon}
                         class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
                     />
-                    &nbsp;&nbsp;
                 {/if}
-                <span>{item.name}</span>
+                <span class="pl-1">{item.name}</span>
             </Button>
             <br />
         {/each}

@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { StringUtils } from '$lib/stringUtils.js';
+import { StringUtils } from '$lib/StringUtils.js';
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -44,9 +44,7 @@ export const actions = {
         console.log('data : ', data);
         console.log('error : ', error);
 
-        // if (event.url.searchParams.has('redirectTo')) {
-        //     redirect(303, event.url.searchParams.get('redirectTo') ?? '/');
-        // }
+        redirect(303, '/');
 
         return { success: true };
     }
