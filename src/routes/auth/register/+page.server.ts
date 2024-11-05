@@ -1,6 +1,17 @@
+import type { PageServerLoad } from "./$types.js";
+import { superValidate } from "sveltekit-superforms";
+import { zod } from "sveltekit-superforms/adapters";
+import { registerSchema } from './RegisterSchema';
+
 import { fail, redirect } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { StringUtils } from '$lib/StringUtils.js';
+
+export const load: PageServerLoad = async () => {   
+    return {
+        form: await superValidate(zod(registerSchema))
+    };
+};
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -20,7 +31,7 @@ export const actions = {
 
         if (!password) {
             console.log('password required');
-            return fail(400, { password : null, passwordRequired: true });
+            return fail(400, { password: null, passwordRequired: true });
         }
 
         if (!username) {

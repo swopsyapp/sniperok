@@ -16,7 +16,7 @@
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
  
-    --border: 0 0% 89.8%;
+    --border: 0 0% 69.8%;
     --input: 0 0% 89.8%;
  
     --primary: 0 0% 35%;
@@ -31,7 +31,7 @@
     --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 0 0% 98%;
  
-    --ring: 0 0% 3.9%;
+    --ring: 205 70% 60%;
  
     --radius: 0.5rem;
   }
@@ -58,14 +58,13 @@
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 55%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
   }
- 
 }
  
 @layer base {
