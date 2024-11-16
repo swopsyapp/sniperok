@@ -20,14 +20,14 @@
 </script>
 
 <section class="dropdown">
-    <Button on:click={() => (menuOpen = !menuOpen)} variant="outline" size="icon">
+    <Button onclick={() => (menuOpen = !menuOpen)} variant="outline" size="icon">
         <Icon icon="lucide:user-round" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
         <span class="sr-only">User</span>
     </Button>
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
         {#each menuItems as item}
-            <Button href={item.url} on:click={() => (menuOpen = !menuOpen)} class="w-1/2 justify-start">
+            <Button href={item.url} onclick={() => (menuOpen = !menuOpen)} class="w-1/2 justify-start">
                 {#if item.icon != null}
                     <Icon
                         icon={item.icon}
