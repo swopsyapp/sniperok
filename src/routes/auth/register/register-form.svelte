@@ -19,50 +19,62 @@
     <div class="grid grid-cols-2 gap-4">
         <div class="col-span-2">
             <Form.Field {form} name="email">
-                <Form.Control let:attrs>
-                    <Input {...attrs} placeholder="Email*" bind:value={$formData.email} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} placeholder="Email*" bind:value={$formData.email} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
         <div>
             <Form.Field {form} name="password">
-                <Form.Control let:attrs>
-                    <Input {...attrs} type="password" placeholder="Password*" bind:value={$formData.password} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} type="password" placeholder="Password*" bind:value={$formData.password} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
         <div>
             <Form.Field {form} name="username">
-                <Form.Control let:attrs>
-                    <Input {...attrs} placeholder="Username*" bind:value={$formData.username} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} placeholder="Username*" bind:value={$formData.username} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
     </div>
         <div class="col-span-2"><hr /></div>
         <div>
             <Form.Field {form} name="name">
-                <Form.Control let:attrs>
-                    <Input {...attrs} placeholder="Name" bind:value={$formData.name} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} placeholder="Name" bind:value={$formData.name} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
         <div>
             <Form.Field {form} name="surname">
-                <Form.Control let:attrs>
-                    <Input {...attrs} placeholder="Surname" bind:value={$formData.surname} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} placeholder="Surname" bind:value={$formData.surname} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
         <div>
             <Form.Field {form} name="birthday">
-                <Form.Control let:attrs>
-                    <Input {...attrs} type="date" placeholder="Birthday" bind:value={$formData.birthday} />
-                    <Form.FieldErrors />
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Input {...props} type="date" placeholder="Birthday" bind:value={$formData.birthday} />
+                        <Form.FieldErrors />
+                    {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
