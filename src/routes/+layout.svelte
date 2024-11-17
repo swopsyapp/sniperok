@@ -1,13 +1,15 @@
-<script>
+<script lang="ts">
     import '../app.css';
     import { goto, invalidate } from '$app/navigation';
     import { ModeWatcher } from 'mode-watcher';
-    import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
-    import { Button } from '$lib/components/ui/button';
     import User from '$lib/components/ui/User.svelte';
     import Icon from '@iconify/svelte';
+    import { getFlash } from 'sveltekit-flash-message';
+    import { page } from '$app/stores';
 
     const { data: propsData, children } = $props();
+
+    const flash = getFlash(page);
 
     const { supabase, session } = propsData;
 
@@ -57,6 +59,16 @@
     </nav>
 
     <main class="mx-auto w-full max-w-2xl flex-grow px-2 py-5 md:px-0">
+        {#if $flash}
+            {@const flashClass = 'rounded-lg border shadow-sm text-center '.concat(
+                $flash.type == 'success' ? 'bg-emerald-400' : 'bg-rose-600'
+            )}
+            <div class="pb-1">
+                <div class={flashClass}>
+                    <div><span class="pl-1">{$flash.message}</span></div>
+                </div>
+            </div>
+        {/if}
         {@render children()}
     </main>
 

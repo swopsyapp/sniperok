@@ -11,7 +11,7 @@
     const menuItems = session
         ? [
               { name: 'Profile', url: '/', icon: 'lucide:user-round' },
-              { name: 'Logout', url: '/', icon: 'mdi:logout' }
+              { name: 'Logout', url: '/auth/logout', icon: 'mdi:logout' }
           ]
         : [
               { name: 'Login', url: '/auth/login', icon: 'mdi:login' },

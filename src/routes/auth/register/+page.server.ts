@@ -3,8 +3,9 @@ import { setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { registerSchema } from './RegisterSchema';
 
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { redirect } from 'sveltekit-flash-message/server'
 
 export const load: PageServerLoad = async () => {
     return {
@@ -14,16 +15,16 @@ export const load: PageServerLoad = async () => {
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
-    default: async (event) => {
-        const form = await superValidate(event.request, zod(registerSchema));
+    default: async ({ request, locals, cookies }) => {
+        const form = await superValidate(request, zod(registerSchema));
 
         if (!form.valid) {
             return fail(400, { form });
         }
 
-        console.log('About to save registration for : ', form.data.username);
+        console.log('About to save registration for : ', form.data.email);
 
-        const supabase: SupabaseClient = event.locals.supabase;
+        const supabase: SupabaseClient = locals.supabase;
         const { error } = await supabase.auth.signUp({
             email: form.data.email,
             password: form.data.password,
@@ -43,8 +44,6 @@ export const actions = {
             return setError(form, 'email', errorMessage);
         }
 
-        redirect(303, '/');
-
-        return { form };
+        redirect('/auth/login', { type: 'success', message: "Registration was successful, please login" }, cookies);
     }
 };
