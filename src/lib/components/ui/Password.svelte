@@ -1,25 +1,28 @@
 <script lang="ts">
+    import type { HTMLInputAttributes } from "svelte/elements";
+    import type { WithElementRef } from "bits-ui";
     import Icon from '@iconify/svelte';
     import { Input } from '$lib/components/ui/input';
 
-    let { value = $bindable(), placeholder, ...restProps } = $props();
+    let {
+        value = $bindable(),
+        placeholder,
+        ...restProps
+    }: WithElementRef<HTMLInputAttributes> = $props();
 
     let show = $state(false);
 
     import { Button } from '$lib/components/ui/button/index.js';
-
-    function toggleShow() {
-        if (show) {
-            show = false;
-        } else {
-            show = true;
-        }
-    }
 </script>
 
 <span class="flex">
     <span class="pr-1">
-        <Input {...restProps} type={show ? 'text' : 'password'} {placeholder} bind:value/>
+        <Input
+            type={show ? 'text' : 'password'}
+            {placeholder}
+            bind:value={value}
+            {...restProps}
+        />
     </span>
     <Button onclick={() => (show = !show)} variant="outline" size="icon">
         {#if show}

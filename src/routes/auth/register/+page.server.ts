@@ -1,13 +1,12 @@
-import type { PageServerLoad } from "./$types.js";
-import { superValidate } from "sveltekit-superforms";
-import { zod } from "sveltekit-superforms/adapters";
+import type { PageServerLoad } from './$types.js';
+import { setError, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { registerSchema } from './RegisterSchema';
 
 import { fail, redirect } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { StringUtils } from '$lib/StringUtils.js';
 
-export const load: PageServerLoad = async () => {   
+export const load: PageServerLoad = async () => {
     return {
         form: await superValidate(zod(registerSchema))
     };
@@ -16,47 +15,36 @@ export const load: PageServerLoad = async () => {
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
     default: async (event) => {
-        const formdata = await event.request.formData();
-        const email = StringUtils.trimField(formdata, 'email');
-        const password = StringUtils.trimField(formdata, 'password');
-        const username = StringUtils.trimField(formdata, 'username');
-        const forename = StringUtils.trimField(formdata, 'forename');
-        const surname = StringUtils.trimField(formdata, 'surname');
-        const birthday = StringUtils.trimField(formdata, 'birthday');
+        const form = await superValidate(event.request, zod(registerSchema));
 
-        if (!email) {
-            console.log('email required');
-            return fail(400, { email, emailRequired: true });
+        if (!form.valid) {
+            return fail(400, { form });
         }
 
-        if (!password) {
-            console.log('password required');
-            return fail(400, { password: null, passwordRequired: true });
-        }
-
-        if (!username) {
-            console.log('username required');
-            return fail(400, { username, usernameRequired: true });
-        }
+        console.log('About to save registration for : ', form.data.username);
 
         const supabase: SupabaseClient = event.locals.supabase;
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
+        const { error } = await supabase.auth.signUp({
+            email: form.data.email,
+            password: form.data.password,
             options: {
                 data: {
-                    username: username,
-                    forename: forename,
-                    surname: surname,
-                    birthday: birthday
+                    username: form.data.username,
+                    name: form.data.name,
+                    surname: form.data.surname,
+                    birthday: form.data.birthday
                 }
             }
         });
-        console.log('data : ', data);
-        console.log('error : ', error);
+
+        if (error != null) {
+            console.log('Error saving registration for ', form.data.email, error.code, error.message);
+            const errorMessage = (error.code == 'user_already_exists') ? 'Email already registered.' : 'Registration error : '.concat(error.message);
+            return setError(form, 'email', errorMessage);
+        }
 
         redirect(303, '/');
 
-        return { success: true };
+        return { form };
     }
 };
