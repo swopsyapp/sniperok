@@ -5,6 +5,7 @@
     import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
     import { zodClient } from 'sveltekit-superforms/adapters';
     import Icon from '@iconify/svelte';
+    import Password from '$lib/components/ui/Password.svelte';
 
     export let data: SuperValidated<Infer<RegisterSchema>>;
 
@@ -31,7 +32,7 @@
             <Form.Field {form} name="password">
                 <Form.Control>
                     {#snippet children({ props })}
-                        <Input {...props} type="password" placeholder="Password*" bind:value={$formData.password} />
+                        <Password placeholder="Password*" bind:value={$formData.password} />
                         <Form.FieldErrors />
                     {/snippet}
                 </Form.Control>
