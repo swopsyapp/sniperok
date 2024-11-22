@@ -18,7 +18,7 @@
 
 <form method="POST" use:enhance>
     <div class="grid grid-cols-2 gap-4">
-        <div class="col-span-2">
+        <div class="col-span-full">
             <Form.Field {form} name="email">
                 <Form.Control>
                     {#snippet children({ props })}
@@ -32,7 +32,11 @@
             <Form.Field {form} name="password">
                 <Form.Control>
                     {#snippet children({ props })}
-                        <Password {...props} placeholder="Password*" bind:value={$formData.password} />
+                        <Password
+                            {...props}
+                            placeholder="Password*"
+                            bind:value={$formData.password}
+                        />
                         <Form.FieldErrors />
                     {/snippet}
                 </Form.Control>
@@ -47,7 +51,7 @@
                     {/snippet}
                 </Form.Control>
             </Form.Field>
-    </div>
+        </div>
         <div class="col-span-2"><hr /></div>
         <div>
             <Form.Field {form} name="name">
@@ -73,16 +77,21 @@
             <Form.Field {form} name="birthday">
                 <Form.Control>
                     {#snippet children({ props })}
-                        <Input {...props} type="date" placeholder="Birthday" bind:value={$formData.birthday} />
+                        <Input
+                            {...props}
+                            type="date"
+                            placeholder="Birthday"
+                            bind:value={$formData.birthday}
+                        />
                         <Form.FieldErrors />
                     {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
-        <div class="flex flex-col items-center justify-center">
+        <div class="flex flex-col items-center justify-center pb-2">
             <Form.Button class="w-full items-center justify-start">
                 <Icon icon="mdi:email-plus-outline" class="h-6 w-6" />
-                <span class="pl-1">Register</span>                        
+                <span class="pl-1">Register</span>
             </Form.Button>
         </div>
     </div>

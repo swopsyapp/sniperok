@@ -1,23 +1,32 @@
 <script lang="ts">
+    import { page } from '$app/stores';
     import Icon from '@iconify/svelte';
 
+    import { logger } from '$lib/logger';
     import { Button } from '$lib/components/ui/button/index.js';
     import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
-
-    let { session } = $props();
-
+    
     let menuOpen = $state(false);
+    let user = $page.data.user;
 
-    const menuItems = session
-        ? [
-              { name: 'Profile', url: '/', icon: 'lucide:user-round' },
-              { name: 'Logout', url: '/auth/logout', icon: 'mdi:logout' }
-          ]
-        : [
-              { name: 'Login', url: '/auth/login', icon: 'mdi:login' },
-              { name: 'Register', url: '/auth/register', icon: 'mdi:register-outline' }
-          ];
+    logger.trace(`User.svelte $page : `, JSON.stringify(Object.keys($page)));
+    logger.trace(`User.svelte $page.data : `, JSON.stringify(Object.keys($page.data)));
+    logger.trace(`User.svelte $page.data.user : `, JSON.stringify($page.data.user));
+
 </script>
+
+{#snippet menuItem(name: string, url: string, icon: string)}
+    <Button href={url} onclick={() => (menuOpen = !menuOpen)} class="w-1/2 justify-start">
+        {#if icon != null}
+            <Icon
+                {icon}
+                class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
+            />
+        {/if}
+        <span class="pl-1">{name}</span>
+    </Button>
+    <br />
+{/snippet}
 
 <section class="dropdown">
     <Button onclick={() => (menuOpen = !menuOpen)} variant="outline" size="icon">
@@ -26,18 +35,13 @@
     </Button>
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
-        {#each menuItems as item}
-            <Button href={item.url} onclick={() => (menuOpen = !menuOpen)} class="w-1/2 justify-start">
-                {#if item.icon != null}
-                    <Icon
-                        icon={item.icon}
-                        class="h-5 w-5 transition-all duration-300 md:group-hover/loginButton:translate-x-1"
-                    />
-                {/if}
-                <span class="pl-1">{item.name}</span>
-            </Button>
-            <br />
-        {/each}
+        {#if !user}
+            {@render menuItem('Login', '/auth/login', 'mdi:login')}
+            {@render menuItem('Register', '/auth/register', 'mdi:register-outline')}
+        {:else}
+            {@render menuItem('Profile', '/', 'lucide:user-round')}
+            {@render menuItem('Logout', '/auth/logout', 'mdi:logout')}
+        {/if}
         <ThemeToggle />
     </div>
 </section>

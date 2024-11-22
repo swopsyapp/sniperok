@@ -6,16 +6,34 @@
     import Icon from '@iconify/svelte';
     import { getFlash } from 'sveltekit-flash-message';
     import { page } from '$app/stores';
+    import { logger } from '$lib/logger';
 
-    const { data: propsData, children } = $props();
+    /*
+        State management issues see:
+            https://github.com/sveltejs/kit/issues/4941
+            https://github.com/sveltejs/kit/issues/4941#issuecomment-1227758791
+            https://github.com/sveltejs/kit/discussions/5007
+            
+    */
+
+    const { data, children } = $props();
+    let session = $state(data.session);
+    let user = $state(data.user);
+
+    const { supabase } = data;
 
     const flash = getFlash(page);
 
-    const { supabase, session } = propsData;
+    logger.debug('user.email : ', user?.email ?? null);
 
     $effect(() => {
-        const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+        const { data: authData } = supabase.auth.onAuthStateChange((event, newSession) => {
+            logger.trace(`eff: running layout effect ${event} ${newSession}`);
+            logger.trace(`eff: session.user.is_anon : ${newSession?.user.is_anonymous}`);
+            logger.trace(`eff: session.user.email : ${newSession?.user.email}`);
+
             if (!newSession) {
+                logger.info(`Triggering goto root for missing session`);
                 /**
                  * Queue this as a task so the navigation won't prevent the
                  * triggering function from completing
@@ -29,7 +47,7 @@
             }
         });
 
-        return () => data.subscription.unsubscribe();
+        return () => authData.subscription.unsubscribe();
     });
 </script>
 
@@ -53,7 +71,9 @@
             </div>
 
             <div class="flex gap-2">
-                <User {session} />
+                {#key $page.url.pathname}
+                    <User />
+                {/key}
             </div>
         </div>
     </nav>

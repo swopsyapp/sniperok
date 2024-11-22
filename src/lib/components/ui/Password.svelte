@@ -3,6 +3,7 @@
     import type { WithElementRef } from "bits-ui";
     import Icon from '@iconify/svelte';
     import { Input } from '$lib/components/ui/input';
+    import { Button } from '$lib/components/ui/button/index.js';
 
     let {
         value = $bindable(),
@@ -12,7 +13,6 @@
 
     let show = $state(false);
 
-    import { Button } from '$lib/components/ui/button/index.js';
 </script>
 
 <span class="flex">

@@ -1,20 +1,8 @@
-<script>
-    import { Button } from '$lib/components/ui/button';
+<script lang="ts">
     import * as Card from '$lib/components/ui/card/index';
-    import Icon from '@iconify/svelte';
-
-    import { getFlash } from 'sveltekit-flash-message';
-    import { page } from '$app/stores';
-
-    const flash = getFlash(page);
-
-    function showGoodMsg() {
-        $flash = { type: 'success', message: 'Success message!' };
-    }
-
-    function showBadMsg() {
-        $flash = { type: 'error', message: 'Error message!' };
-    }
+    import type { PageData } from './$types.js';
+    import LoginForm from './login-form.svelte';
+    export let data: PageData;
 </script>
 
 <Card.Root class="mx-auto max-w-md">
@@ -23,9 +11,6 @@
         <Card.Description>Login with your email address</Card.Description>
     </Card.Header>
     <Card.Content>
-        <Button href="/auth/login/github" class="flex items-center gap-2">
-            <Icon icon="mdi:github" class="h-6 w-6" />
-            Login with GitHub
-        </Button>
+        <LoginForm data={data.form} />
     </Card.Content>
 </Card.Root>
