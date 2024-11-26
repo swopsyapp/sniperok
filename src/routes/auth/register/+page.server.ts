@@ -1,25 +1,35 @@
-import type { PageServerLoad } from './$types.js';
-import { setError, superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
-import { registerSchema } from './RegisterSchema';
-
 import { fail } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { setError, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from 'sveltekit-flash-message/server'
 
+import { logger } from '$lib/logger';
+import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
+import type { PageServerLoad } from './$types.js';
+
 export const load: PageServerLoad = async () => {
-    return {
-        form: await superValidate(zod(registerSchema))
-    };
+    const form = await superValidate(zod(profileSchema));
+    form.data.profileMode = 'create';
+
+    logger.trace('form : ', form);
+    
+    return { form };
 };
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
     default: async ({ request, locals, cookies }) => {
-        const form = await superValidate(request, zod(registerSchema));
+        const form = await superValidate(request, zod(profileSchema));
 
         if (!form.valid) {
             return fail(400, { form });
+        }
+
+        if (!form.data.password) {
+            const errorMessage = 'Password is mandatory';
+            logger.error(errorMessage);
+            return setError(form, 'password', errorMessage);
         }
 
         console.log('About to save registration for : ', form.data.email);

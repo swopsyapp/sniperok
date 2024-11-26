@@ -1,12 +1,12 @@
-import type { PageServerLoad } from './$types.js';
 import { fail } from '@sveltejs/kit';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from 'sveltekit-flash-message/server'
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '$lib/logger';
-import { profileSchema } from './ProfileSchema';
+import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
+import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async (requestEvent) => {
 
@@ -18,6 +18,7 @@ export const load: PageServerLoad = async (requestEvent) => {
     }
 
     const form = await superValidate(zod(profileSchema));
+    form.data.profileMode = 'update';
 
     if (!form.data.email) {
         form.data.email = user.email ?? '';

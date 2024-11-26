@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card/index';
     import type { PageData } from './$types.js';
-    import RegisterForm from './register-form.svelte';
+    import ProfileForm from '$lib/components/ui/profile/profile-form.svelte';
     export let data: PageData;
 </script>
 
@@ -11,6 +11,6 @@
         <Card.Description>Register with your email address</Card.Description>
     </Card.Header>
     <Card.Content>
-        <RegisterForm data={data.form} />
+        <ProfileForm data={data.form} />
     </Card.Content>
 </Card.Root>
