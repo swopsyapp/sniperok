@@ -24,7 +24,7 @@
 
     const flash = getFlash(page);
 
-    logger.debug('user.email : ', user?.email ?? null);
+    logger.trace('user.email : ', user?.email ?? null);
 
     $effect(() => {
         const { data: authData } = supabase.auth.onAuthStateChange((event, newSession) => {
@@ -80,7 +80,7 @@
 
     <main class="mx-auto w-full max-w-2xl flex-grow px-2 py-5 md:px-0">
         {#if $flash}
-            {@const flashClass = 'rounded-lg border shadow-sm text-center '.concat(
+            {@const flashClass = 'rounded-lg border shadow-sm text-center mx-auto max-w-md h-10 pt-2 '.concat(
                 $flash.type == 'success' ? 'bg-emerald-400' : 'bg-rose-600'
             )}
             <div class="pb-1">

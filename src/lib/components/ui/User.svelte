@@ -39,7 +39,7 @@
             {@render menuItem('Login', '/auth/login', 'mdi:login')}
             {@render menuItem('Register', '/auth/register', 'mdi:register-outline')}
         {:else}
-            {@render menuItem('Profile', '/', 'lucide:user-round')}
+            {@render menuItem('Profile', '/auth/profile', 'lucide:user-round')}
             {@render menuItem('Logout', '/auth/logout', 'mdi:logout')}
         {/if}
         <ThemeToggle />

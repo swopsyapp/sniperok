@@ -46,7 +46,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
         data: { user }
     } = await supabase.auth.getUser();
 
-    logger.debug('user.email : ', user?.email ?? null);
+    logger.trace('user.email : ', user?.email ?? null);
 
     return { session, supabase, user };
 };
