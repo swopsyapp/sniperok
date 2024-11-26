@@ -3,16 +3,18 @@
     import Icon from '@iconify/svelte';
 
     import { logger } from '$lib/logger';
-    import { Button } from '$lib/components/ui/button/index.js';
+
+    import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+    import * as Tooltip from '$lib/components/ui/tooltip/index.js';
     import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
-    
+
     let menuOpen = $state(false);
     let user = $page.data.user;
+    let username = user?.user_metadata.username ?? 'Guest';
 
     logger.trace(`User.svelte $page : `, JSON.stringify(Object.keys($page)));
     logger.trace(`User.svelte $page.data : `, JSON.stringify(Object.keys($page.data)));
     logger.trace(`User.svelte $page.data.user : `, JSON.stringify($page.data.user));
-
 </script>
 
 {#snippet menuItem(name: string, url: string, icon: string)}
@@ -29,10 +31,17 @@
 {/snippet}
 
 <section class="dropdown">
-    <Button onclick={() => (menuOpen = !menuOpen)} variant="outline" size="icon">
-        <Icon icon="lucide:user-round" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
-        <span class="sr-only">User</span>
-    </Button>
+    <Tooltip.Provider>
+        <Tooltip.Root>
+            <Tooltip.Trigger onclick={() => (menuOpen = !menuOpen)} class={buttonVariants({variant: 'outline', size: 'icon'})} >
+                <Icon icon="lucide:user-round" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
+                <span class="sr-only">User</span>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+                <p>{username}</p>
+            </Tooltip.Content>
+        </Tooltip.Root>
+    </Tooltip.Provider>
 
     <div id="userDropdown" class:show={menuOpen} class="dropdown-content">
         {#if !user}

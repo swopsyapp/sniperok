@@ -33,7 +33,7 @@
             logger.trace(`eff: session.user.email : ${newSession?.user.email}`);
 
             if (!newSession) {
-                logger.info(`Triggering goto root for missing session`);
+                logger.trace(`Triggering goto root for missing session`);
                 /**
                  * Queue this as a task so the navigation won't prevent the
                  * triggering function from completing
