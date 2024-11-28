@@ -8,7 +8,7 @@ and https://github.com/engageintellect/sveltekit-supabase
 
 ## Features
 
-- Sign in with GitHub
+- Register and Sign in with email
 - Sign out
 - Display user information
 - Update user information
@@ -35,8 +35,8 @@ and https://github.com/engageintellect/sveltekit-supabase
 1. Clone the repo
 
 ```bash
-git clone https://github.com/engageintellect/sveltekit-supabase
-cd sveltekit-supabase
+git clone https://github.com/swopsyapp/junowot.git
+cd junowot
 ```
 
 2. Install dependencies
