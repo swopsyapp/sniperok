@@ -1,4 +1,6 @@
-# sveltekit-supabase
+# Junowot
+
+Junowot is a General Knowledge game.
 
 ## Description
 
