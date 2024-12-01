@@ -1,5 +1,12 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card/index';
+    import { logger } from '$lib/logger';
+    import type { PageData } from './$types.js';
+
+    export let data: PageData;
+    const leagues = data.leagues;
+
+    logger.debug("leagues : ", leagues);
 </script>
 
 <div>
@@ -9,7 +16,11 @@
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
-            <div>The list goes here</div>
+            <ul>
+                {#each leagues as league}
+                    <li>{league.name}</li>
+                {/each}
+            </ul>
         </Card.Content>
     </Card.Root>
 </div>
