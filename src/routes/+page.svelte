@@ -15,7 +15,7 @@
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
-            <Button href="/game/list" class="w-full">
+            <Button href="/games" class="w-full">
                 <div class="flex items-center gap-2">
                     <Icon
                         icon="mdi:format-list-checkbox"

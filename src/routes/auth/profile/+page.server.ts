@@ -12,16 +12,11 @@ export const load: PageServerLoad = async (requestEvent) => {
 
     const { session, user } = await requestEvent.locals.safeGetSession();
 
-    if (!user) {
-        logger.error('User not logged in.');
-        redirect('/', { type: 'error', message: 'You are not logged in' }, requestEvent);
-    }
-
     const form = await superValidate(zod(profileSchema));
     form.data.profileMode = 'update';
 
     if (!form.data.email) {
-        form.data.email = user.email ?? '';
+        form.data.email = user?.email ?? '';
         const userMeta = session?.user.user_metadata;
         form.data.username = userMeta?.username;
         form.data.name = userMeta?.name;

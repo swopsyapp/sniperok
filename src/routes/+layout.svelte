@@ -18,19 +18,14 @@
 
     const { data, children } = $props();
     let session = $state(data.session);
-    let user = $state(data.user);
 
     const { supabase } = data;
 
     const flash = getFlash(page);
 
-    logger.trace('user.email : ', user?.email ?? null);
-
     $effect(() => {
         const { data: authData } = supabase.auth.onAuthStateChange((event, newSession) => {
             logger.trace(`eff: running layout effect ${event} ${newSession}`);
-            logger.trace(`eff: session.user.is_anon : ${newSession?.user.is_anonymous}`);
-            logger.trace(`eff: session.user.email : ${newSession?.user.email}`);
 
             if (!newSession) {
                 logger.trace(`Triggering goto root for missing session`);
@@ -100,10 +95,4 @@
 </div>
 
 <style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-    }
 </style>
