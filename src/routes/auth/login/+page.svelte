@@ -2,7 +2,8 @@
     import * as Card from '$lib/components/ui/card/index';
     import type { PageData } from './$types.js';
     import LoginForm from './login-form.svelte';
-    export let data: PageData;
+
+    let { data }: { data: PageData } = $props();
 </script>
 
 <Card.Root class="mx-auto max-w-md">

@@ -7,7 +7,7 @@ export const load = (async (requestEvent) => {
 
     const leagues = await db.withSchema('junowot').selectFrom('league').selectAll().execute();
 
-    logger.debug('leagues : ', leagues);
+    logger.trace('leagues : ', leagues);
 
     return {
         leagues

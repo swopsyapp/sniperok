@@ -1,8 +1,10 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card/index';
-    import type { PageData } from './$types.js';
     import ProfileForm from '$lib/components/ui/profile/profile-form.svelte';
-    export let data: PageData;
+    import type { PageData } from './$types.js';
+
+    let { data }: { data: PageData } = $props();
+
 </script>
 
 <Card.Root class="mx-auto max-w-md">

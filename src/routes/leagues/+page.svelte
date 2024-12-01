@@ -3,10 +3,10 @@
     import { logger } from '$lib/logger';
     import type { PageData } from './$types.js';
 
-    export let data: PageData;
+    let { data }: { data: PageData } = $props();
     const leagues = data.leagues;
 
-    logger.debug("leagues : ", leagues);
+    logger.trace("leagues : ", leagues);
 </script>
 
 <div>

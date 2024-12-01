@@ -1,11 +1,14 @@
 <script lang="ts">
+    import Icon from '@iconify/svelte';
+    import { zodClient } from 'sveltekit-superforms/adapters';
+    import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
+
     import * as Form from '$lib/components/ui/form';
     import { Input } from '$lib/components/ui/input';
-    import { loginSchema, type LoginSchema } from './LoginSchema';
-    import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
-    import { zodClient } from 'sveltekit-superforms/adapters';
-    import Icon from '@iconify/svelte';
     import Password from '$lib/components/ui/Password.svelte';
+
+    import { loginSchema, type LoginSchema } from './LoginSchema';
+    import type { PageData } from './$types.js';
 
     export let data: SuperValidated<Infer<LoginSchema>>;
 
