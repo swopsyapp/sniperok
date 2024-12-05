@@ -1,8 +1,8 @@
 <script lang="ts">
+    import Icon from '@iconify/svelte';
     import { page } from '$app/stores';
     import * as Card from '$lib/components/ui/card/index';
     import { Button } from '$lib/components/ui/button';
-    import Icon from '@iconify/svelte';
 
     let user = $page.data.user;
 

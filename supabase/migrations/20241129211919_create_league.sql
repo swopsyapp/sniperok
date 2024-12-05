@@ -29,6 +29,8 @@ alter table "junowot"."league_member" enable row level security;
 
 CREATE UNIQUE INDEX league_member_pkey ON junowot.league_member USING btree (id);
 
+CREATE UNIQUE INDEX league_member_ux2 ON junowot.league_member USING btree (member_uuid, league_id);
+
 CREATE UNIQUE INDEX league_member_status_code_key ON junowot.league_member_status USING btree (code);
 
 CREATE UNIQUE INDEX league_pkey ON junowot.league USING btree (id);

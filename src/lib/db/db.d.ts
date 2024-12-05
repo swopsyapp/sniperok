@@ -7,7 +7,8 @@ const dialect = new PostgresDialect({
     pool: new pg.Pool({
         connectionString: DATABASE_URL,
         max: 10
-    })
+    }),
+    log: ['query', 'error']
 });
 
 export const db = new Kysely<DB>({
