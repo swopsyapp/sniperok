@@ -62,7 +62,7 @@
                 <div>|</div>
                 <Icon icon="mdi:list-status" class="h-16 w-16 text-pink-500" />
                 <div>|</div>
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-rose-700" />
+                <Icon icon="mdi:list-status" class="h-16 w-16 text-red-600" />
             </div>
 
             <div class="flex gap-2">

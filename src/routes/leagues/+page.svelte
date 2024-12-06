@@ -16,7 +16,7 @@
     const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
-    const leagues = $derived(data.leagues);
+    const leagues = $derived(data.leagues.rows);
 
     logger.trace('leagues : ', leagues);
 
@@ -25,7 +25,7 @@
         isAdding
             ? 'line-md:minus-square'
             : 'line-md:plus-square'
-    ); //line-md:plus-square
+    );
     let addClass = $derived(
         isAdding
             ? 'h-6 w-6 rotate-0 scale-100 text-orange-500'
@@ -97,6 +97,16 @@
 
         addClick();
         invalidateAll();
+    }
+
+    async function deleteClick(leagueId : string) {
+        logger.trace("deleting leagueId : ", leagueId);
+
+        const newLeagueUrl = encodeURI($page.url.href.concat('/[', leagueId, ']'));
+        const response = await fetch(newLeagueUrl, {
+            method: "DELETE",
+            body: JSON.stringify({ id: leagueId })
+        });
 
     }
 </script>
@@ -119,7 +129,54 @@
                     {#each leagues as league}
                         <Table.Row>
                             <Table.Cell class="font-medium">{league.name}</Table.Cell>
-                            <Table.Cell class="text-right"></Table.Cell>
+                            <Table.Cell>
+                                <span class="flex text-gray-600">
+                                    [{league.member_count == 0 ? '*' : league.member_count}]
+                                    {#if league.is_curator}
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <a href="/leagues/[{league.id}]">
+                                                        <Icon
+                                                            id="leagueEditBtn"
+                                                            icon='line-md:edit'
+                                                            class='text-green-600'
+                                                        />
+                                                    </a>
+                                                <span class="sr-only">Edit</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Edit</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
+                                        {#if league.member_count == 1}
+                                            <Tooltip.Provider>
+                                                <Tooltip.Root>
+                                                    <Tooltip.Trigger
+                                                        onclick={() => deleteClick(league.id)}
+                                                        class={buttonVariants({
+                                                            variant: 'ghost',
+                                                            size: 'icon'
+                                                        })}
+                                                    >
+                                                        <Icon
+                                                            id="leagueDeleteBtn"
+                                                            icon='flowbite:trash-bin-outline'
+                                                            class='text-red-600'
+                                                        />
+                                                    <span class="sr-only">Delete</span>
+                                                    </Tooltip.Trigger>
+                                                    <Tooltip.Content><p>Delete</p></Tooltip.Content>
+                                                </Tooltip.Root>
+                                            </Tooltip.Provider>
+                                        {/if}
+                                    {/if}
+                                </span>    
+                            </Table.Cell>
                         </Table.Row>
                     {/each}
                     <Table.Row>

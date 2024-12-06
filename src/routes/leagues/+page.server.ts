@@ -6,11 +6,44 @@ import { logger } from '$lib/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async (requestEvent) => {
+    const { user } = await requestEvent.locals.safeGetSession();
+    if (!user) {
+        logger.error('User not logged in.');
+        redirect('/', { type: 'error', message: 'You are not logged in' }, requestEvent);
+    }
+
+    const userId = user.id;
+
     const db = requestEvent.locals.db;
 
-    const leagues = await db.withSchema('junowot').selectFrom('league').selectAll().execute();
+    logger.trace('leagues.load');
 
-    logger.trace('leagues.length : ', leagues.length);
+    const leaguesQry = db
+        .withSchema('junowot')
+        .selectFrom('league as l')
+        .leftJoin('league_member as lm', 'lm.league_id', 'l.id')
+        .select(({ fn }) => [
+            'l.id', 'l.name', 'lm.is_curator',
+            fn.count<number>('lm.id').as('member_count')
+        ])
+        .groupBy(['l.id', 'l.name', 'lm.is_curator'])
+        .where('l.name', '=', 'public')
+        .unionAll(db.withSchema('junowot')
+                    .selectFrom('league as l')
+                    .innerJoin('league_member as lm', 'lm.league_id', 'l.id')
+                    .select(({ fn }) => [
+                        'l.id', 'l.name', 'lm.is_curator',
+                        fn.count<number>('lm.id').as('member_count')
+                    ])
+                    .groupBy(['l.id', 'l.name', 'lm.is_curator'])
+                    .where('lm.member_uuid', '=', userId) );
+
+    const compiledQry = leaguesQry.compile();
+    logger.trace('userLeagueList : ', compiledQry);
+
+    const leagues = await db.executeQuery(compiledQry);
+
+    logger.trace('leagues.length : ', leagues.rows.length);
 
     return {
         leagues

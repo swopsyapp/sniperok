@@ -6,12 +6,36 @@ export class StringUtils {
      * @returns The trimmed string or null;
      */
     static trimField(formData: FormData, fieldName: string): string | null {
-        let result : string | null = null;
+        let result: string | null = null;
 
-        if ( formData.has(fieldName) ) {
+        if (formData.has(fieldName)) {
             result = formData.get(fieldName)?.toString().trim() ?? null;
         }
 
         return result;
+    }
+
+    /**
+     * Trims the first and last characters from text if text begins with (, [, {, <, ', "
+     * @param text - The string to be trimmed
+     * @returns The trimmed string or null;
+     */
+    static trimEndMarkers(text: string): string | null {
+        if (text) {
+            if (
+                text.startsWith('(') ||
+                text.startsWith('[') ||
+                text.startsWith('{') ||
+                text.startsWith('<') ||
+                text.startsWith('"') ||
+                text.startsWith("'")
+            ) {
+                return text.substring(1, text.length - 1);
+            } else {
+                return text;
+            }
+        } else {
+            return '';
+        }
     }
 }
