@@ -105,9 +105,11 @@
         const newLeagueUrl = encodeURI($page.url.href.concat('/[', leagueId, ']'));
         const response = await fetch(newLeagueUrl, {
             method: "DELETE",
-            body: JSON.stringify({ id: leagueId })
         });
 
+        $flash = { type: 'success', message: `League deleted` };
+
+        invalidateAll();
     }
 </script>
 
@@ -130,8 +132,10 @@
                         <Table.Row>
                             <Table.Cell class="font-medium">{league.name}</Table.Cell>
                             <Table.Cell>
-                                <span class="flex text-gray-600">
-                                    [{league.member_count == 0 ? '*' : league.member_count}]
+                                <span class="flex">
+                                    <span class="pt-2 text-gray-600">
+                                        [{league.member_count == 0 ? '*' : league.member_count}]
+                                    </span>
                                     {#if league.is_curator}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>

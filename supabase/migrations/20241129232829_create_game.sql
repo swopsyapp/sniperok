@@ -7,7 +7,7 @@ create table "junowot"."game" (
     "is_public" boolean not null default false,
     "rounds" smallint not null default '3'::smallint,
     "round_duration" smallint not null default '60'::smallint,
-    "owner" uuid not null default auth.uid(),
+    "league_id" bigint not null,
     "updated_at" timestamp with time zone not null default now()
 );
 

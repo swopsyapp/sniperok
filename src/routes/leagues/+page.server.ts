@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { redirect } from 'sveltekit-flash-message/server';
 
 import { logger } from '$lib/logger';
+import { HttpStatus } from '$lib/utils'
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -67,7 +68,7 @@ export const actions = {
             const msg = 'League name cannot be blank';
             logger.warn(msg);
             // setFlash({ type: 'error', message: msg }, requestEvent.cookies);
-            return fail(406);
+            return fail(HttpStatus.NOT_ACCEPTABLE);
         }
         logger.trace('leagueName : ', leagueName);
 
@@ -80,7 +81,7 @@ export const actions = {
             .innerJoin('league_member as lm', 'lm.league_id', 'l.id')
             .where('l.name', '=', leagueName)
             .where('lm.member_uuid', '=', userId)
-            .select(({ fn }) => [fn.count<number>('l.id').as('league_count')]);
+            .select(({ fn }) => [fn.count<number>('l.id').as('member_count')]);
         
         const compiledQry = leagueMemberCountQry.compile();
         logger.trace('userLeagueOwnerCountQry : ', compiledQry);
@@ -89,11 +90,11 @@ export const actions = {
 
         logger.trace('userLeagueOwnerCount : ', leagueMemberCount);
 
-        if (leagueMemberCount.league_count > 0) {
+        if (leagueMemberCount.member_count > 0) {
             const msg = `You are already a member of "${leagueName}"`;
             logger.warn(msg);
             // setFlash({ type: 'error', message: msg }, requestEvent.cookies);
-            return fail(409);
+            return fail(HttpStatus.CONFLICT);
         }
 
         const result = await db.withSchema('junowot').transaction().execute(async (trx) => {

@@ -17,8 +17,8 @@ export interface Game {
   id: Generated<Int8>;
   is_public: Generated<boolean>;
   language: Generated<string>;
+  league_id: Int8;
   name: string;
-  owner: Generated<string>;
   round_duration: Generated<number>;
   rounds: Generated<number>;
   updated_at: Generated<Timestamp>;
