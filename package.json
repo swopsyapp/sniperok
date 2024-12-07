@@ -11,7 +11,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"db:reset": "supabase db reset",
-		"db:pull": "kysely-codegen --schema junowot --out-file ./src/lib/db/junowot-schema.d.ts --include-pattern=\"junowot.*\" --log-level info",
+		"db:pull": "kysely-codegen --schema junowot --out-file ./src/lib/server/db/junowot-schema.d.ts --include-pattern=\"junowot.*\" --log-level info",
 		"test": "vitest"
 	},
 	"devDependencies": {

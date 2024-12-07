@@ -1,37 +1,14 @@
 import { error, json } from '@sveltejs/kit';
-import { Kysely, PostgresDialect } from 'kysely';
+import { Transaction } from 'kysely';
 
 import { z } from 'zod';
 
 import { logger } from '$lib/logger';
 import { StringUtils } from '$lib/StringUtils';
 import { HttpStatus } from '$lib/utils'
-import { type DB } from '$lib/db/junowot-schema.d';
+import { type DB } from '$lib/server/db/junowot-schema.d';
+import { db, isCurator } from '$lib/server/db/db.d';
 import type { RequestHandler } from './$types';
-
-async function isCurator(db: Kysely<DB>, leagueId : string, userId : string) : Promise<boolean> {
-    
-    const userCuratorCountQry = db
-        .withSchema('junowot')
-        .selectFrom('league_member as lm')
-        .where('lm.league_id', '=', leagueId)
-        .where('lm.member_uuid', '=', userId)
-        .where('lm.is_curator', '=', true)
-        .select(({ fn }) => [fn.count<number>('lm.member_uuid').as('curator_count')]);
-
-    const compiledQry = userCuratorCountQry.compile();
-    logger.trace('userCuratorCountQry : ', compiledQry);
-    
-    const userCuratorCount = await userCuratorCountQry.executeTakeFirstOrThrow();
-
-    logger.trace('userCuratorCount : ', userCuratorCount);
-
-    if ( userCuratorCount.curator_count > 0 ) {
-        return true;
-    }
-
-    return false;
-}
 
 export const DELETE: RequestHandler = async (requestEvent) => {
     
@@ -47,9 +24,7 @@ export const DELETE: RequestHandler = async (requestEvent) => {
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : '';
 
-    const db = requestEvent.locals.db;
-
-    const isCurrentUserCurator = await isCurator(db, leagueId, userId);
+    const isCurrentUserCurator = await isCurator(leagueId, userId);
     if (!isCurrentUserCurator) {
         error(HttpStatus.FORBIDDEN, 'Not a league curator');
     }
@@ -81,7 +56,7 @@ export const DELETE: RequestHandler = async (requestEvent) => {
         };
     */
 
-    await db.withSchema('junowot').transaction().execute(async (trx) => {
+    await db.withSchema('junowot').transaction().execute(async (trx : Transaction<DB>) => {
         await trx.deleteFrom('game as g')
                 .where('g.league_id', '=', leagueId)
                 .execute();
@@ -116,9 +91,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : '';
 
-    const db = requestEvent.locals.db;
-
-    const isCurrentUserCurator = await isCurator(db, leagueId, userId);
+    const isCurrentUserCurator = await isCurator(leagueId, userId);
     if (!isCurrentUserCurator) {
         error(HttpStatus.FORBIDDEN, 'Not a league curator');
     }
@@ -135,7 +108,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
 
     logger.trace("About to patch league : ", leagueId);
 
-    await db.withSchema('junowot').transaction().execute(async (trx) => {
+    await db.withSchema('junowot').transaction().execute(async (trx : Transaction<DB>) => {
         await trx.updateTable('league as l')
                 .set({ name: leagueName })
                 .where('l.id', '=', leagueId)

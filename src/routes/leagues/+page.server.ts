@@ -3,6 +3,7 @@ import { redirect } from 'sveltekit-flash-message/server';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils'
+import { db } from '$lib/server/db/db.d'
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -14,8 +15,6 @@ export const load = (async (requestEvent) => {
     }
 
     const userId = user.id;
-
-    const db = requestEvent.locals.db;
 
     logger.trace('leagues.load');
 
@@ -77,8 +76,6 @@ export const actions = {
             return fail(HttpStatus.NOT_ACCEPTABLE);
         }
         logger.trace('leagueName : ', leagueName);
-
-        const db = requestEvent.locals.db;
 
         // See https://kysely.dev/docs/examples/select/function-calls
         const leagueMemberCountQry = db

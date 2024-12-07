@@ -1,7 +1,6 @@
-import { redirect } from 'sveltekit-flash-message/server';
-
 import { logger } from '$lib/logger';
 import { StringUtils } from '$lib/StringUtils';
+import { db } from '$lib/server/db/db.d'
 
 import type { PageServerLoad } from './$types';
 
@@ -13,8 +12,6 @@ export const load = (async (requestEvent) => {
     const leagueId = StringUtils.trimEndMarkers(requestEvent.params.league_id);
 
     logger.trace('loading league : ', leagueId);
-
-    const db = requestEvent.locals.db;
 
     const league = await db
         .withSchema('junowot')

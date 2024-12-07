@@ -5,7 +5,6 @@ import { redirect } from 'sveltekit-flash-message/server';
 
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 
-import { db } from '$lib/db/db.d';
 import { logger } from '$lib/logger';
 
 const supabase: Handle = async ({ event, resolve }) => {
@@ -30,8 +29,6 @@ const supabase: Handle = async ({ event, resolve }) => {
             }
         }
     });
-
-    event.locals.db = db;
 
     /**
      * Unlike `supabase.auth.getSession()`, which returns the session _without_

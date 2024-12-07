@@ -6,6 +6,7 @@ import { redirect } from 'sveltekit-flash-message/server'
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
+import { db } from '$lib/server/db/db.d'
 import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
 import type { PageServerLoad } from './$types.js';
 
@@ -33,7 +34,6 @@ export const actions = {
             return setError(form, 'password', errorMessage);
         }
 
-        const db = locals.db;
         const usernameCount = await db.withSchema('junowot')
                                         .selectFrom('user')
                                         .select(({fn}) => (
