@@ -1,10 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
+import { type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { redirect } from 'sveltekit-flash-message/server';
 
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 import { db } from '$lib/db/db.d';
+import { logger } from '$lib/logger';
 
-export const handle = async ({ event, resolve }) => {
+const supabase: Handle = async ({ event, resolve }) => {
     /**
      * Creates a Supabase client specific to this server request.
      *
@@ -64,3 +68,26 @@ export const handle = async ({ event, resolve }) => {
         }
     });
 };
+
+const authGuard: Handle = async ({ event, resolve }) => {
+    // See : https://supabase.com/docs/guides/auth/server-side/sveltekit
+    const { user } = await event.locals.safeGetSession();
+    event.locals.user = user;
+
+    if (
+        !user &&
+        !(
+            event.route.id == '/' ||
+            event.route.id == '/auth/login' ||
+            event.route.id == '/auth/register' ||
+            event.route.id == '/games'
+        )
+    ) {
+        logger.error('User not logged in.');
+        redirect('/', { type: 'error', message: 'You are not logged in' }, event);
+    }
+
+    return resolve(event);
+}
+
+export const handle: Handle = sequence(supabase, authGuard);
