@@ -56,13 +56,10 @@ export const actions = {
         const url = requestEvent.url;
         logger.trace('url : ', url);
 
+        // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
         const { user } = await requestEvent.locals.safeGetSession();
-        if (!user) {
-            logger.error('User not logged in.');
-            redirect('/', { type: 'error', message: 'You are not logged in' }, requestEvent);
-        }
+        const userId = user ? user.id : '';
 
-        const userId = user.id;
         const leagueName = url.searchParams.get('name');
         if (!leagueName?.trim()) {
             const msg = 'League name cannot be blank';

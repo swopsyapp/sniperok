@@ -8,12 +8,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async (requestEvent) => {
 
     const { user } = await requestEvent.locals.safeGetSession();
-    if (!user) {
-        logger.error('User not logged in.');
-        redirect('/', { type: 'error', message: 'You are not logged in' }, requestEvent);
-    }
-
-    const userId = user.id;
+    const userId = user ? user.id : ''; // NOTE: user should never be null here due to auth guard hook
 
     const leagueId = StringUtils.trimEndMarkers(requestEvent.params.league_id);
 

@@ -77,19 +77,20 @@
         const json = await response.json();
         logger.trace('json : ', json);
 
-        if (json.status == HttpStatus.NOT_ACCEPTABLE) {
+        if (response.status == HttpStatus.NOT_ACCEPTABLE) {
             const msg = 'League name cannot be blank';
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status == HttpStatus.CONFLICT) {
+        if (response.status == HttpStatus.CONFLICT) {
             const msg = `You are already a member of "${leagueName}"`;
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status >= HttpStatus.BAD_REQUEST) {
+        if (response.status != HttpStatus.OK) {
+            logger.error(`error status : ${response.status}`);
             $flash = { type: 'error', message: 'An error occurred' };
             return;
         }
@@ -107,6 +108,22 @@
         const response = await fetch(leagueUrl, {
             method: "DELETE",
         });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            const msg = `You are not a curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
 
         $flash = { type: 'success', message: `League deleted` };
 

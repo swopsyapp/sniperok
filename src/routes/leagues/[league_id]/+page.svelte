@@ -5,7 +5,7 @@
     import { invalidateAll } from '$app/navigation';
     import { page } from '$app/stores';
     import { logger } from '$lib/logger';
-    import { booleanToChecked } from '$lib/utils'
+    import { HttpStatus } from '$lib/utils';
     import { buttonVariants } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import { Checkbox } from '$lib/components/ui/checkbox/index';
@@ -14,12 +14,12 @@
     import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
     import type { PageData } from './$types.js';
-    import { checkbox } from 'zod-form-data';
-
+    
     const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
 
+    const leagueId = $derived(data.league.id);
     var leagueName = $state(data.league.name);
     const members = $derived(data.league.members);
 
@@ -72,8 +72,8 @@
             return;
         }
 
-        const newLeagueUrl = encodeURI($page.url.href.concat('?/new&name=', newLeagueName));
-        const response = await fetch(newLeagueUrl, {
+        const leagueUrl = encodeURI($page.url.href.concat(`/[${leagueId}]?name=${newLeagueName}`));
+        const response = await fetch($page.url.href, {
             method: "PATCH",
             body: JSON.stringify({ name: newLeagueName })
         });
@@ -81,27 +81,28 @@
         const json = await response.json();
         logger.trace('json : ', json);
 
-        if (json.status == 406) {
+        if (response.status == HttpStatus.NOT_ACCEPTABLE) {
             const msg = 'League name cannot be blank';
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status == 409) {
-            const msg = `You are already a member of "${newLeagueName}"`;
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status >= 400) {
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
             $flash = { type: 'error', message: 'An error occurred' };
             return;
         }
 
-        $flash = { type: 'success', message: `League created : ${leagueName}` };
-
         changeNameClick();
-        invalidateAll();
+        
+        $flash = { type: 'success', message: `League updated : ${leagueName}` };
     }
 
     async function deleteClick(memberId : string) {
@@ -133,6 +134,7 @@
                     readonly={!isNameChange}
                     class={nameChangeClass}
                 />
+                <span class="pl-2 flex justify-end space-x-2">
                     <Tooltip.Provider>
                         <Tooltip.Root>
                             <Tooltip.Trigger
@@ -175,6 +177,7 @@
                             </Tooltip.Content>
                         </Tooltip.Root>
                     </Tooltip.Provider>
+                </span>
             </span>
             <Table.Root>
                 <Table.Header>
