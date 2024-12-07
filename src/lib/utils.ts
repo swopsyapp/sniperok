@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export function booleanToChecked(checked : boolean | null) {
+    return checked ? 'checked' : 'unchecked';
+}
+
 export enum HttpStatus {
     OK = 200,
     BAD_REQUEST = 400,

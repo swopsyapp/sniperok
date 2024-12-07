@@ -12,23 +12,24 @@
     import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
     import type { PageData } from './$types.js';
+    import { HttpStatus } from '$lib/utils.js';
 
     const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
-    const leagues = $derived(data.leagues.rows);
+    const leagues = $derived(data.leagues);
 
     logger.trace('leagues : ', leagues);
 
     let isAdding = $state(false);
     let addButtonIcon = $derived(
         isAdding
-            ? 'line-md:minus-square'
+            ? 'line-md:u-turn-left'
             : 'line-md:plus-square'
     );
     let addClass = $derived(
         isAdding
-            ? 'h-6 w-6 rotate-0 scale-100 text-orange-500'
+            ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
             : 'h-6 w-6 rotate-0 scale-100 text-green-600'
     );
     let addToolTip = $derived(
@@ -38,6 +39,12 @@
     );
     let inputClass = $derived(isAdding ? '' : 'text-muted-foreground aria-readonly');
     let leagueName = $state('');
+
+    let confirmClass = $derived(
+        isAdding
+            ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
+            : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
+    );
 
     function addClick() {
         isAdding = !isAdding;
@@ -53,12 +60,6 @@
             }
         }
     }
-
-    let confirmClass = $derived(
-        isAdding
-            ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
-            : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
-    );
 
     async function confirmClick() {
         leagueName = leagueName.trim();
@@ -76,19 +77,19 @@
         const json = await response.json();
         logger.trace('json : ', json);
 
-        if (json.status == 406) {
+        if (json.status == HttpStatus.NOT_ACCEPTABLE) {
             const msg = 'League name cannot be blank';
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status == 409) {
+        if (json.status == HttpStatus.CONFLICT) {
             const msg = `You are already a member of "${leagueName}"`;
             $flash = { type: 'error', message: msg };
             return;
         }
 
-        if (json.status >= 400) {
+        if (json.status >= HttpStatus.BAD_REQUEST) {
             $flash = { type: 'error', message: 'An error occurred' };
             return;
         }
@@ -102,8 +103,8 @@
     async function deleteClick(leagueId : string) {
         logger.trace("deleting leagueId : ", leagueId);
 
-        const newLeagueUrl = encodeURI($page.url.href.concat('/[', leagueId, ']'));
-        const response = await fetch(newLeagueUrl, {
+        const leagueUrl = encodeURI($page.url.href.concat(`/[${leagueId}]`));
+        const response = await fetch(leagueUrl, {
             method: "DELETE",
         });
 
@@ -198,27 +199,6 @@
                                 <Tooltip.Provider>
                                     <Tooltip.Root>
                                         <Tooltip.Trigger
-                                            onclick={() => addClick()}
-                                            class={buttonVariants({
-                                                variant: 'ghost',
-                                                size: 'icon'
-                                            })}
-                                        >
-                                            <Icon
-                                                id="leagueAddBtn"
-                                                icon={addButtonIcon}
-                                                class={addClass}
-                                            />
-                                            <span class="sr-only">{addToolTip}</span>
-                                        </Tooltip.Trigger>
-                                        <Tooltip.Content>
-                                            <p>{addToolTip}</p>
-                                        </Tooltip.Content>
-                                    </Tooltip.Root>
-                                </Tooltip.Provider>
-                                <Tooltip.Provider>
-                                    <Tooltip.Root>
-                                        <Tooltip.Trigger
                                             onclick={() => confirmClick()}
                                             class={buttonVariants({
                                                 variant: 'ghost',
@@ -234,6 +214,27 @@
                                         </Tooltip.Trigger>
                                         <Tooltip.Content>
                                             <p>Confirm</p>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
+                                </Tooltip.Provider>
+                                <Tooltip.Provider>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger
+                                            onclick={() => addClick()}
+                                            class={buttonVariants({
+                                                variant: 'ghost',
+                                                size: 'icon'
+                                            })}
+                                        >
+                                            <Icon
+                                                id="leagueAddBtn"
+                                                icon={addButtonIcon}
+                                                class={addClass}
+                                            />
+                                            <span class="sr-only">{addToolTip}</span>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <p>{addToolTip}</p>
                                         </Tooltip.Content>
                                     </Tooltip.Root>
                                 </Tooltip.Provider>

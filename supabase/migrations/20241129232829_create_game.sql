@@ -16,3 +16,7 @@ alter table "junowot"."game" enable row level security;
 CREATE UNIQUE INDEX game_pkey1 ON junowot.game USING btree (id);
 
 alter table "junowot"."game" add constraint "game_pkey1" PRIMARY KEY using index "game_pkey1";
+
+alter table "junowot"."game" add constraint "game_league_id_fkey" FOREIGN KEY (league_id) REFERENCES junowot.league(id) not valid;
+
+alter table "junowot"."game" validate constraint "game_league_id_fkey";

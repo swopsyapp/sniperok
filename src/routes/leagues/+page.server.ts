@@ -47,7 +47,7 @@ export const load = (async (requestEvent) => {
     logger.trace('leagues.length : ', leagues.rows.length);
 
     return {
-        leagues
+        leagues: leagues.rows
     };
 }) satisfies PageServerLoad;
 

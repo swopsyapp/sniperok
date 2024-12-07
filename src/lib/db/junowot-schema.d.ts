@@ -44,9 +44,16 @@ export interface LeagueMemberStatus {
   code: Generated<string>;
 }
 
+export interface User {
+  email: string | null;
+  id: string | null;
+  username: string | null;
+}
+
 export interface DB {
   game: Game;
   league: League;
   league_member: LeagueMember;
   league_member_status: LeagueMemberStatus;
+  user: User;
 }
