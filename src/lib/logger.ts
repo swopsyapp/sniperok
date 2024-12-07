@@ -13,7 +13,7 @@ export function getLogLevel(level: string): number {
         warn: 4,
         error: 5,
         fatal: 6
-    };
+    }
 
     // Return the corresponding log level or default to 'info' level (3)
     return logLevels[level.toLowerCase()] ?? 3;

@@ -49,7 +49,7 @@ export const load = (async (requestEvent) => {
                 .where('lm.member_uuid', '=', userId) );
 
     const compiledQry = leaguesQry.compile();
-    logger.debug('leaguesQry : ', compiledQry);
+    logger.trace('leaguesQry : ', compiledQry);
 
     const leagues = await db.executeQuery(compiledQry);
 

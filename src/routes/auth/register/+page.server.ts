@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from 'sveltekit-flash-message/server'
 
 import { logger } from '$lib/logger';
+import { HttpStatus } from '$lib/utils';
 import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
 import type { PageServerLoad } from './$types.js';
 
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async () => {
     logger.trace('form : ', form);
     
     return { form };
-};
+}
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -23,7 +24,7 @@ export const actions = {
         const form = await superValidate(request, zod(profileSchema));
 
         if (!form.valid) {
-            return fail(400, { form });
+            return fail(HttpStatus.BAD_REQUEST, { form });
         }
 
         if (!form.data.password) {
@@ -32,7 +33,34 @@ export const actions = {
             return setError(form, 'password', errorMessage);
         }
 
-        console.log('About to save registration for : ', form.data.email);
+        const db = locals.db;
+        const usernameCount = await db.withSchema('junowot')
+                                        .selectFrom('user')
+                                        .select(({fn}) => (
+                                            [fn.count<number>('username').as('tally')]
+                                        ))
+                                        .where('username', '=', form.data.username)
+                                        .executeTakeFirstOrThrow();
+        if (usernameCount.tally > 0) {
+            const errorMessage = 'Username is already registered ';
+            logger.info(errorMessage, form.data.username);
+            return setError(form, 'username', errorMessage);
+        }
+
+        const emailCount = await db.withSchema('junowot')
+                                        .selectFrom('user')
+                                        .select(({fn}) => (
+                                            [fn.count<number>('username').as('tally')]
+                                        ))
+                                        .where('email', '=', form.data.email)
+                                        .executeTakeFirstOrThrow();
+        if (emailCount.tally > 0) {
+            const errorMessage = 'Email address is already registered ';
+            logger.info(errorMessage, form.data.email);
+            return setError(form, 'email', errorMessage);
+        }
+
+        logger.trace('About to save registration for : ', form.data.email);
 
         const supabase: SupabaseClient = locals.supabase;
         const { error } = await supabase.auth.signUp({
@@ -49,11 +77,11 @@ export const actions = {
         });
 
         if (error != null) {
-            console.log('Error saving registration for ', form.data.email, error.code, error.message);
-            const errorMessage = (error.code == 'user_already_exists') ? 'Email already registered.' : 'Registration error : '.concat(error.message);
+            logger.error('Error saving registration for ', form.data.email, error.code, error.message);
+            const errorMessage = (error.code == 'user_already_exists') ? 'Email already registered.' : 'Registration error';
             return setError(form, 'email', errorMessage);
         }
 
         redirect('/auth/login', { type: 'success', message: "Registration was successful, please login" }, cookies);
     }
-};
+}
