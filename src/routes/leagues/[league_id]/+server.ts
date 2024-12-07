@@ -20,11 +20,11 @@ async function isCurator(db: Kysely<DB>, leagueId : string, userId : string) : P
         .select(({ fn }) => [fn.count<number>('lm.member_uuid').as('curator_count')]);
 
     const compiledQry = userCuratorCountQry.compile();
-    logger.debug('userLeagueOwnerCountQry : ', compiledQry);
+    logger.trace('userCuratorCountQry : ', compiledQry);
     
     const userCuratorCount = await userCuratorCountQry.executeTakeFirstOrThrow();
 
-    logger.debug('userCuratorCount : ', userCuratorCount);
+    logger.trace('userCuratorCount : ', userCuratorCount);
 
     if ( userCuratorCount.curator_count > 0 ) {
         return true;
@@ -105,7 +105,6 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 
 export const PATCH: RequestHandler = async (requestEvent) => {
     
-    logger.debug("requestEvent : start");
     logger.trace("requestEvent : ", requestEvent);
 
     const leagueId = StringUtils.trimEndMarkers(requestEvent.params.league_id);
