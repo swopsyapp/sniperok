@@ -23,8 +23,9 @@
     var leagueName = $state(data.league.name);
     const members = $derived(data.league.members);
 
+    const readOnlyInputClass = 'text-muted-foreground aria-readonly';
     let isNameChange = $state(false);
-    let nameChangeClass = $derived(isNameChange ? '' : 'text-muted-foreground aria-readonly');
+    let nameChangeClass = $derived(isNameChange ? '' : readOnlyInputClass);
     let renameButtonIcon = $derived(
         isNameChange
             ? 'line-md:u-turn-left'
@@ -46,6 +47,31 @@
             ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
             : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
     );
+
+    let isAdding = $state(false);
+    let newUsername = $state('');
+    let usernameInputClass = $derived(isAdding ? '' : readOnlyInputClass);
+    let addMemberIcon = $derived(
+        isAdding
+            ? 'line-md:u-turn-left'
+            : 'line-md:plus-square'
+    );
+    let addMemberClass = $derived(
+        isAdding
+            ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
+            : 'h-6 w-6 rotate-0 scale-100 text-green-600'
+    );
+    let addMemberToolTip = $derived(
+        isAdding
+            ? 'Cancel'
+            : 'New'
+    );
+    let confirmMemberClass = $derived(
+        isAdding
+            ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
+            : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
+    );
+
 
     async function changeNameClick() {
         isNameChange = !isNameChange;
@@ -105,18 +131,105 @@
         $flash = { type: 'success', message: `League updated : ${leagueName}` };
     }
 
-    async function deleteClick(memberId : string) {
+    async function deleteMemberClick(memberId : string) {
         logger.trace("deleting memberId : ", memberId);
 
-        const memberUrl = $page.url.origin.concat(`/league_members/[${memberId}]`);
+        const memberUrl = $page.url.href.concat(`/[${memberId}]`);
         const response = await fetch(memberUrl, {
             method: "DELETE",
         });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            const msg = `You are not a curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status == HttpStatus.NOT_ACCEPTABLE) {
+            logger.debug('NOT_ACCEPTABLE ', response);
+            const msg = `League must have at least one curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
 
         $flash = { type: 'success', message: `Member deleted` };
 
         invalidateAll();
     }
+
+    function addMemberClick() {
+        isAdding = !isAdding;
+
+        if (document) {
+            const inputElem = document.getElementById('usernameInput');
+            const buttonElem = document.getElementById('memberAddBtn');
+            if (isAdding) {
+                inputElem?.focus();
+            } else {
+                newUsername = '';
+                buttonElem?.focus();
+            }
+        }
+    }
+
+    async function confirmMemberClick() {
+        newUsername = newUsername.trim();
+        if (newUsername == '') {
+            $flash = { type: 'error', message: 'Member username name cannot be blank' };
+            return;
+        }
+
+        const newCuratorCheckElem = document.getElementById('newCuratorCheck');
+        // logger.trace('newCuratorCheckElem : ', newCuratorCheckElem);
+        const newCuratorCheck = (newCuratorCheckElem?.attributes.getNamedItem('data-state')?.value == 'checked') ? true : false;
+
+        // const newLeagueUrl = encodeURI($page.url.href.concat('/[addMember]'));
+        const newLeagueUrl = $page.url.href.concat('/[addMember]');
+        const response = await fetch(newLeagueUrl, {
+            method: "POST",
+            body: JSON.stringify({
+                username: newUsername,
+                isCurator: newCuratorCheck
+            })
+        });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.NOT_FOUND) {
+            const msg = 'User not found';
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status == HttpStatus.CONFLICT) {
+            const msg = `You are already a member of "${leagueName}"`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error(`error status : ${response.status}`);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
+
+        $flash = { type: 'success', message: `League created : ${leagueName}` };
+
+        addMemberClick();
+        invalidateAll();
+    }
+
 </script>
 
 <div>
@@ -225,7 +338,7 @@
                                             <Tooltip.Provider>
                                                 <Tooltip.Root>
                                                     <Tooltip.Trigger
-                                                        onclick={() => deleteClick(member.league_member_id)}
+                                                        onclick={() => deleteMemberClick(member.league_member_id)}
                                                         class={buttonVariants({
                                                             variant: 'ghost',
                                                             size: 'icon'
@@ -247,53 +360,45 @@
                             </Table.Cell>
                         </Table.Row>
                     {/each}
-                    <!--
                     <Table.Row>
                         <Table.Cell class="font-medium">
                             <Input
-                                id="leagueNameInput"
-                                bind:value={leagueName}
+                                id="usernameInput"
+                                bind:value={newUsername}
                                 placeholder="-"
                                 readonly={!isAdding}
-                                class={inputClass}
+                                class={usernameInputClass}
                             />
                         </Table.Cell>
+                        <Table.Cell class="font-medium">
+                            <Input
+                                placeholder="pending"
+                                readonly={true}
+                                class={readOnlyInputClass}
+                            />
+                        </Table.Cell>
+                        <Table.Cell class="font-medium">
+                            {#if (isAdding)}
+                                <Checkbox id="newCuratorCheck" />
+                            {:else}
+                                <Checkbox id="newCuratorCheck" disabled />
+                            {/if}
+                        </Table.Cell>
                         <Table.Cell class="object-right text-right">
-                            <span class="flex justify-end">
+                            <span class="flex justify-end space-x-2">
                                 <Tooltip.Provider>
                                     <Tooltip.Root>
                                         <Tooltip.Trigger
-                                            onclick={() => addClick()}
+                                            onclick={() => confirmMemberClick()}
                                             class={buttonVariants({
                                                 variant: 'ghost',
                                                 size: 'icon'
                                             })}
                                         >
                                             <Icon
-                                                id="leagueAddBtn"
-                                                icon={addButtonIcon}
-                                                class={addClass}
-                                            />
-                                            <span class="sr-only">{addToolTip}</span>
-                                        </Tooltip.Trigger>
-                                        <Tooltip.Content>
-                                            <p>{addToolTip}</p>
-                                        </Tooltip.Content>
-                                    </Tooltip.Root>
-                                </Tooltip.Provider>
-                                <Tooltip.Provider>
-                                    <Tooltip.Root>
-                                        <Tooltip.Trigger
-                                            onclick={() => confirmClick()}
-                                            class={buttonVariants({
-                                                variant: 'ghost',
-                                                size: 'icon'
-                                            })}
-                                        >
-                                            <Icon
-                                                id="leagueConfirmBtn"
+                                                id="memberConfirmBtn"
                                                 icon="line-md:confirm"
-                                                class={confirmClass}
+                                                class={confirmMemberClass}
                                             />
                                             <span class="sr-only">Confirm</span>
                                         </Tooltip.Trigger>
@@ -302,10 +407,30 @@
                                         </Tooltip.Content>
                                     </Tooltip.Root>
                                 </Tooltip.Provider>
+                                <Tooltip.Provider>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger
+                                            onclick={() => addMemberClick()}
+                                            class={buttonVariants({
+                                                variant: 'ghost',
+                                                size: 'icon'
+                                            })}
+                                        >
+                                            <Icon
+                                                id="memberAddBtn"
+                                                icon={addMemberIcon}
+                                                class={addMemberClass}
+                                            />
+                                            <span class="sr-only">{addMemberToolTip}</span>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <p>{addMemberToolTip}</p>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
+                                </Tooltip.Provider>
                             </span>
                         </Table.Cell>
                     </Table.Row>
-                    -->
                 </Table.Body>
             </Table.Root>
         </Card.Content>

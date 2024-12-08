@@ -1,13 +1,13 @@
 import { error, json } from '@sveltejs/kit';
 import { Transaction } from 'kysely';
-
 import { z } from 'zod';
+
+import { type DB } from '$lib/server/db/junowot-schema.d';
+import { db, isCurator } from '$lib/server/db/db.d';
 
 import { logger } from '$lib/logger';
 import { StringUtils } from '$lib/StringUtils';
 import { HttpStatus } from '$lib/utils'
-import { type DB } from '$lib/server/db/junowot-schema.d';
-import { db, isCurator } from '$lib/server/db/db.d';
 import type { RequestHandler } from './$types';
 
 export const DELETE: RequestHandler = async (requestEvent) => {
@@ -50,9 +50,9 @@ export const DELETE: RequestHandler = async (requestEvent) => {
         logger.trace('userLeagueOwnerCount : ', leagueMemberCount);
 
         if (leagueMemberCount.member_count > 1) {
-            const msg = `League still has other members`;
+            const msg = 'League still has other members';
             logger.warn(msg);
-            return fail(HttpStatus.FORBIDDEN);
+            return error(HttpStatus.FORBIDDEN, msg);
         };
     */
 
@@ -78,6 +78,11 @@ export const DELETE: RequestHandler = async (requestEvent) => {
     return json({ success: true })
 };
 
+/**
+ * PATCH - Update the League name
+ * @param requestEvent 
+ * @returns 
+ */
 export const PATCH: RequestHandler = async (requestEvent) => {
     
     logger.trace("requestEvent : ", requestEvent);

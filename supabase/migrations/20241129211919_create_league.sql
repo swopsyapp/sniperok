@@ -45,6 +45,11 @@ create table "junowot"."league_member" (
     "updated_at" timestamp with time zone not null default now()
 );
 
+create or replace trigger tg_league_member_updated before
+update
+    on
+    junowot.league_member for each row execute function junowot.fn_touch_updated_at();
+
 alter table "junowot"."league_member" enable row level security;
 
 CREATE UNIQUE INDEX league_member_pkey ON junowot.league_member USING btree (id);
