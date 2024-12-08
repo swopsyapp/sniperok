@@ -18,7 +18,9 @@
 
     let { data }: { data: PageData } = $props();
     const leagues = $derived(data.leagues);
+    const user = $derived(data.user);
 
+    // svelte-ignore state_referenced_locally
     logger.trace('leagues : ', leagues);
 
     let isAdding = $state(false);
@@ -104,7 +106,7 @@
     async function deleteClick(leagueId : string) {
         logger.trace("deleting leagueId : ", leagueId);
 
-        const leagueUrl = encodeURI($page.url.href.concat(`/[${leagueId}]`));
+        const leagueUrl = $page.url.href.concat(`/[${leagueId}]`);
         const response = await fetch(leagueUrl, {
             method: "DELETE",
         });
@@ -129,6 +131,41 @@
 
         invalidateAll();
     }
+
+    async function confirmMemberClick(league_id : string, member_id : string) {
+        logger.trace("Confirming membership of league : ", league_id);
+
+        const leagueUrl = $page.url.href.concat(`/[${league_id}]/[${member_id}]`);
+        const response = await fetch(leagueUrl, {
+            method: "PATCH",
+            body: JSON.stringify({
+                leagueId: league_id,
+                memberId: member_id,
+                statusCode: 'active'
+            })
+        });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            const msg = `You are not a curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
+
+        $flash = { type: 'success', message: `Membership updated` };
+
+        invalidateAll();
+    }
+
 </script>
 
 <div>
@@ -154,7 +191,7 @@
                                     <span class="pt-2 text-gray-600">
                                         [{league.member_count == 0 ? '*' : league.member_count}]
                                     </span>
-                                    {#if league.is_curator}
+                                    {#if league.name != 'public'}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
@@ -175,6 +212,8 @@
                                                 <Tooltip.Content><p>Edit</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
+                                    {/if}
+                                    {#if league.is_curator}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
@@ -192,6 +231,27 @@
                                                 <span class="sr-only">Delete</span>
                                                 </Tooltip.Trigger>
                                                 <Tooltip.Content><p>Delete</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
+                                    {/if}
+                                    {#if league.status_code == 'pending'}
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                onclick={() => confirmMemberClick(league.id, league.member_id)}
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <Icon
+                                                        id="memberConfirmBtn"
+                                                        icon='line-md:confirm'
+                                                        class='text-green-600'
+                                                    />
+                                                    <span class="sr-only">Confirm join</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Confirm join</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {/if}

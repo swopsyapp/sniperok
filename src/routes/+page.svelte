@@ -14,8 +14,7 @@
     let isUserSessionActive : boolean = user ? true : false;
 
     let pendingLeagueCount : number = parseInt($page.data.pendingLeagueCount);
-    let showNewLeagesFlag = (pendingLeagueCount > 0) ? true : false;
-
+    let showNewLeaguesFlag = (pendingLeagueCount > 0) ? true : false;
 
     const btnIconClass = 'h-5 w-5';
 
@@ -60,7 +59,7 @@
         <Card.Content>
             {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'List Games', false)}
             {@render pageActionButton('/games/[new]', 'mdi:add-bold', 'Create game', !isUserSessionActive)}
-            {@render pageActionButton('/leagues', 'mdi:users-group-outline', 'Leagues', !isUserSessionActive, showNewLeagesFlag)}
+            {@render pageActionButton('/leagues', 'mdi:users-group-outline', 'Leagues', !isUserSessionActive, showNewLeaguesFlag)}
         </Card.Content>
     </Card.Root>
 </div>

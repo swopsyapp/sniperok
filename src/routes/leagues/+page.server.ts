@@ -29,12 +29,13 @@ export const load = (async (requestEvent) => {
                       .groupBy('lm.league_id')
             )
         .selectFrom('league as l')
-        .leftJoin('league_member as lm', 'lm.league_id', 'l.id')
-        .select(({ fn }) => [
-            'l.id', 'l.name', 'lm.is_curator',
-            fn.count<number>('lm.id').as('member_count')
+        .select(({ val }) => [
+            'l.id', 'l.name',
+            val(false).as('is_curator'),
+            val('0').as('member_id'),
+            val('active').as('status_code'),
+            val(0).as('member_count')
         ])
-        .groupBy(['l.id', 'l.name', 'lm.is_curator'])
         .where('l.name', '=', 'public')
         .unionAll(
             db.selectFrom('league as l')
@@ -42,9 +43,11 @@ export const load = (async (requestEvent) => {
                 .innerJoin('member_count as mc', 'mc.league_id', 'l.id')
                 .select(({ fn }) => [
                     'l.id', 'l.name', 'lm.is_curator',
+                    'lm.id as member_id',
+                    'lm.status_code',
                     fn.sum<number>('mc.member_count').as('member_count')
                 ])
-                .groupBy(['l.id', 'l.name', 'lm.is_curator'])
+                .groupBy(['l.id', 'l.name', 'lm.id', 'lm.is_curator', 'lm.status_code'])
                 .where('lm.member_uuid', '=', userId) );
 
     const compiledQry = leaguesQry.compile();
