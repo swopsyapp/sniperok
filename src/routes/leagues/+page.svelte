@@ -5,6 +5,7 @@
     import { invalidateAll } from '$app/navigation';
     import { page } from '$app/stores';
     import { logger } from '$lib/logger';
+    import { HttpStatus } from '$lib/utils.js';
     import { buttonVariants } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import { Input } from '$lib/components/ui/input';
@@ -12,7 +13,6 @@
     import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
     import type { PageData } from './$types.js';
-    import { HttpStatus } from '$lib/utils.js';
 
     const flash = getFlash(page);
 
@@ -175,27 +175,25 @@
                                                 <Tooltip.Content><p>Edit</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
-                                        {#if league.member_count == 1}
-                                            <Tooltip.Provider>
-                                                <Tooltip.Root>
-                                                    <Tooltip.Trigger
-                                                        onclick={() => deleteClick(league.id)}
-                                                        class={buttonVariants({
-                                                            variant: 'ghost',
-                                                            size: 'icon'
-                                                        })}
-                                                    >
-                                                        <Icon
-                                                            id="leagueDeleteBtn"
-                                                            icon='flowbite:trash-bin-outline'
-                                                            class='text-red-600'
-                                                        />
-                                                    <span class="sr-only">Delete</span>
-                                                    </Tooltip.Trigger>
-                                                    <Tooltip.Content><p>Delete</p></Tooltip.Content>
-                                                </Tooltip.Root>
-                                            </Tooltip.Provider>
-                                        {/if}
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                    onclick={() => deleteClick(league.id)}
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <Icon
+                                                        id="leagueDeleteBtn"
+                                                        icon='flowbite:trash-bin-outline'
+                                                        class='text-red-600'
+                                                    />
+                                                <span class="sr-only">Delete</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Delete</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
                                     {/if}
                                 </span>    
                             </Table.Cell>

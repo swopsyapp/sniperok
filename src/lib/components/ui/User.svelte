@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { page } from '$app/stores';
     import Icon from '@iconify/svelte';
 
+    import { page } from '$app/stores';
     import { logger } from '$lib/logger';
 
     import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
