@@ -166,6 +166,42 @@
         invalidateAll();
     }
 
+    async function deleteMemberClick(leagueId : string, memberId : string) {
+        logger.trace("deleting memberId : ", memberId);
+
+        const memberUrl = $page.url.href.concat(`/[${leagueId}]/[${memberId}]`);
+        const response = await fetch(memberUrl, {
+            method: "DELETE",
+        });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            const msg = `You are not a curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status == HttpStatus.NOT_ACCEPTABLE) {
+            logger.debug('NOT_ACCEPTABLE ', response);
+            const msg = `League must have at least one curator`;
+            $flash = { type: 'error', message: msg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
+
+        $flash = { type: 'success', message: `You have left the league` };
+
+        invalidateAll();
+    }
+
 </script>
 
 <div>
@@ -191,7 +227,7 @@
                                     <span class="pt-2 text-gray-600">
                                         [{league.member_count == 0 ? '*' : league.member_count}]
                                     </span>
-                                    {#if league.name != 'public'}
+                                    {#if (league.name != 'public')}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
@@ -252,6 +288,26 @@
                                                     <span class="sr-only">Confirm join</span>
                                                 </Tooltip.Trigger>
                                                 <Tooltip.Content><p>Confirm join</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
+                                    {:else if (league.name != 'public')}
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                onclick={() => deleteMemberClick(league.id, league.member_id)}
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <Icon
+                                                        id="memberLeavemBtn"
+                                                        icon='line-md:account-delete'
+                                                        class='text-red-600'
+                                                    />
+                                                    <span class="sr-only">Leave</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Leave</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {/if}

@@ -16,6 +16,16 @@ import type { RequestHandler } from './$types';
  * PATCH : Update the membership status or curator flag
  */
 
+async function getLeagueMember(memberId : string) {
+    const leagueMemberRecord = await db
+        .withSchema('junowot')
+        .selectFrom('league_member')
+        .where('id', '=', memberId)
+        .selectAll()
+        .executeTakeFirst();
+    
+    return leagueMemberRecord;
+}
 
 /**
  * Adds a new league member with status pending
@@ -103,30 +113,48 @@ export const DELETE: RequestHandler = async (requestEvent) => {
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : '';
 
-    const isCurrentUserCurator = await isCurator(leagueId, userId);
-    if (!isCurrentUserCurator) {
-        error(HttpStatus.FORBIDDEN, 'Not a league curator');
-    }
-
     /*
      * A league must always have at least one curator.
      * Do not allow the last curator (probably self) to be deleted.
      */
-    const curatorCount = await db
-        .withSchema('junowot')
-        .selectFrom('league_member as lm')
-        .where('lm.league_id', '=', leagueId)
-        .where('lm.is_curator', '=', true)
-        .select(({ fn }) => [fn.count<number>('lm.member_uuid').as('member_count')])
-        .executeTakeFirstOrThrow();
-    
-    logger.trace('curatorCount : ', curatorCount);
+    const memberRecord = await getLeagueMember(memberId);
 
-    if (curatorCount.member_count == 1) {
-        const msg = 'League must have at least one curator';
-        logger.warn(msg);
-        return error(HttpStatus.NOT_ACCEPTABLE, msg);
-    };
+    if ( memberRecord == undefined ) {
+        error(HttpStatus.NOT_FOUND, 'Member not found');
+    }
+
+    if ( userId == memberRecord.member_uuid ) {
+        // TODO also fix this with row level security on postgres
+        logger.trace('OK for user to remove own record');
+    } else {
+        // If member != self then self must be curator in order to update member record
+        const isCurrentUserCurator = await isCurator(leagueId, userId);
+        if (!isCurrentUserCurator) {
+            error(HttpStatus.FORBIDDEN, 'Not a league curator');
+        }    
+    }
+
+    if ( memberRecord.is_curator ) {
+        /*
+        * A league must always have at least one curator.
+        * Do not allow the last curator (probably self) to be deleted.
+        */
+        const curatorCount = await db
+            .withSchema('junowot')
+            .selectFrom('league_member as lm')
+            .where('lm.league_id', '=', leagueId)
+            .where('lm.is_curator', '=', true)
+            .select(({ fn }) => [fn.count<number>('lm.member_uuid').as('member_count')])
+            .executeTakeFirstOrThrow();
+        
+        logger.trace('curatorCount : ', curatorCount);
+
+        if (curatorCount.member_count == 1) {
+            const msg = 'League must have at least one curator';
+            logger.warn(msg);
+            return error(HttpStatus.NOT_ACCEPTABLE, msg);
+        };
+    }
     
     logger.trace("About to delete league member : ", memberId);
 
@@ -182,12 +210,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
      * A league must always have at least one curator.
      * Do not allow the last curator (probably self) to be deleted.
      */
-    const memberRecord = await db
-        .withSchema('junowot')
-        .selectFrom('league_member')
-        .where('id', '=', memberId)
-        .selectAll()
-        .executeTakeFirst();
+    const memberRecord = await getLeagueMember(memberId);
 
     if ( memberRecord == undefined ) {
         error(HttpStatus.NOT_FOUND, 'Member not found');
@@ -195,7 +218,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
 
     if ( userId == memberRecord.member_uuid ) {
         // TODO also fix this with row level security on postgres
-        logger.debug('OK for user to update own record');
+        logger.trace('OK for user to update own record');
     } else {
         // If member != self then self must be curator in order to update member record
         const isCurrentUserCurator = await isCurator(leagueId, userId);
