@@ -133,7 +133,7 @@
         }
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
@@ -162,15 +162,15 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
         }
 
         if (response.status == HttpStatus.NOT_ACCEPTABLE) {
-            logger.debug('NOT_ACCEPTABLE ', response);
-            const msg = `League must have at least one curator`;
+            logger.trace('NOT_ACCEPTABLE ', response);
+            const msg = `League must have at least one active curator`;
             $flash = { type: 'error', message: msg };
             return;
         }
@@ -277,17 +277,14 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             $flash = { type: 'error', message: 'You are not a curator' };
-            // return;
         } else if (response.status == HttpStatus.NOT_ACCEPTABLE) {
-            logger.debug('not_acceptable');
+            logger.trace('not_acceptable');
             $flash = { type: 'error', message: 'Cannot update own curatorship' };
-            // return;
         } else if (response.status != HttpStatus.OK) {
             logger.error('error status : ', json.status);
             $flash = { type: 'error', message: 'An error occurred' };
-            // return;
         } else {
             $flash = { type: 'success', message: `Membership updated` };
         }

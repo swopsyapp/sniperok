@@ -121,7 +121,7 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
@@ -155,7 +155,7 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
@@ -184,14 +184,14 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.FORBIDDEN) {
-            logger.debug('forbidden');
+            logger.trace('forbidden');
             const msg = `You are not a curator`;
             $flash = { type: 'error', message: msg };
             return;
         }
 
         if (response.status == HttpStatus.NOT_ACCEPTABLE) {
-            logger.debug('NOT_ACCEPTABLE ', response);
+            logger.trace('NOT_ACCEPTABLE ', response);
             const msg = `League must have at least one curator`;
             $flash = { type: 'error', message: msg };
             return;
@@ -332,7 +332,7 @@
                             />
                         </Table.Cell>
                         <Table.Cell class="object-right text-right">
-                            <span class="flex justify-end">
+                            <span class="flex justify-end space-x-2">
                                 <Tooltip.Provider>
                                     <Tooltip.Root>
                                         <Tooltip.Trigger

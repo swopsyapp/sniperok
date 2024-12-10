@@ -136,21 +136,23 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 
     if ( memberRecord.is_curator ) {
         /*
-        * A league must always have at least one curator.
-        * Do not allow the last curator (probably self) to be deleted.
+        * A league must always have at least one active curator.
+        * Do not allow the last curator (probably self) to be deleted directly.
+        * It will be deleted, if the league is deleted.
         */
         const curatorCount = await db
             .withSchema('junowot')
             .selectFrom('league_member as lm')
             .where('lm.league_id', '=', leagueId)
             .where('lm.is_curator', '=', true)
+            .where('lm.status_code', '=', 'active')
             .select(({ fn }) => [fn.count<number>('lm.member_uuid').as('member_count')])
             .executeTakeFirstOrThrow();
         
         logger.trace('curatorCount : ', curatorCount);
 
         if (curatorCount.member_count == 1) {
-            const msg = 'League must have at least one curator';
+            const msg = 'League must have at least one active curator';
             logger.warn(msg);
             return error(HttpStatus.NOT_ACCEPTABLE, msg);
         };
