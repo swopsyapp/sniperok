@@ -57,8 +57,21 @@ export const load = (async (requestEvent) => {
 
     logger.trace('leagues.length : ', leagues.rows.length);
 
+    const leagueList = leagues.rows.map((leagueRow) => {
+        return {
+            id: leagueRow.id,
+            name: leagueRow.name,
+            memberCount: leagueRow.member_count,
+            currentUser: {
+                memberId: leagueRow.member_id,
+                statusCode: leagueRow.status_code,
+                isCurator: leagueRow.is_curator
+            }
+        }
+    })
+
     return {
-        leagues: leagues.rows
+        leagues: leagueList
     };
 }) satisfies PageServerLoad;
 

@@ -64,6 +64,10 @@
     }
 
     async function confirmClick() {
+        if (!isAdding) {
+            // button should be disabled
+            return;
+        }
         leagueName = leagueName.trim();
         if (leagueName == '') {
             $flash = { type: 'error', message: 'League name cannot be blank' };
@@ -225,7 +229,7 @@
                             <Table.Cell>
                                 <span class="flex">
                                     <span class="pt-2 text-gray-600">
-                                        [{league.member_count == 0 ? '*' : league.member_count}]
+                                        [{league.memberCount == 0 ? '*' : league.memberCount}]
                                     </span>
                                     {#if (league.name != 'public')}
                                         <Tooltip.Provider>
@@ -249,7 +253,7 @@
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {/if}
-                                    {#if league.is_curator}
+                                    {#if league.currentUser.isCurator}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
@@ -270,11 +274,11 @@
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {/if}
-                                    {#if league.status_code == 'pending'}
+                                    {#if league.currentUser.statusCode == 'pending'}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                onclick={() => confirmMemberClick(league.id, league.member_id)}
+                                                onclick={() => confirmMemberClick(league.id, league.currentUser.memberId)}
                                                     class={buttonVariants({
                                                         variant: 'ghost',
                                                         size: 'icon'
@@ -294,7 +298,7 @@
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                onclick={() => deleteMemberClick(league.id, league.member_id)}
+                                                onclick={() => deleteMemberClick(league.id, league.currentUser.memberId)}
                                                     class={buttonVariants({
                                                         variant: 'ghost',
                                                         size: 'icon'

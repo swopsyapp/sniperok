@@ -47,7 +47,9 @@ export const load = (async (requestEvent) => {
         league: {
             id: league.id,
             name: league.name,
-            isCurator: league.is_curator,
+            currentUser: {
+                isCurator: league.is_curator
+            },
             members: members
         }
     };

@@ -25,21 +25,25 @@
 
     const readOnlyInputClass = 'text-muted-foreground aria-readonly';
     let isNameChange = $state(false);
-    let nameChangeClass = $derived(isNameChange ? '' : readOnlyInputClass);
+    let renameInputClass = $derived(isNameChange ? '' : readOnlyInputClass);
     let renameButtonIcon = $derived(
         isNameChange
             ? 'line-md:u-turn-left'
             : 'line-md:edit'
     );
-    let addClass = $derived(
-        isNameChange
-            ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
-            : 'h-6 w-6 rotate-0 scale-100 text-green-600'
+    let renameIconClass = $derived(
+        !data.league.currentUser.isCurator ?
+            'h-6 w-6 rotate-0 scale-100 text-gray-400'
+            :
+            isNameChange ?
+                'h-6 w-6 rotate-0 scale-100 text-red-600'
+                :
+                'h-6 w-6 rotate-0 scale-100 text-green-600'
     );
-    let addToolTip = $derived(
+    let renameToolTip = $derived(
         isNameChange
             ? 'Cancel'
-            : 'New'
+            : 'Rename'
     );
     
     let confirmNameClass = $derived(
@@ -74,6 +78,11 @@
 
 
     async function changeNameClick() {
+        if ( !data.league.currentUser.isCurator ) {
+            // Button should be disabled
+            return;
+        }
+
         isNameChange = !isNameChange;
 
         if (document) {
@@ -92,6 +101,11 @@
     }
 
     async function confirmNameClick() {
+        if (!isNameChange) {
+            // button should be disabled
+            return;
+        }
+
         const newLeagueName = leagueName.trim();
         if (newLeagueName == '') {
             $flash = { type: 'error', message: 'League name cannot be blank' };
@@ -183,6 +197,11 @@
     }
 
     async function confirmMemberClick() {
+        if (!isAdding) {
+            // button should be disabled
+            return;
+        }
+
         newUsername = newUsername.trim();
         if (newUsername == '') {
             $flash = { type: 'error', message: 'Member username name cannot be blank' };
@@ -245,7 +264,7 @@
                     bind:value={leagueName}
                     placeholder="-"
                     readonly={!isNameChange}
-                    class={nameChangeClass}
+                    class={renameInputClass}
                 />
                 <span class="pl-2 flex justify-end space-x-2">
                     <Tooltip.Provider>
@@ -281,12 +300,12 @@
                                 <Icon
                                     id="changeNameBtn"
                                     icon={renameButtonIcon}
-                                    class={addClass}
+                                    class={renameIconClass}
                                 />
-                                <span class="sr-only">{addToolTip}</span>
+                                <span class="sr-only">{renameToolTip}</span>
                             </Tooltip.Trigger>
                             <Tooltip.Content>
-                                <p>{addToolTip}</p>
+                                <p>{renameToolTip}</p>
                             </Tooltip.Content>
                         </Tooltip.Root>
                     </Tooltip.Provider>
@@ -315,7 +334,7 @@
                             </Table.Cell>
                             <Table.Cell>
                                 <span class="flex">
-                                    {#if data.league.isCurator}
+                                    {#if data.league.currentUser.isCurator}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
