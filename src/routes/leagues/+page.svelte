@@ -58,6 +58,8 @@
                 inputElem?.focus();
             } else {
                 leagueName = '';
+                // Clear any previous flash message
+                $flash = undefined;
                 buttonElem?.focus();
             }
         }

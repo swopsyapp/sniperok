@@ -191,6 +191,8 @@
                 inputElem?.focus();
             } else {
                 newUsername = '';
+                // Clear any previous flash message
+                $flash = undefined;
                 buttonElem?.focus();
             }
         }
