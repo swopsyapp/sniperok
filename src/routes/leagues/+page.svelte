@@ -141,8 +141,8 @@
     async function confirmMemberClick(league_id : string, member_id : string) {
         logger.trace("Confirming membership of league : ", league_id);
 
-        const leagueUrl = $page.url.href.concat(`/[${league_id}]/[${member_id}]`);
-        const response = await fetch(leagueUrl, {
+        const membershipUrl = $page.url.href.concat(`/[${league_id}]/[${member_id}]`);
+        const response = await fetch(membershipUrl, {
             method: "PATCH",
             body: JSON.stringify({
                 leagueId: league_id,

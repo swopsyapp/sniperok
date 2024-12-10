@@ -19,6 +19,8 @@
 
     let { data }: { data: PageData } = $props();
 
+    logger.trace('username : ', data.user?.user_metadata.username);
+
     const leagueId = $derived(data.league.id);
     var leagueName = $state(data.league.name);
     const members = $derived(data.league.members);
@@ -32,13 +34,11 @@
             : 'line-md:edit'
     );
     let renameIconClass = $derived(
-        !data.league.currentUser.isCurator ?
-            'h-6 w-6 rotate-0 scale-100 text-gray-400'
-            :
-            isNameChange ?
-                'h-6 w-6 rotate-0 scale-100 text-red-600'
-                :
-                'h-6 w-6 rotate-0 scale-100 text-green-600'
+        !data.league.currentUser.isCurator
+            ? 'h-6 w-6 rotate-0 scale-100 text-gray-400'
+            : isNameChange
+                ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
+                : 'h-6 w-6 rotate-0 scale-100 text-green-600'
     );
     let renameToolTip = $derived(
         isNameChange
@@ -47,9 +47,12 @@
     );
     
     let confirmNameClass = $derived(
-        isNameChange
-            ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
-            : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
+        !data.league.currentUser.isCurator ?
+            'h-6 w-6 rotate-0 scale-100 text-gray-400'
+            :
+            isNameChange
+                ? 'h-6 w-6 rotate-0 scale-100 text-green-600'
+                : 'h-6 w-6 rotate-0 scale-100 text-gray-400'
     );
 
     let isAdding = $state(false);
@@ -61,9 +64,11 @@
             : 'line-md:plus-square'
     );
     let addMemberClass = $derived(
-        isAdding
-            ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
-            : 'h-6 w-6 rotate-0 scale-100 text-green-600'
+        !data.league.currentUser.isCurator
+            ? 'h-6 w-6 rotate-0 scale-100 text-gray-400'
+            : isAdding
+                ? 'h-6 w-6 rotate-0 scale-100 text-red-600'
+                : 'h-6 w-6 rotate-0 scale-100 text-green-600'
     );
     let addMemberToolTip = $derived(
         isAdding
@@ -182,6 +187,10 @@
     }
 
     function addMemberClick() {
+        if (!data.league.currentUser.isCurator) {
+            // Button should be disabled
+            return;
+        }
         isAdding = !isAdding;
 
         if (document) {
@@ -248,6 +257,41 @@
         $flash = { type: 'success', message: `League created : ${leagueName}` };
 
         addMemberClick();
+        invalidateAll();
+    }
+
+    async function toggleCurator(league_id : string, member_id : string, is_curator: boolean) {
+        logger.trace("Toggling curatorship of member : ", member_id);
+
+        const membershipUrl = $page.url.href.concat(`/[${member_id}]`);
+        const response = await fetch(membershipUrl, {
+            method: "PATCH",
+            body: JSON.stringify({
+                leagueId: league_id,
+                memberId: member_id,
+                isCurator: is_curator
+            })
+        });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.debug('forbidden');
+            $flash = { type: 'error', message: 'You are not a curator' };
+            // return;
+        } else if (response.status == HttpStatus.NOT_ACCEPTABLE) {
+            logger.debug('not_acceptable');
+            $flash = { type: 'error', message: 'Cannot update own curatorship' };
+            // return;
+        } else if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            // return;
+        } else {
+            $flash = { type: 'success', message: `Membership updated` };
+        }
+
         invalidateAll();
     }
 
@@ -328,34 +372,14 @@
                             <Table.Cell class="font-medium">{member.username}</Table.Cell>
                             <Table.Cell class="font-medium">{member.status_code}</Table.Cell>
                             <Table.Cell class="font-medium">
-                                {#if member.is_curator}
-                                    <Checkbox checked />
-                                {:else}
-                                    <Checkbox />
-                                {/if}
+                                <Checkbox checked={member.is_curator}
+                                        disabled={!data.league.currentUser.isCurator}
+                                        onclick={ () => { toggleCurator( data.league.id, member.league_member_id, !member.is_curator ) } } />
                             </Table.Cell>
                             <Table.Cell>
                                 <span class="flex">
                                     {#if data.league.currentUser.isCurator}
-                                        <Tooltip.Provider>
-                                            <Tooltip.Root>
-                                                <Tooltip.Trigger
-                                                    class={buttonVariants({
-                                                        variant: 'ghost',
-                                                        size: 'icon'
-                                                    })}
-                                                >
-                                                    <Icon
-                                                        id="leagueEditBtn"
-                                                        icon='line-md:edit'
-                                                        class='text-green-600'
-                                                    />
-                                                <span class="sr-only">Edit</span>
-                                                </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Edit</p></Tooltip.Content>
-                                            </Tooltip.Root>
-                                        </Tooltip.Provider>
-                                        {#if members.length > 1}
+                                        {#if member.username != data.user?.user_metadata.username }
                                             <Tooltip.Provider>
                                                 <Tooltip.Root>
                                                     <Tooltip.Trigger

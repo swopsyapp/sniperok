@@ -217,8 +217,12 @@ export const PATCH: RequestHandler = async (requestEvent) => {
     }
 
     if ( userId == memberRecord.member_uuid ) {
-        // TODO also fix this with row level security on postgres
-        logger.trace('OK for user to update own record');
+        if ( Object.keys(memberPatch).includes("isCurator") ) {
+            error(HttpStatus.NOT_ACCEPTABLE, "Can't update own curatorship");
+        } else {
+            // NOTE row level security can't protect only some columns AFAIK
+            logger.trace('OK for user to update own record');
+        }
     } else {
         // If member != self then self must be curator in order to update member record
         const isCurrentUserCurator = await isCurator(leagueId, userId);
