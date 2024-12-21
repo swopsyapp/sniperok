@@ -11,37 +11,30 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
+export type PlayerStatus = "active" | "inactive" | "pending";
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface Game {
   id: Generated<Int8>;
   is_public: Generated<boolean>;
-  language: Generated<string>;
-  league_id: Int8;
-  name: string;
-  round_duration: Generated<number>;
+  min_players: Generated<number>;
   rounds: Generated<number>;
-  updated_at: Generated<Timestamp>;
+  start_time: Timestamp | null;
 }
 
-export interface League {
-  id: Generated<Int8>;
-  name: string;
-  owner: Generated<string>;
-  updated_at: Generated<Timestamp>;
+export interface GamePlayer {
+  game_id: Int8;
+  player_uuid: string;
+  status: Generated<PlayerStatus>;
 }
 
-export interface LeagueMember {
-  id: Generated<Int8>;
-  is_curator: Generated<boolean>;
-  league_id: Int8;
-  member_uuid: string;
-  status_code: Generated<string>;
-  updated_at: Generated<Timestamp>;
-}
-
-export interface LeagueMemberStatus {
-  code: Generated<string>;
+export interface PlayerTurn {
+  game_id: Int8;
+  player_uuid: string;
+  response_time_millis: number | null;
+  round_seq: number;
+  weapon_code: string | null;
 }
 
 export interface User {
@@ -50,10 +43,21 @@ export interface User {
   username: string | null;
 }
 
+export interface Weapon {
+  code: string;
+  level: Generated<number>;
+}
+
+export interface WeaponVictory {
+  versus_code: string;
+  weapon_code: string;
+}
+
 export interface DB {
   game: Game;
-  league: League;
-  league_member: LeagueMember;
-  league_member_status: LeagueMemberStatus;
+  game_player: GamePlayer;
+  player_turn: PlayerTurn;
   user: User;
+  weapon: Weapon;
+  weapon_victory: WeaponVictory;
 }

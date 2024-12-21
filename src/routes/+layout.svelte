@@ -51,25 +51,22 @@
 <div class="flex min-h-screen flex-col">
     <nav class="border-b p-2">
         <div class="mx-auto flex w-full max-w-2xl items-center justify-between">
-            <a href="/" class="text-2xl font-bold">Junowot</a>
-
-            <div class="flex items-center justify-center gap-2">
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-sky-400" />
+            
+            <a href="/" class="text-2xl font-bold italic">rps-2.0!</a>
+            
+            <div class="flex items-center justify-center gap-8">
+                <a href="/"><Icon icon="fa:hand-rock-o" class="h-16 w-16 text-red-600" /></a>
                 <div>|</div>
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-emerald-400" />
+                <a href="/"><Icon icon="fa:hand-paper-o" class="h-16 w-16 text-yellow-400" /></a>
                 <div>|</div>
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-yellow-400" />
-                <div>|</div>
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-pink-500" />
-                <div>|</div>
-                <Icon icon="mdi:list-status" class="h-16 w-16 text-red-600" />
+                <a href="/"><Icon icon="fa:hand-scissors-o" class="h-16 w-16 text-blue-500" /></a>
             </div>
 
             <div class="flex gap-2">
                 {#key $page.url.pathname}
                     <User />
                 {/key}
-            </div>
+            </div>  
         </div>
     </nav>
 

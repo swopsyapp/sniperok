@@ -1,9 +1,13 @@
-# Junowot
+# sniperok
+
+## See
+- https://github.com/razshare/sveltekit-sse
+- https://github.com/andywer/pg-listen
 
 ## Build
 
 ```
-git clone https://github.com/swopsyapp/junowot.git
+git clone https://github.com/swopsyapp/sniperok.git
 pnpm install
 supabase start
 pnpm dev

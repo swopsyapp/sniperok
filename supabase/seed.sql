@@ -43,38 +43,9 @@ INSERT INTO
         FROM usr
     );
 
-insert into junowot.league(name, owner)
-values ('public', uuid_generate_v4());
+insert into sniperok.weapon ("code", "level") values
+('rock', 1), ('paper', 1), ('scissors', 1),
+('bazooka', 2), ('dynamite', 2), ('shotgun', 2);
 
-insert into junowot.league_member_status(code)
-values ('pending'), ('active'), ('banned');
-
-insert into junowot.league (name, owner)
-select 'Test1 friends league', users.id
-  from auth.users
- where users.email like 'test1%'
-;
-
-insert into junowot.league_member(league_id, member_uuid, status_code, is_curator)
-select l.id as league_id, u.id as member_uuid, 'active' as status_code, true as is_curator
-  from junowot.league l
-  join auth.users u
-    on u.email like 'test1%'
- where l.name like 'Test1%'
-;
-
-insert into junowot.league_member(league_id, member_uuid, status_code, is_curator)
-select l.id as league_id, u.id as member_uuid, 'active' as status_code, false as is_curator
-  from junowot.league l
-  join auth.users u
-    on u.email like 'test2%'
- where l.name like 'Test1%'
-;
-
-insert into junowot.league_member(league_id, member_uuid, status_code)
-select l.id as league_id, u.id as member_uuid, 'pending' as status_code
-  from junowot.league l
-  join auth.users u
-    on u.email like 'test3%'
- where l.name like 'Test1%'
-;
+insert into sniperok.weapon_victory (weapon_code, versus_code) VALUES
+('paper', 'rock'), ('scissors', 'paper'), ('rock', 'scissors');

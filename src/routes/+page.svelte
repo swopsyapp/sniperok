@@ -8,41 +8,46 @@
 
     // logger.debug('$page.data : ', $page.data);
 
-    // let { user, pendingLeagueCount } = $props();
+    //  let { user, pendingLeagueCount } = $props();
     // Wierd that user props doesn't behave properly
     let user = $page.data.user;
     let isUserSessionActive : boolean = user ? true : false;
 
-    let pendingLeagueCount : number = parseInt($page.data.pendingLeagueCount);
-    let showNewLeaguesFlag = (pendingLeagueCount > 0) ? true : false;
+    let boostsCount : number = parseInt($page.data.boostsCount);
 
     const btnIconClass = 'h-5 w-5';
+    const itemCountClass = 'pl-1 text-green-500';
 
 </script>
-{#snippet pageActionButton(href: string, iconName: string, buttonLabel: string, isDisabled: boolean, showNew: boolean = false)}
-    {#if (!isDisabled)}
-        <Button href={href} class="w-full">
-            <div class="flex items-center gap-2">
-                <Icon
-                    icon={iconName}
-                    class='h-5 w-5'
-                />
-                {buttonLabel}
-                {#if showNew }
-                <span class="pl-1 text-green-600">
-                    *New
-                </span>
-                {/if}
-            </div>
-        </Button>
-    {:else}
+{#snippet pageActionButton(href: string, iconName: string, buttonLabel: string, isDisabled: boolean, itemCount: number = 0)}
+    {#if (isDisabled)}
         <Button disabled={true} class="w-full">
             <div class="flex items-center gap-2">
                 <Icon
                     icon={iconName}
-                    class='h-5 w-5'
+                    class={btnIconClass}
                 />
                 <span>{buttonLabel}</span>
+                {#if itemCount > 0 }
+                    <span class={itemCountClass}>
+                        [{itemCount}]
+                    </span>
+                {/if}
+            </div>
+        </Button>
+    {:else}
+        <Button href={href} class="w-full">
+            <div class="flex items-center gap-2">
+                <Icon
+                    icon={iconName}
+                    class={btnIconClass}
+                />
+                {buttonLabel}
+                {#if itemCount > 0 }
+                    <span class={itemCountClass}>
+                        [{itemCount}]
+                    </span>
+                {/if}
             </div>
         </Button>
     {/if}
@@ -53,13 +58,13 @@
 <div>
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
-            <Card.Title class="text-center text-4xl font-thin">Welcome to Junowot</Card.Title>
+            <Card.Title class="text-center text-4xl font-thin">Welcome to <i>rps-2.0!</i></Card.Title>
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
             {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'List Games', false)}
             {@render pageActionButton('/games/[new]', 'mdi:add-bold', 'Create game', !isUserSessionActive)}
-            {@render pageActionButton('/leagues', 'mdi:users-group-outline', 'Leagues', !isUserSessionActive, showNewLeaguesFlag)}
+            {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'Boosts', !isUserSessionActive, boostsCount)}
         </Card.Content>
     </Card.Root>
 </div>

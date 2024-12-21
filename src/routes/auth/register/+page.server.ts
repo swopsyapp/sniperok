@@ -34,7 +34,7 @@ export const actions = {
             return setError(form, 'password', errorMessage);
         }
 
-        const usernameCount = await db.withSchema('junowot')
+        const usernameCount = await db.withSchema('sniperok')
                                         .selectFrom('user')
                                         .select(({fn}) => (
                                             [fn.count<number>('username').as('tally')]
@@ -47,7 +47,7 @@ export const actions = {
             return setError(form, 'username', errorMessage);
         }
 
-        const emailCount = await db.withSchema('junowot')
+        const emailCount = await db.withSchema('sniperok')
                                         .selectFrom('user')
                                         .select(({fn}) => (
                                             [fn.count<number>('username').as('tally')]

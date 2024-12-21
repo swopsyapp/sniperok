@@ -1,6 +1,6 @@
-# Junowot
+# sniperok
 
-Junowot is a General Knowledge game.
+sniperok is a game of rock-peper-scissors snips-paper-rock.
 
 ## Description
 
@@ -37,8 +37,8 @@ and https://github.com/engageintellect/sveltekit-supabase
 1. Clone the repo
 
 ```bash
-git clone https://github.com/swopsyapp/junowot.git
-cd junowot
+git clone https://github.com/swopsyapp/sniperok.git
+cd sniperok
 ```
 
 2. Install dependencies

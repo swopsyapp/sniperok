@@ -16,7 +16,7 @@ export function getLogLevel(level: string): number {
     }
 
     // Return the corresponding log level or default to 'info' level (3)
-    return logLevels[level.toLowerCase()] ?? 3;
+    return logLevels[level?.toLowerCase()] ?? 3;
 }
 
 export const logger = new Logger({ name: 'mainLogger', minLevel: getLogLevel(PUBLIC_TSLOG_MIN_LEVEL) });

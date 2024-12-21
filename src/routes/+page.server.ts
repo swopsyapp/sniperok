@@ -1,26 +1,28 @@
-import { db } from '$lib/server/db/db.d';
+// import { db } from '$lib/server/db/db.d';
 
 export const load = async ({ locals }) => {
     const { user } = await locals.safeGetSession();
 
-    let pendingLeagueCount = 0;
+    let boostsCount = 0;
     
     if (user) {
-        const pendingLeagueDbCount = await db
-            .withSchema('junowot')
-            .selectFrom('league_member as lm')
-            .where('lm.member_uuid', '=', user.id)
-            .where('lm.status_code', '=', 'pending')
-            .select(({ fn }) => [fn.count<number>('lm.id').as('tally')])
-            .executeTakeFirst();
+        const boostsDbCount = undefined;
+        // const boostsDbCount = await db
+        //     .withSchema('sniperok')
+        //     .selectFrom('league_member as lm')
+        //     .where('lm.member_uuid', '=', user.id)
+        //     .where('lm.status_code', '=', 'pending')
+        //     .select(({ fn }) => [fn.count<number>('lm.id').as('tally')])
+        //     .executeTakeFirst();
         
-        if (pendingLeagueDbCount) {
-            pendingLeagueCount = pendingLeagueDbCount.tally;
+        if (boostsDbCount) {
+            boostsCount = 0;
+            // boostsCount = boostsDbCount.tally;
         }
     }
 
     return {
         user,
-        pendingLeagueCount
+        boostsCount
     };
 };

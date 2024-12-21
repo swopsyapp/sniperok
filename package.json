@@ -1,6 +1,6 @@
 {
-	"name": "junowot",
-	"version": "0.2.0",
+	"name": "sniperok",
+	"version": "0.0.1",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -11,7 +11,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"db:reset": "supabase db reset",
-		"db:pull": "kysely-codegen --schema junowot --out-file ./src/lib/server/db/junowot-schema.d.ts --include-pattern=\"junowot.*\" --log-level info",
+		"db:pull": "kysely-codegen --schema sniperok --out-file ./src/lib/server/db/sniperok-schema.d.ts --include-pattern=\"sniperok.*\" --log-level info",
 		"test": "vitest"
 	},
 	"devDependencies": {
