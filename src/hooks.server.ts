@@ -76,6 +76,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
         !(
             event.route.id == '/' ||
             event.route.id == '/auth/login' ||
+            event.route.id == '/auth/login/guest' ||
             event.route.id == '/auth/register' ||
             event.route.id == '/games'
         )

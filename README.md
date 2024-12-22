@@ -1,6 +1,6 @@
 # sniperok
 
-sniperok is a game of rock-peper-scissors snips-paper-rock.
+sniperok is a game of rock-paper-scissors.
 
 ## Description
 

@@ -47,6 +47,7 @@
         {#if !user}
             {@render menuItem('Login', '/auth/login', 'mdi:login')}
             {@render menuItem('Register', '/auth/register', 'mdi:register-outline')}
+            {@render menuItem('Guest', '/auth/login/guest', 'mdi:anonymous')}
         {:else}
             {@render menuItem('Profile', '/auth/profile', 'lucide:user-round')}
             {@render menuItem('Logout', '/auth/logout', 'mdi:logout')}
