@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { User } from "@supabase/supabase-js";
     import Icon from '@iconify/svelte';
 
     import { page } from '$app/stores';
@@ -10,10 +11,10 @@
 
     //  let { user, pendingLeagueCount } = $props();
     // Wierd that user props doesn't behave properly
-    let user = $page.data.user;
-    let isUserSessionActive : boolean = user ? true : false;
+    let user : User = $page.data.user;
+    const isRegisteredUserSession : boolean = (user && !user.is_anonymous) ? true : false;
 
-    let boostsCount : number = parseInt($page.data.boostsCount);
+    const boostsCount : number = parseInt($page.data.boostsCount);
 
     const btnIconClass = 'h-5 w-5';
     const itemCountClass = 'pl-1 text-green-500';
@@ -63,8 +64,8 @@
         </Card.Header>
         <Card.Content>
             {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'List Games', false)}
-            {@render pageActionButton('/games/[new]', 'mdi:add-bold', 'Create game', !isUserSessionActive)}
-            {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'Boosts', !isUserSessionActive, boostsCount)}
+            {@render pageActionButton('/games/[new]', 'mdi:add-bold', 'Create game', !isRegisteredUserSession)}
+            {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'Boosts', !isRegisteredUserSession, boostsCount)}
         </Card.Content>
     </Card.Root>
 </div>

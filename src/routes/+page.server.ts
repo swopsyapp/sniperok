@@ -5,7 +5,7 @@ export const load = async ({ locals }) => {
 
     let boostsCount = 0;
     
-    if (user) {
+    if (user && !user.is_anonymous) {
         const boostsDbCount = undefined;
         // const boostsDbCount = await db
         //     .withSchema('sniperok')
