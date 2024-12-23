@@ -1,10 +1,12 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { getFlash } from 'sveltekit-flash-message';
     
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
 
     import * as Card from '$lib/components/ui/card/index';
+    import * as Form from "$lib/components/ui/form/index.js";
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
@@ -17,6 +19,10 @@
     let isPublic : boolean = $state(true);
     let minPlayers : number = $state(2);
     let startSeconds : number = $state(60);
+
+	onMount(() => {
+        document.getElementById("isPublic")?.focus();
+	});
 
     async function newGame(event : SubmitEvent) {
         event.preventDefault();
@@ -84,6 +90,10 @@
                         Seconds before start
                     </Label>
                     <Input id="startSeconds" bind:value={startSeconds} type="number" min="10" max="600"/>
+                </span>
+                <br/>
+                <span class="flex w-full  justify-center items-center">
+                    <Form.Button>Create</Form.Button>
                 </span>
             </form>    
         </Card.Content>

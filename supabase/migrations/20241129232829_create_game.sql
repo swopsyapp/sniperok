@@ -20,7 +20,7 @@ create table "sniperok"."game" (
     "is_public" boolean not null default false,
     "rounds" smallint not null default '3'::smallint,
     "min_players" smallint not null default '2'::smallint,
-    "start_time" timestamp
+    "start_time" timestamp not null
 );
 
 CREATE UNIQUE INDEX game_pk ON sniperok.game USING btree (id);

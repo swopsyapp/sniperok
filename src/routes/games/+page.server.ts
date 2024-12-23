@@ -9,8 +9,11 @@ export const load = (async () => {
     const gamesQry = db
         .withSchema('sniperok')
         .selectFrom('game as g')
-        .select(['g.id', 'g.status_id', 'g.is_public', 'g.min_players', 'g.rounds', 'g.start_time'])
+        .innerJoin('game_player as gp', 'gp.game_id', 'g.id')
+        .innerJoin('user as u', 'u.id', 'gp.player_uuid')
+        .select(['g.id', 'g.status_id', 'u.username as curator', 'g.is_public', 'g.min_players', 'g.rounds', 'g.start_time'])
         .where('g.status_id', '=', Status.pending.valueOf())
+        .where('gp.status_id', '=', Status.activeCurator)
         .orderBy('g.start_time desc');
 
     const compiledQry = gamesQry.compile();
@@ -22,6 +25,7 @@ export const load = (async () => {
         return {
             id: gameRow.id,
             status: getStatus(gameRow.status_id),
+            curator: gameRow.curator,
             isPublic: gameRow.is_public,
             players: 0,
             minPlayers: gameRow.min_players,

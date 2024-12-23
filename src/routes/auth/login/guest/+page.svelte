@@ -20,6 +20,10 @@
 
     let answer : string = $state('');
 
+	onMount(() => {
+        document.getElementById("answer")?.focus();
+	});
+
     async function challenge(event : SubmitEvent) {
         event.preventDefault();
         const response = await fetch($page.url.href.concat('?answer=', answer), {
@@ -44,10 +48,6 @@
             return;
         }
     }
-
-	onMount(() => {
-        document.getElementById("answer")?.focus();
-	});
 
 </script>
 

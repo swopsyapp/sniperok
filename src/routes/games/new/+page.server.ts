@@ -1,15 +1,12 @@
 import { error } from '@sveltejs/kit';
 import { redirect as flashRedirect } from 'sveltekit-flash-message/server';
+import { Transaction } from 'kysely';
 
+import { db } from '$lib/server/db/db.d';
+import { type DB } from '$lib/server/db/sniperok-schema.d';
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
-
-// import type { PageServerLoad } from './$types';
-
-// export const load = (async () => {
-//     return {};
-// }) satisfies PageServerLoad;
-
+import { Status } from '$lib/model/status.d';
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -18,30 +15,46 @@ export const actions = {
         const json = await request.json();
         logger.trace('New game : ', json);
 
-        // const answer = json.answer;
-        // logger.debug('Guest login answer : ', answer);
+        const isPublic : boolean = json.isPublic;
+        const minPlayers : number = json.minPlayers;
+        const startSeconds : number = json.startSeconds;
+        const startTime : Date = new Date();
+        startTime.setSeconds(startTime.getSeconds() + startSeconds);
 
-        // TODO : make challenge dynamic
-        // if ( answer != '5') {
-        //     logger.warn('Challenge incorrect : ', answer);
-        //     error(HttpStatus.BAD_REQUEST, 'Nope!');
-        // }
+        // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
+        const { user } = await locals.safeGetSession();
+        const userId = user ? user.id : '';
 
-        if ( locals.user ) {
-            logger.warn('Challenge already logged in : ', locals.user);
-            error(HttpStatus.BAD_REQUEST, 'already logged in!');
-        }
-        locals.supabase
-        const { data, error: authError } = await locals.supabase.auth.signInAnonymously();
-        if (authError) {
-            logger.error('Challenge signIn error : ', authError);
-            error(HttpStatus.BAD_REQUEST, 'Error!');
-        }
-        locals.user = data.user;
+        await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
+            const game = await trx.insertInto('game')
+                .values({
+                    status_id: Status.pending.valueOf(),
+                    is_public: isPublic,
+                    min_players: minPlayers,
+                    start_time: startTime
+                })
+                .returning('id')
+                .executeTakeFirstOrThrow()
+
+                await trx.insertInto('game_player')
+                .values({
+                    game_id: game.id,
+                    player_uuid: userId,
+                    status_id: Status.activeCurator.valueOf()
+                })
+                .returningAll()
+                .executeTakeFirst()
+
+        }).catch(function(err){
+            logger.error('Error creating game', err);
+            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+        });
+    
+        // return json({ success: true })
 
         flashRedirect(
-            '/',
-            { type: 'success', message: `Welcome Guest` },
+            '/games',
+            { type: 'success', message: 'Game created' },
             cookies
         );
     }

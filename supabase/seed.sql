@@ -44,7 +44,8 @@ INSERT INTO
     );
 
 insert into sniperok.status ("id", "code") values
-(1, 'pending'), (2, 'active'), (3, 'inactive');
+(1, 'pending'), (2, 'active'), (3, 'inactive'),
+(4, 'active_curator');
 
 insert into sniperok.weapon ("code", "level") values
 ('rock', 1), ('paper', 1), ('scissors', 1),

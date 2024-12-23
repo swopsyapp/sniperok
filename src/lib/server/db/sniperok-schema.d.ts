@@ -18,7 +18,7 @@ export interface Game {
   is_public: Generated<boolean>;
   min_players: Generated<number>;
   rounds: Generated<number>;
-  start_time: Timestamp | null;
+  start_time: Timestamp;
   status_id: Generated<number>;
 }
 
