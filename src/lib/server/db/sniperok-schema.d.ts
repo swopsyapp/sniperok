@@ -11,8 +11,6 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
-export type PlayerStatus = "active" | "inactive" | "pending";
-
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface Game {
@@ -21,12 +19,13 @@ export interface Game {
   min_players: Generated<number>;
   rounds: Generated<number>;
   start_time: Timestamp | null;
+  status_id: Generated<number>;
 }
 
 export interface GamePlayer {
   game_id: Int8;
   player_uuid: string;
-  status: Generated<PlayerStatus>;
+  status_id: Generated<number>;
 }
 
 export interface PlayerTurn {
@@ -35,6 +34,11 @@ export interface PlayerTurn {
   response_time_millis: number | null;
   round_seq: number;
   weapon_code: string | null;
+}
+
+export interface Status {
+  code: string;
+  id: Generated<number>;
 }
 
 export interface User {
@@ -57,6 +61,7 @@ export interface DB {
   game: Game;
   game_player: GamePlayer;
   player_turn: PlayerTurn;
+  status: Status;
   user: User;
   weapon: Weapon;
   weapon_victory: WeaponVictory;

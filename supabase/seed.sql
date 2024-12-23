@@ -43,6 +43,9 @@ INSERT INTO
         FROM usr
     );
 
+insert into sniperok.status ("id", "code") values
+(1, 'pending'), (2, 'active'), (3, 'inactive');
+
 insert into sniperok.weapon ("code", "level") values
 ('rock', 1), ('paper', 1), ('scissors', 1),
 ('bazooka', 2), ('dynamite', 2), ('shotgun', 2);
