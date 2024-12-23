@@ -1,13 +1,21 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
+    import { getFlash } from 'sveltekit-flash-message';
     import Icon from '@iconify/svelte';
 
+    import { page } from '$app/stores';
+    import { invalidateAll } from '$app/navigation';
+
+    import { logger } from '$lib/logger';
+    import { HttpStatus } from '$lib/utils';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
     import { buttonVariants } from '$lib/components/ui/button';
 
     import type { PageData } from './$types';
+
+    const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
     const games = $derived(data.games);
@@ -42,6 +50,32 @@
             textColor = ' text-red-500';
         }
         return textColor;
+    }
+
+    async function deleteGame(gameId : string) {
+        const gameUrl = $page.url.href.concat(`/[${gameId}]`);
+        const response = await fetch(gameUrl, {
+            method: 'DELETE',
+        });
+
+        const json = await response.json();
+        logger.trace('json : ', json);
+
+        if (response.status == HttpStatus.FORBIDDEN) {
+            logger.trace('forbidden');
+            $flash = { type: 'error', message: 'You are not a curator' };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', json.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
+
+        $flash = { type: 'success', message: 'Game deleted' };
+
+        invalidateAll();
     }
 
 </script>
@@ -89,6 +123,25 @@
                                                 <span class="sr-only">Edit</span>
                                                 </Tooltip.Trigger>
                                                 <Tooltip.Content><p>Edit</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                    onclick={() => deleteGame(game.id)}
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <Icon
+                                                        id="leagueDeleteBtn"
+                                                        icon='flowbite:trash-bin-outline'
+                                                        class='text-red-600'
+                                                    />
+                                                <span class="sr-only">Delete</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Delete</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {:else}
