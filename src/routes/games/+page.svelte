@@ -52,6 +52,12 @@
         return textColor;
     }
 
+    async function joinGame(gameId : string) {
+        $flash = { type: 'success', message: 'Game deleted' };
+
+        invalidateAll();
+    }
+
     async function deleteGame(gameId : string) {
         const gameUrl = $page.url.href.concat(`/[${gameId}]`);
         const response = await fetch(gameUrl, {
@@ -145,7 +151,25 @@
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {:else}
-                                        <span>join</span>
+                                        <Tooltip.Provider>
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger
+                                                    onclick={() => joinGame(game.id)}
+                                                    class={buttonVariants({
+                                                        variant: 'ghost',
+                                                        size: 'icon'
+                                                    })}
+                                                >
+                                                    <Icon
+                                                        id="leagueDeleteBtn"
+                                                        icon='gg:enter'
+                                                        class='text-green-600'
+                                                    />
+                                                <span class="sr-only">Join</span>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content><p>Join</p></Tooltip.Content>
+                                            </Tooltip.Root>
+                                        </Tooltip.Provider>
                                     {/if}
                                 </span>
                             </Table.Cell>

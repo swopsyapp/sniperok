@@ -1,6 +1,8 @@
 # sniperok
 
 ## See
+- https://medium.com/version-1/websockets-in-sveltekit-28e91eec9245
+  - https://joyofcode.xyz/using-websockets-with-sveltekit
 - https://github.com/razshare/sveltekit-sse
 - https://github.com/andywer/pg-listen
 
