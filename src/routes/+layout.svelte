@@ -1,12 +1,15 @@
 <script lang="ts">
-    import '../app.css';
-    import { goto, invalidate } from '$app/navigation';
-    import { ModeWatcher } from 'mode-watcher';
-    import User from '$lib/components/ui/User.svelte';
     import Icon from '@iconify/svelte';
+    import { ModeWatcher } from 'mode-watcher';
     import { getFlash } from 'sveltekit-flash-message';
+
     import { page } from '$app/stores';
+    import { goto, invalidate } from '$app/navigation';
+
+    import User from '$lib/components/ui/User.svelte';
+    import MessagePanel from '$lib/components/MessagePanel.svelte';
     import { logger } from '$lib/logger';
+    import '../app.css';
 
     /*
         State management issues see:
@@ -81,7 +84,16 @@
                 </div>
             </div>
         {/if}
-        {@render children()}
+        <div class="grid auto-rows-fr grid-cols-3 gap-1">
+            <div class="col-span-2">
+                {@render children()}
+            </div>
+            <div>
+                {#key $page.url.pathname}
+                    <MessagePanel />
+                {/key}                
+            </div>
+        </div>
     </main>
 
     <footer class="w-full border-t py-5">

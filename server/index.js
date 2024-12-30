@@ -1,9 +1,12 @@
 import process from 'node:process';
-import { handler } from '../build/handler.js';
-import { env } from '../build/env.js';
 import http from 'node:http';
 import { setImmediate } from 'node:timers';
 import * as qs from 'node:querystring';
+import { Server } from 'socket.io'
+
+import { env } from '../build/env.js';
+import { handler } from '../build/handler.js';
+
 
 /**
  * @param {string|RegExp} input The route pattern
@@ -264,14 +267,23 @@ let shutdown_timeout_id;
 /** @type {NodeJS.Timeout | void} */
 let idle_timeout_id;
 
-const server = polka().use(handler);
+const polkaServer = polka();
+
+const io = new Server(polkaServer);
+globalThis.io = io
+
+io.on('connection', (socket) => {
+    socket.emit('eventFromServer', 'WebSocket to server connected 👋')
+});
+
+polkaServer.use(handler);
 
 if (socket_activation) {
-	server.listen({ fd: SD_LISTEN_FDS_START }, () => {
+	polkaServer.listen({ fd: SD_LISTEN_FDS_START }, () => {
 		console.log(`Listening on file descriptor ${SD_LISTEN_FDS_START}`);
 	});
 } else {
-	server.listen({ path, host, port }, () => {
+	polkaServer.listen({ path, host, port }, () => {
 		console.log(`Listening on ${path || `http://${host}:${port}`}`);
 	});
 }
@@ -283,9 +295,9 @@ function graceful_shutdown(reason) {
 	// If a connection was opened with a keep-alive header close() will wait for the connection to
 	// time out rather than close it even if it is not handling any requests, so call this first
 	// @ts-expect-error this was added in 18.2.0 but is not reflected in the types
-	server.server.closeIdleConnections();
+	polkaServer.server.closeIdleConnections();
 
-	server.server.close((error) => {
+	polkaServer.server.close((error) => {
 		// occurs if the server is already closed
 		if (error) return;
 
@@ -302,12 +314,12 @@ function graceful_shutdown(reason) {
 
 	shutdown_timeout_id = setTimeout(
 		// @ts-expect-error this was added in 18.2.0 but is not reflected in the types
-		() => server.server.closeAllConnections(),
+		() => polkaServer.server.closeAllConnections(),
 		shutdown_timeout * 1000
 	);
 }
 
-server.server.on(
+polkaServer.server.on(
 	'request',
 	/** @param {import('node:http').IncomingMessage} req */
 	(req) => {
@@ -323,7 +335,7 @@ server.server.on(
 			if (shutdown_timeout_id) {
 				// close connections as soon as they become idle, so they don't accept new requests
 				// @ts-expect-error this was added in 18.2.0 but is not reflected in the types
-				server.server.closeIdleConnections();
+				polkaServer.server.closeIdleConnections();
 			}
 			if (requests === 0 && socket_activation && idle_timeout) {
 				idle_timeout_id = setTimeout(() => graceful_shutdown('IDLE'), idle_timeout * 1000);
@@ -335,4 +347,4 @@ server.server.on(
 process.on('SIGTERM', graceful_shutdown);
 process.on('SIGINT', graceful_shutdown);
 
-export { host, path, port, server };
+export { host, path, port, polkaServer as server };
