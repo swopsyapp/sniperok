@@ -2,10 +2,10 @@ import process from 'node:process';
 import http from 'node:http';
 import { setImmediate } from 'node:timers';
 import * as qs from 'node:querystring';
-import { Server } from 'socket.io'
 
 import { env } from '../build/env.js';
 import { handler } from '../build/handler.js';
+import { webSocket } from './webSocket.js';
 
 
 /**
@@ -15,6 +15,7 @@ import { handler } from '../build/handler.js';
 function parse$1(input, loose) {
 	if (input instanceof RegExp) return { keys:false, pattern:input };
 	var c, o, tmp, ext, keys=[], pattern='', arr = input.split('/');
+	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 	arr[0] || arr.shift();
 
 	// eslint-disable-next-line no-cond-assign
@@ -269,13 +270,6 @@ let idle_timeout_id;
 
 const polkaServer = polka();
 
-const io = new Server(polkaServer);
-globalThis.io = io
-
-io.on('connection', (socket) => {
-    socket.emit('eventFromServer', 'WebSocket to server connected 👋')
-});
-
 polkaServer.use(handler);
 
 if (socket_activation) {
@@ -287,6 +281,9 @@ if (socket_activation) {
 		console.log(`Listening on ${path || `http://${host}:${port}`}`);
 	});
 }
+
+const io = webSocket(polkaServer.server, 'WebSocket to server connected 👋');
+globalThis.io = io
 
 /** @param {'SIGINT' | 'SIGTERM' | 'IDLE'} reason */
 function graceful_shutdown(reason) {

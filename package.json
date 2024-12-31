@@ -13,7 +13,7 @@
 		"db:reset": "supabase db reset",
 		"db:pull": "kysely-codegen --schema sniperok --out-file ./src/lib/server/db/sniperok-schema.d.ts --include-pattern=\"sniperok.*\" --log-level info",
 		"test": "vitest",
-		"prod": "cross-env ORIGIN=http://localhost:3000 node server"
+		"serve": "cross-env ORIGIN=http://localhost:3000 node server/index.js"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.2.0",
