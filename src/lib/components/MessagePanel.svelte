@@ -9,18 +9,22 @@
 
     import Input from './ui/input/input.svelte';
     import { Button } from './ui/button';
-    import { messageHandler } from './messages.svelte';
+    import { clientMessageHandler } from './messages.svelte';
 
     let user = $page.data.user;
     let username = user?.user_metadata.username ?? 'Guest';
 
     let activeTab: string = $state('worldChat');
     let msgText: string = $state('');
-    let messages = $derived(messageHandler.getMessages(activeTab));
+    let messages = $derived(clientMessageHandler.getMessages(activeTab));
 
     onDestroy(() => {
         logger.debug('MessagePanel destroy');
     });
+
+    function isSendDisabled() : boolean {
+        return username == 'Guest' ? true : false;
+    }
 
     function getTabVariant(tabName: string) {
         return tabName == activeTab ? 'default' : 'outline';
@@ -35,7 +39,7 @@
     }
 
     function sendWorldChatMessage() {
-        messageHandler.sendWorldMessage(username, msgText);
+        clientMessageHandler.sendWorldMessage(username, msgText);
         msgText = '';
     }
 </script>
@@ -71,7 +75,8 @@
         </div>
         <div class="pb-1">
             <span class="flex gap-1">
-                <Input bind:value={msgText} autocomplete="off" /><Button
+                <Input disabled={isSendDisabled()} bind:value={msgText} autocomplete="off" />
+                <Button disabled={isSendDisabled()}
                     onclick={sendWorldChatMessage}>Send</Button
                 >
             </span>

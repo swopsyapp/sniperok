@@ -12,8 +12,8 @@ const worldMessages: Message[] = $state([]);
 const userMessages: Message[] = $state([]);
 const gameMessages: Message[] = $state([]);
 
-export class MessageHandler {
-    private static instance: MessageHandler;
+export class ClientMessageHandler {
+    private static instance: ClientMessageHandler;
 
     private socket: Socket;
 
@@ -33,7 +33,7 @@ export class MessageHandler {
         if (this.instance) {
             return this.instance;
         }
-        this.instance = new MessageHandler();
+        this.instance = new ClientMessageHandler();
         return this.instance;
     }
 
@@ -92,4 +92,4 @@ export class MessageHandler {
     }
 }
 
-export const messageHandler = MessageHandler.getInstance();
+export const clientMessageHandler = ClientMessageHandler.getInstance();
