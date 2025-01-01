@@ -18,10 +18,6 @@
     let msgText: string = $state('');
     let messages = $derived(clientMessageHandler.getMessages(activeTab));
 
-    onDestroy(() => {
-        logger.debug('MessagePanel destroy');
-    });
-
     function isSendDisabled() : boolean {
         return username == 'Guest' ? true : false;
     }

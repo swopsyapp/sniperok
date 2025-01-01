@@ -13,6 +13,19 @@ export type Int8 = ColumnType<string, bigint | number | string, bigint | number 
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Buddy {
+  buddy_uuid: string;
+  player_uuid: string;
+  status_id: Generated<number>;
+}
+
+export interface BuddyVw {
+  buddy: string | null;
+  player: string | null;
+  status_code: string | null;
+  status_id: number | null;
+}
+
 export interface Game {
   id: Generated<Int8>;
   is_public: Generated<boolean>;
@@ -58,6 +71,8 @@ export interface WeaponVictory {
 }
 
 export interface DB {
+  buddy: Buddy;
+  buddy_vw: BuddyVw;
   game: Game;
   game_player: GamePlayer;
   player_turn: PlayerTurn;

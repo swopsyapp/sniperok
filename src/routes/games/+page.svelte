@@ -89,8 +89,7 @@
 <div>
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
-            <Card.Title class="text-center text-4xl font-thin">List of Games</Card.Title>
-            <!-- <Card.Description>Welcome</Card.Description> -->
+            <Card.Title class="text-center text-4xl font-thin">Games</Card.Title>
         </Card.Header>
         <Card.Content>
             <Table.Root>

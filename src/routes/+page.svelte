@@ -66,6 +66,7 @@
             {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'List Games', false)}
             {@render pageActionButton('/games/new', 'mdi:add-bold', 'Create game', !isRegisteredUserSession)}
             {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'Boosts', !isRegisteredUserSession, boostsCount)}
+            {@render pageActionButton('/buddies', 'mdi:account-group-outline', 'Buddies', !isRegisteredUserSession)}
         </Card.Content>
     </Card.Root>
 </div>
