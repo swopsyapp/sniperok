@@ -18,6 +18,7 @@ function webSocket(server, welcomeMessage) {
         });
     });
 
+    globalThis.io = io;
     return io;
 }
 

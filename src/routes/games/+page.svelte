@@ -16,6 +16,7 @@
     import type { PageData } from './$types';
 
     const flash = getFlash(page);
+    const iconGhost = buttonVariants({ variant: 'ghost', size: 'icon' });
 
     let { data }: { data: PageData } = $props();
     const games = $derived(data.games);
@@ -53,7 +54,7 @@
     }
 
     async function joinGame(gameId : string) {
-        $flash = { type: 'success', message: 'Game deleted' };
+        $flash = { type: 'success', message: 'Joined game' };
 
         invalidateAll();
     }
@@ -113,14 +114,10 @@
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                    class={buttonVariants({
-                                                        variant: 'ghost',
-                                                        size: 'icon'
-                                                    })}
+                                                    class={iconGhost}
                                                 >
                                                     <a href="/games/[{game.id}]">
                                                         <Icon
-                                                            id="gameEditBtn_{game.id}"
                                                             icon='line-md:edit'
                                                             class='text-green-600'
                                                         />
@@ -134,13 +131,9 @@
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
                                                     onclick={() => deleteGame(game.id)}
-                                                    class={buttonVariants({
-                                                        variant: 'ghost',
-                                                        size: 'icon'
-                                                    })}
+                                                    class={iconGhost}
                                                 >
                                                     <Icon
-                                                        id="leagueDeleteBtn"
                                                         icon='flowbite:trash-bin-outline'
                                                         class='text-red-600'
                                                     />
@@ -154,13 +147,9 @@
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
                                                     onclick={() => joinGame(game.id)}
-                                                    class={buttonVariants({
-                                                        variant: 'ghost',
-                                                        size: 'icon'
-                                                    })}
+                                                    class={iconGhost}
                                                 >
                                                     <Icon
-                                                        id="leagueDeleteBtn"
                                                         icon='gg:enter'
                                                         class='text-green-600'
                                                     />

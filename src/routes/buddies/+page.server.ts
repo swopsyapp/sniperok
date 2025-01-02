@@ -9,9 +9,73 @@ import { Status, getStatus } from '$lib/model/status.d'
 
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({locals}) => {
+async function addBuddy(userId : string, buddyName : string) {
+
+    const buddyRecord = await db
+        .withSchema('sniperok')
+        .selectFrom('user as b')
+        .innerJoin('user as u', (join) => join.on('u.id', '=', userId))
+        .select(['u.id as player_uuid', 'b.id as buddy_uuid'
+                ,sql<number>`(select count(*) from sniperok.buddy br where br.player_uuid = u.id and br.buddy_uuid = b.id)`.as('buddy_count')
+        ])
+        .where('b.username', '=', buddyName)
+        .$narrowType<{ player_uuid: NotNull }>()
+        .$narrowType<{ buddy_uuid: NotNull }>()
+        .executeTakeFirst();
+
+    if (!buddyRecord) {
+        logger.debug('BuddyRecord not found ', buddyName, ' for ', userId);
+        error(HttpStatus.NOT_FOUND, 'Buddy not found');
+    }
+
+    if (buddyRecord.buddy_count > 0) {
+        logger.debug('BuddyRecord already exists ', buddyName, ' for ', userId);
+        error(HttpStatus.CONFLICT, 'Buddy already exists');
+    }
+
+    if (buddyRecord.player_uuid == buddyRecord.buddy_uuid) {
+        logger.debug('BuddyRecord cannot be created for self ', buddyName, ' for ', userId);
+        error(HttpStatus.NOT_ACCEPTABLE, 'Cannot buddy yourself');
+    }
+
+    logger.debug(`adding buddy: ${buddyName} for ${userId}`);
+
+    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
+        await trx.insertInto('buddy')
+            .values({
+                player_uuid: buddyRecord.player_uuid,
+                buddy_uuid: buddyRecord.buddy_uuid,
+                status_id: Status.pending.valueOf()
+            })
+            .execute()
+    }).catch(function(err){
+        logger.error('Error creating buddy', err);
+        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+    });
+
+    return;
+}
+
+export const load = (async (requestEvent) => {
+
+    const locals = requestEvent.locals;
+    const action = requestEvent.url.searchParams.get('action');
+    const buddyName = requestEvent.url.searchParams.get('buddyName');
 
     const { user } = await locals.safeGetSession();
+
+    let addBuddyError = undefined;
+
+    if (action == 'add' && buddyName) {
+        const userId = user ? user.id : '';
+        
+        try {
+            await addBuddy(userId, buddyName);
+        } catch(e) {
+            addBuddyError = e;
+            logger.error(e);
+        }
+    }
 
     const username = user?.user_metadata.username;
     const buddies = await db
@@ -34,6 +98,10 @@ export const load = (async ({locals}) => {
         }
     })
 
+    if (addBuddyError) {
+        logger.debug(addBuddyError);
+    }
+
     return {
         buddies: buddiesList
     };
@@ -43,7 +111,7 @@ export const load = (async ({locals}) => {
 export const actions = {
     default: async ( { request, locals }) => {
         const jsonBody = await request.json();
-        logger.debug('New buddy : ', jsonBody);
+        logger.trace('New buddy : ', jsonBody);
 
         const buddyName : string = jsonBody.buddyName;
 
@@ -51,45 +119,7 @@ export const actions = {
         const { user } = await locals.safeGetSession();
         const userId = user ? user.id : '';
 
-        const buddyRecord = await db
-            .withSchema('sniperok')
-            .selectFrom('user as b')
-            .innerJoin('user as u', (join) => join.on('u.id', '=', userId))
-            .select(['u.id as player_uuid', 'b.id as buddy_uuid'
-                    ,sql<number>`(select count(*) from sniperok.buddy br where br.player_uuid = u.id and br.buddy_uuid = b.id)`.as('buddy_count')
-            ])
-            .where('b.username', '=', buddyName)
-            .$narrowType<{ player_uuid: NotNull }>()
-            .$narrowType<{ buddy_uuid: NotNull }>()
-            .executeTakeFirst();
-
-        if (!buddyRecord) {
-            logger.debug('BuddyRecord not found ', buddyName, ' for ', userId);
-            error(HttpStatus.NOT_FOUND, 'Buddy not found');
-        }
-
-        if (buddyRecord.buddy_count > 0) {
-            logger.debug('BuddyRecord already exists ', buddyName, ' for ', userId);
-            error(HttpStatus.CONFLICT, 'Buddy already exists');
-        }
-
-        if (buddyRecord.player_uuid == buddyRecord.buddy_uuid) {
-            logger.debug('BuddyRecord cannot be created for self ', buddyName, ' for ', userId);
-            error(HttpStatus.NOT_ACCEPTABLE, 'Cannot buddy yourself');
-        }
-
-        await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
-            await trx.insertInto('buddy')
-                .values({
-                    player_uuid: buddyRecord.player_uuid,
-                    buddy_uuid: buddyRecord.buddy_uuid,
-                    status_id: Status.pending.valueOf()
-                })
-                .execute()
-        }).catch(function(err){
-            logger.error('Error creating buddy', err);
-            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-        });
+        await addBuddy(userId, buddyName);
     
         return { success: true };
     }

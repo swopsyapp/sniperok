@@ -3,7 +3,7 @@
     import Icon from '@iconify/svelte';
 
     import { page } from '$app/stores';
-    import { invalidateAll } from '$app/navigation';
+    import { goto, invalidateAll } from '$app/navigation';
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
@@ -17,6 +17,7 @@
     import type { PageData } from './$types';
 
     const hourglassNotDone = '\u23F3';
+    const iconGhost = buttonVariants({ variant: 'ghost', size: 'icon' });
     const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
@@ -25,7 +26,7 @@
     let buddyName: string = $state('');
 
     async function addBuddy() {
-        if ( !buddyName || buddyName.trim().length == 0) {
+        if (!buddyName || buddyName.trim().length == 0) {
             $flash = { type: 'error', message: 'Buddy name cannot be empty' };
             buddyName = '';
             return;
@@ -63,7 +64,9 @@
     async function confirmBuddy(player: string, buddy: string) {}
 
     async function deleteBuddy(player: string, buddy: string) {
-        const response = await fetch($page.url.href + '/service', {
+        const deleteBuddyUrl = new URL($page.url.href);
+        deleteBuddyUrl.search = '';
+        const response = await fetch(deleteBuddyUrl.toString() + '/service', {
             method: 'DELETE',
             body: JSON.stringify({
                 playerName: player,
@@ -77,9 +80,11 @@
         logger.trace('json : ', json);
 
         if (response.status == HttpStatus.OK) {
-            $flash = { type: 'success', message: 'Request sent' };
+            $flash = { type: 'success', message: 'Buddy gone ... see ya!' };
             buddyName = '';
-            invalidateAll();
+            goto('/buddies');
+            // replaceState('/buddies', $page.state);
+            // invalidateAll();
         } else if (response.status == HttpStatus.NOT_FOUND) {
             $flash = { type: 'error', message: 'Buddy not found' };
         } else if (response.status == HttpStatus.FORBIDDEN) {
@@ -103,7 +108,7 @@
                         <Icon icon="mdi:user-add-outline" />Add
                     </Button>
                 </span>
-            </div>    
+            </div>
             <Table.Root>
                 <Table.Header>
                     <Table.Row>
@@ -117,22 +122,23 @@
                             <Table.Cell class="font-medium">
                                 {buddyRecord.counterparty}
                                 <!-- If record is pending and invitor is viewing the list -->
-                                {#if buddyRecord.status == Status.pending && buddyRecord.buddy == buddyRecord.counterparty }
+                                {#if buddyRecord.status == Status.pending && buddyRecord.buddy == buddyRecord.counterparty}
                                     &nbsp;...&nbsp;{hourglassNotDone}
                                 {/if}
                             </Table.Cell>
                             <Table.Cell class="font-medium">
                                 <span class="flex">
                                     <!-- If record is pending and invitee is viewing the list -->
-                                    {#if buddyRecord.status == Status.pending && buddyRecord.player == buddyRecord.counterparty }
+                                    {#if buddyRecord.status == Status.pending && buddyRecord.player == buddyRecord.counterparty}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                    onclick={() => confirmBuddy(buddyRecord.player, buddyRecord.buddy)}
-                                                    class={buttonVariants({
-                                                        variant: 'ghost',
-                                                        size: 'icon'
-                                                    })}
+                                                    onclick={() =>
+                                                        confirmBuddy(
+                                                            buddyRecord.player,
+                                                            buddyRecord.buddy
+                                                        )}
+                                                    class={iconGhost}
                                                 >
                                                     <Icon
                                                         icon="line-md:confirm"
@@ -148,10 +154,7 @@
                                         <Tooltip.Root>
                                             <Tooltip.Trigger
                                                 onclick={() => deleteBuddy(buddyRecord.player, buddyRecord.buddy)}
-                                                class={buttonVariants({
-                                                    variant: 'ghost',
-                                                    size: 'icon'
-                                                })}
+                                                class={iconGhost}
                                             >
                                                 <Icon
                                                     icon="flowbite:trash-bin-outline"
@@ -172,7 +175,7 @@
             {#if buddies.length == 0}
                 <center>
                     <br />
-                    <span>Nobby No-mates</span>    
+                    <span>Nobby No-mates</span>
                 </center>
             {/if}
         </Card.Content>

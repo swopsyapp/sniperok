@@ -38,6 +38,8 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
         error(HttpStatus.NOT_FOUND, 'Buddy not found');
     }
 
+    logger.debug(`Deleting buddy: ${buddyName} for ${playerName}`);
+
     await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
         await trx.deleteFrom('buddy as b')
                 .where('b.player_uuid', '=', buddyRecord.player_uuid)

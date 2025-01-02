@@ -8,6 +8,7 @@ import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { db } from '$lib/server/db/db.d'
 import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
+import type { Message } from '$lib/components/messages.svelte.js';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async () => {
@@ -82,6 +83,12 @@ export const actions = {
             return setError(form, 'email', errorMessage);
         }
 
+        const welcomeMsg = {} as Message;
+        welcomeMsg.type = 'welcome';
+        welcomeMsg.sender = 'rps';
+        welcomeMsg.text = `Welcome @${form.data.username}`;
+
+        globalThis.io.emit('worldChat', welcomeMsg);
         redirect('/auth/login', { type: 'success', message: "Registration was successful, please login" }, cookies);
     }
 }

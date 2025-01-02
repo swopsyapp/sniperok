@@ -9,7 +9,7 @@
 
     import Input from './ui/input/input.svelte';
     import { Button } from './ui/button';
-    import { clientMessageHandler } from './messages.svelte';
+    import { clientMessageHandler, type ActionableMessage } from './messages.svelte';
 
     let user = $page.data.user;
     let username = user?.user_metadata.username ?? 'Guest';
@@ -52,6 +52,18 @@
     </Button>
 {/snippet}
 
+{#snippet messageItem(message: ActionableMessage)}
+    <li>@{message.sender}
+        {#if (username != 'Guest' && message.actions && message.actions.length > 0)}
+            [
+            {#each message.actions as action}
+                <a href={action.url} class={action.promptClass}>{action.prompt}</a>
+            {/each}
+            ]
+        {/if}: {message.text}
+    </li>
+{/snippet}
+
 <Card.Root class="mx-auto h-full max-w-md">
     <Card.Header>
         <Card.Title class="text-center text-4xl font-thin">Messages</Card.Title>
@@ -65,7 +77,7 @@
         <div class="flex-grow">
             <ul>
                 {#each messages as msg}
-                    <li>@{msg.sender} : {msg.text}</li>
+                    {@render messageItem(msg)}
                 {/each}
             </ul>
         </div>

@@ -8,9 +8,19 @@ export interface Message {
     text: string;
 }
 
-const worldMessages: Message[] = $state([]);
-const userMessages: Message[] = $state([]);
-const gameMessages: Message[] = $state([]);
+export interface Action {
+    url: string,
+    prompt: string,
+    promptClass: string
+}
+
+export interface ActionableMessage extends Message {
+    actions: Action[];
+}
+
+const worldMessages: ActionableMessage[] = $state([]);
+const userMessages: ActionableMessage[] = $state([]);
+const gameMessages: ActionableMessage[] = $state([]);
 
 export class ClientMessageHandler {
     private static instance: ClientMessageHandler;
@@ -37,7 +47,7 @@ export class ClientMessageHandler {
         return this.instance;
     }
 
-    public getMessages(context: string): Message[] {
+    public getMessages(context: string): ActionableMessage[] {
         return context == 'gameChat'
             ? gameMessages
             : context == 'userChat'
@@ -45,24 +55,32 @@ export class ClientMessageHandler {
               : worldMessages;
     }
 
-    public getWorldMessages(): Message[] {
+    public getWorldMessages(): ActionableMessage[] {
         return worldMessages;
     }
 
-    public getUserMessages(): Message[] {
+    public getUserMessages(): ActionableMessage[] {
         return userMessages;
     }
 
-    public getGameMessages(): Message[] {
+    public getGameMessages(): ActionableMessage[] {
         return gameMessages;
     }
 
     public addWorldMessage(messageType: string, messageSender: string, messageText: string) {
         logger.debug(messageText);
-        const msg = {} as Message;
+        const msg = {} as ActionableMessage;
         msg.type = messageType;
         msg.sender = messageSender;
         msg.text = messageText;
+        if (messageType == 'welcome') {
+            const buddyname = messageText.slice(messageText.indexOf('@') + 1);
+            const addBuddyAction = {} as Action;
+            addBuddyAction.url = '/buddies?action=add&buddyName='+buddyname;
+            addBuddyAction.prompt = '+';
+            addBuddyAction.promptClass = 'font-extrabold text-green-600';
+            msg.actions = [addBuddyAction];
+        }
         worldMessages.push(msg);
     }
 
