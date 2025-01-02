@@ -61,7 +61,31 @@
         }
     }
 
-    async function confirmBuddy(player: string, buddy: string) {}
+    async function confirmBuddy(player: string, buddy: string) {
+        const deleteBuddyUrl = new URL($page.url.href);
+        deleteBuddyUrl.search = '';
+        const response = await fetch(deleteBuddyUrl.toString() + '/service', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                playerName: player,
+                buddyName: buddy
+            })
+        });
+
+        const json = await response.json();
+
+        if (response.status == HttpStatus.OK) {
+            $flash = { type: 'success', message: 'Buddy confirmed :)' };
+            buddyName = '';
+            goto('/buddies', { invalidateAll: true });
+        } else if (response.status == HttpStatus.NOT_FOUND) {
+            $flash = { type: 'error', message: 'Buddy not found' };
+        } else if (response.status == HttpStatus.FORBIDDEN) {
+            $flash = { type: 'error', message: 'Unauthorized' };
+        } else {
+            $flash = { type: 'error', message: 'Nope!' };
+        }
+    }
 
     async function deleteBuddy(player: string, buddy: string) {
         const deleteBuddyUrl = new URL($page.url.href);
@@ -82,9 +106,7 @@
         if (response.status == HttpStatus.OK) {
             $flash = { type: 'success', message: 'Buddy gone ... see ya!' };
             buddyName = '';
-            goto('/buddies');
-            // replaceState('/buddies', $page.state);
-            // invalidateAll();
+            goto('/buddies', { invalidateAll: true });
         } else if (response.status == HttpStatus.NOT_FOUND) {
             $flash = { type: 'error', message: 'Buddy not found' };
         } else if (response.status == HttpStatus.FORBIDDEN) {
@@ -133,11 +155,7 @@
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                    onclick={() =>
-                                                        confirmBuddy(
-                                                            buddyRecord.player,
-                                                            buddyRecord.buddy
-                                                        )}
+                                                    onclick={() => confirmBuddy(buddyRecord.player, buddyRecord.buddy)}
                                                     class={iconGhost}
                                                 >
                                                     <Icon
