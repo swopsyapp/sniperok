@@ -8,6 +8,7 @@
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
+    import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
@@ -90,7 +91,17 @@
 <div>
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
-            <Card.Title class="text-center text-4xl font-thin">Games</Card.Title>
+            <span class="flex w-full justify-center">
+                <Card.Title class="w-10/12 text-center text-4xl font-thin">Games</Card.Title>                
+                <Button href="/games/new" class="w-2/12">
+                    <div class="flex items-center gap-2">
+                        <Icon
+                            icon='mdi:add-bold'
+                            class='h-5 w-5 text-green-600'
+                        />
+                    </div>
+                </Button>
+            </span>
         </Card.Header>
         <Card.Content>
             <Table.Root>

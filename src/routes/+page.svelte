@@ -5,9 +5,6 @@
     import { page } from '$app/stores';
     import * as Card from '$lib/components/ui/card/index';
     import { Button } from '$lib/components/ui/button';
-    import { logger } from '$lib/logger';
-
-    // logger.debug('$page.data : ', $page.data);
 
     //  let { user, pendingLeagueCount } = $props();
     // Wierd that user props doesn't behave properly
@@ -16,17 +13,17 @@
 
     const boostsCount : number = parseInt($page.data.boostsCount);
 
-    const btnIconClass = 'h-5 w-5';
+    const btnIconClass = 'h-5 w-5 ';
     const itemCountClass = 'pl-1 text-green-500';
 
 </script>
-{#snippet pageActionButton(href: string, iconName: string, buttonLabel: string, isDisabled: boolean, itemCount: number = 0)}
+{#snippet pageActionButton(href: string, iconName: string, iconColor: string, buttonLabel: string, isDisabled: boolean, itemCount: number = 0)}
     {#if (isDisabled)}
         <Button disabled={true} class="w-full">
             <div class="flex items-center gap-2">
                 <Icon
                     icon={iconName}
-                    class={btnIconClass}
+                    class={btnIconClass + iconColor}
                 />
                 <span>{buttonLabel}</span>
                 {#if itemCount > 0 }
@@ -41,7 +38,7 @@
             <div class="flex items-center gap-2">
                 <Icon
                     icon={iconName}
-                    class={btnIconClass}
+                    class={btnIconClass + iconColor}
                 />
                 {buttonLabel}
                 {#if itemCount > 0 }
@@ -63,10 +60,10 @@
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
-            {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'List Games', false)}
-            {@render pageActionButton('/games/new', 'mdi:add-bold', 'Create game', !isRegisteredUserSession)}
-            {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'Boosts', !isRegisteredUserSession, boostsCount)}
-            {@render pageActionButton('/buddies', 'mdi:account-group-outline', 'Buddies', !isRegisteredUserSession)}
+            {@render pageActionButton('/games', 'mdi:format-list-checkbox', 'text-yellow-400', 'List Games', false)}
+            {@render pageActionButton('/games/new', 'mdi:add-bold', 'text-green-600', 'Create game', !isRegisteredUserSession)}
+            {@render pageActionButton('/boosts', 'mdi:rocket-launch-outline', 'text-blue-500', 'Boosts', !isRegisteredUserSession, boostsCount)}
+            {@render pageActionButton('/buddies', 'mdi:account-group-outline', 'text-red-500', 'Buddies', !isRegisteredUserSession)}
         </Card.Content>
     </Card.Root>
 </div>

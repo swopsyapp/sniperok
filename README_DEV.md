@@ -26,3 +26,7 @@ See https://supabase.com/docs/guides/local-development/overview#diffing-changes
 copy output from diff into newly created empty migration file.
 
 `supabase db reset`
+
+## Troubleshooting
+- Supabase wont start because of port conflict after reboot  
+  `netsh int ipv4 show excludedportrange protocol=tcp`
