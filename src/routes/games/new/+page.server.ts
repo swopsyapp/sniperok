@@ -8,7 +8,10 @@ import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { Status } from '$lib/model/status.d';
 
-/** @satisfies {import('./$types').Actions} */
+/**
+ * POST : Create Game
+ * @satisfies {import('./$types').Actions}
+ */
 export const actions = {
     default: async ( { request, locals, cookies }) => {
         // const data = await request.formData();

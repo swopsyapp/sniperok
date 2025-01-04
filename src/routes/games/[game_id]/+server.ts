@@ -59,3 +59,64 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 
     return json({ success: true });
 };
+
+/**
+ * PATCH : this method is being used to join the current user to the game,
+ * it adds a game_player if necessary, or updates the status
+ * @param requestEvent 
+ * @returns 
+ */
+export const PATCH: RequestHandler = async (requestEvent) => {
+
+    // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
+    const { user } = await requestEvent.locals.safeGetSession();
+    const userName = user ? user.user_metadata.username : null;
+    const userId = user ? user.id : null;
+
+    if ( userId == undefined ) {
+        // Must be logged in as registered or anonymous
+        logger.warn('User not logged in');
+        error(HttpStatus.UNAUTHORIZED, 'User not logged in');
+    }
+
+    const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id) ?? '';
+    const gameRecord = await getGameRecord(gameId);
+
+    if ( gameRecord == undefined ) {
+        error(HttpStatus.NOT_FOUND, 'Game not found');
+    }
+
+    const activeStatus = (userName == gameRecord.curator) ? Status.activeCurator : Status.active;
+
+    /*
+    const upsertStmt =  db.withSchema('sniperok')
+                            .insertInto('game_player')
+                            .values({
+                                game_id: gameRecord.id,
+                                player_uuid: userId,
+                                status_id: activeStatus
+                            })
+                            .onConflict((oc) => oc.column('game_id').column('player_uuid').doUpdateSet({ status_id: activeStatus }))
+                            .compile();
+
+    logger.debug(upsertStmt.sql);
+    logger.debug(upsertStmt.parameters);
+    */
+    
+    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
+        await trx.insertInto('game_player')
+                    .values({
+                        game_id: gameRecord.id,
+                        player_uuid: userId,
+                        status_id: activeStatus
+                    })
+                    .onConflict((oc) => oc.column('game_id').column('player_uuid').doUpdateSet({ status_id: activeStatus }))
+                    .executeTakeFirst()
+
+    }).catch(function(err){
+        logger.error(`Error joining game : ${gameId} - `, err);
+        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+    });
+
+    return json({ success: true });
+};

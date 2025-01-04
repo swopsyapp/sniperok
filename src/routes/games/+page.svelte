@@ -4,7 +4,7 @@
     import Icon from '@iconify/svelte';
 
     import { page } from '$app/stores';
-    import { invalidateAll } from '$app/navigation';
+    import { goto, invalidateAll } from '$app/navigation';
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
@@ -21,7 +21,8 @@
 
     let { data }: { data: PageData } = $props();
     const games = $derived(data.games);
-    const username = $derived(data.user?.user_metadata.username);
+    const userName = $derived(data.user?.user_metadata.username);
+    const isRegistered = $derived(data.user && !data.user.is_anonymous);
 
     let countdown = $state(10);
     let timer: NodeJS.Timeout | null  = null;
@@ -55,9 +56,45 @@
     }
 
     async function joinGame(gameId : string) {
+        if ( !data.user ) {
+            $flash = { type: 'error', message: 'User not logged in' };
+            return;
+        }
+        const gameUrl = $page.url.href.concat(`/[${gameId}]`);
+        const response = await fetch(gameUrl, {
+            method: 'PATCH',
+        });
+
+        if (response.status == HttpStatus.SEE_OTHER) {
+            const redirectLocation = response.headers.get('location') ?? '/#';
+            logger.warn('redirecting to ', redirectLocation);
+            // Must be logged in as registered or anonymous
+            // $flash = { type: 'error', message: 'User not logged in' };
+            goto(redirectLocation);
+        }
+
+        if (response.status == HttpStatus.UNAUTHORIZED) {
+            // Must be logged in as registered or anonymous
+            $flash = { type: 'error', message: 'User not logged in' };
+            return;
+        }
+
+        if (response.status == HttpStatus.NOT_FOUND) {
+            const errMsg = 'Game not found';
+            logger.warn(errMsg);
+            $flash = { type: 'error', message: errMsg };
+            return;
+        }
+
+        if (response.status != HttpStatus.OK) {
+            logger.error('error status : ', response.status);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return;
+        }
+
         $flash = { type: 'success', message: 'Joined game' };
 
-        invalidateAll();
+        goto(`/games/[${gameId}]`);
     }
 
     async function deleteGame(gameId : string) {
@@ -92,15 +129,17 @@
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
             <span class="flex w-full justify-center">
-                <Card.Title class="w-10/12 text-center text-4xl font-thin">Games</Card.Title>                
-                <Button href="/games/new" class="w-2/12">
-                    <div class="flex items-center gap-2">
-                        <Icon
-                            icon='mdi:add-bold'
-                            class='h-5 w-5 text-green-600'
-                        />
-                    </div>
-                </Button>
+                <Card.Title class="w-10/12 text-center text-4xl font-thin">Games</Card.Title>
+                {#if isRegistered}
+                    <Button href="/games/new" class="w-2/12">
+                        <div class="flex items-center gap-2">
+                            <Icon
+                                icon='mdi:add-bold'
+                                class='h-5 w-5 text-green-600'
+                            />
+                        </div>
+                    </Button>
+                {/if}
             </span>
         </Card.Header>
         <Card.Content>
@@ -121,7 +160,22 @@
                             <Table.Cell class="font-medium">{game.rounds}</Table.Cell>
                             <Table.Cell class="font-medium">
                                 <span class="flex">
-                                    {#if game.curator == username}
+                                    <Tooltip.Provider>
+                                        <Tooltip.Root>
+                                            <Tooltip.Trigger
+                                                onclick={() => joinGame(game.id)}
+                                                class={iconGhost}
+                                            >
+                                                <Icon
+                                                    icon='gg:enter'
+                                                    class='text-green-600'
+                                                />
+                                            <span class="sr-only">Join</span>
+                                            </Tooltip.Trigger>
+                                            <Tooltip.Content><p>Join</p></Tooltip.Content>
+                                        </Tooltip.Root>
+                                    </Tooltip.Provider>
+                                    {#if game.curator == userName}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
@@ -151,22 +205,6 @@
                                                 <span class="sr-only">Delete</span>
                                                 </Tooltip.Trigger>
                                                 <Tooltip.Content><p>Delete</p></Tooltip.Content>
-                                            </Tooltip.Root>
-                                        </Tooltip.Provider>
-                                    {:else}
-                                        <Tooltip.Provider>
-                                            <Tooltip.Root>
-                                                <Tooltip.Trigger
-                                                    onclick={() => joinGame(game.id)}
-                                                    class={iconGhost}
-                                                >
-                                                    <Icon
-                                                        icon='gg:enter'
-                                                        class='text-green-600'
-                                                    />
-                                                <span class="sr-only">Join</span>
-                                                </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Join</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                     {/if}
