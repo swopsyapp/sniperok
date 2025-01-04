@@ -9,6 +9,6 @@
 
     clientMessageHandler.logout();
 
-    goto('/');
+    goto('/', { invalidateAll: true } );
 
 </script>

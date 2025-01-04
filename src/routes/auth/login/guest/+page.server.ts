@@ -30,7 +30,7 @@ export const actions = {
             logger.warn('Challenge already logged in : ', locals.user);
             error(HttpStatus.BAD_REQUEST, 'already logged in!');
         }
-        locals.supabase
+        
         const { data, error: authError } = await locals.supabase.auth.signInAnonymously();
         if (authError) {
             logger.error('Challenge signIn error : ', authError);

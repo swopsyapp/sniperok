@@ -12,9 +12,12 @@ export function booleanToChecked(checked : boolean | null) {
 export enum HttpStatus {
     OK = 200,
     CREATED = 201,
+    
     SEE_OTHER = 303,
+
     BAD_REQUEST = 400,
-    FORBIDDEN = 403,
+    UNAUTHORIZED = 401,     // Not logged in
+    FORBIDDEN = 403,        // Not permitted
     NOT_FOUND = 404,
     NOT_ACCEPTABLE = 406,
     CONFLICT = 409,

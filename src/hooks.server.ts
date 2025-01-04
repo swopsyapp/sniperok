@@ -72,8 +72,9 @@ const authGuard: Handle = async ({ event, resolve }) => {
     event.locals.user = user;
 
     if (
-        !user &&
+        (!user) &&
         !(
+            // These are the only routes accessible when not logged in
             event.route.id == '/' ||
             event.route.id == '/auth/login' ||
             event.route.id == '/auth/login/guest' ||
@@ -81,8 +82,23 @@ const authGuard: Handle = async ({ event, resolve }) => {
             event.route.id == '/games'
         )
     ) {
-        logger.error('User not logged in.');
+        logger.error(`User not logged in, route=${event.route.id}`);
         redirect('/', { type: 'error', message: 'You are not logged in' }, event);
+    }
+
+    if (
+        (user && user.is_anonymous) &&
+        !(
+            // These are the only routes accessible when logged in anonymously
+            event.route.id == '/' ||
+            event.route.id == '/auth/logout' ||
+            event.route.id == '/games' ||
+            event.route.id == '/games/[game_id]'
+        )
+    ) {
+        logger.error(`User not registered, route=${event.route.id}`);
+        redirect('/', { type: 'error', message: 'You are not a registered user' }, event);
+
     }
 
     return resolve(event);

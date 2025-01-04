@@ -1,5 +1,6 @@
 <script lang="ts">
     import Icon from '@iconify/svelte';
+    import type { User } from '@supabase/supabase-js';
 
     import { page } from '$app/stores';
     import { logger } from '$lib/logger';
@@ -9,8 +10,9 @@
     import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
 
     let menuOpen = $state(false);
-    let user = $page.data.user;
-    let username = user?.user_metadata.username ?? 'Guest';
+    let user : User = $page.data.user;
+    const userName = !user ? 'Visitor' : user.is_anonymous ? 'Ghost' : user.user_metadata.username;
+    const userIcon = userName == 'Visitor' ? 'mdi:anonymous' : userName == 'Ghost' ? 'mdi:ghost-outline' : 'lucide:user-round';
 
     logger.trace(`User.svelte $page : `, JSON.stringify(Object.keys($page)));
     logger.trace(`User.svelte $page.data : `, JSON.stringify(Object.keys($page.data)));
@@ -34,11 +36,11 @@
     <Tooltip.Provider>
         <Tooltip.Root>
             <Tooltip.Trigger onclick={() => (menuOpen = !menuOpen)} class={buttonVariants({variant: 'outline', size: 'icon'})} >
-                <Icon icon="lucide:user-round" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
+                <Icon icon={userIcon} class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
                 <span class="sr-only">User</span>
             </Tooltip.Trigger>
             <Tooltip.Content>
-                <p>{username}</p>
+                <p>{userName}</p>
             </Tooltip.Content>
         </Tooltip.Root>
     </Tooltip.Provider>
@@ -47,9 +49,11 @@
         {#if !user}
             {@render menuItem('Login', '/auth/login', 'mdi:login')}
             {@render menuItem('Register', '/auth/register', 'mdi:register-outline')}
-            {@render menuItem('Guest', '/auth/login/guest', 'mdi:anonymous')}
+            {@render menuItem('Guest', '/auth/login/guest', 'mdi:ghost-outline')}
         {:else}
-            {@render menuItem('Profile', '/auth/profile', 'lucide:user-round')}
+            {#if !user.is_anonymous}
+                {@render menuItem('Profile', '/auth/profile', 'lucide:user-round')}
+            {/if}
             {@render menuItem('Logout', '/auth/logout', 'mdi:logout')}
         {/if}
         <ThemeToggle />
