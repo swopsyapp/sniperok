@@ -3,12 +3,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from 'sveltekit-flash-message/server'
+import type { Server } from 'socket.io';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { db } from '$lib/server/db/db.d'
 import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
-import type { Message } from '$lib/components/messages.svelte.js';
+import type { Message } from '$lib/components/messages.svelte';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async () => {
@@ -88,7 +89,8 @@ export const actions = {
         welcomeMsg.sender = 'rps';
         welcomeMsg.text = `Welcome @${form.data.username}`;
 
-        globalThis.io.emit('worldChat', welcomeMsg);
+        const io : Server = globalThis.io;
+        io.emit('worldChat', welcomeMsg);
         redirect('/auth/login', { type: 'success', message: "Registration was successful, please login" }, cookies);
     }
 }

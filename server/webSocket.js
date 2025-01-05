@@ -10,12 +10,12 @@ function webSocket(server, welcomeMessage) {
     });
     
     io.on('connection', (socket) => {
-        socket.emit('eventFromServer', welcomeMessage);
         socket.on('worldChat', (worldChatMsg) => {
-            // TODO check sender inside of worldChatMsg verify that they can send
+            // TODO check sender inside of worldChatMsg verify that they can send to world
             console.log('Received: ', worldChatMsg);
             io.emit('worldChat', worldChatMsg);
         });
+        socket.emit('eventFromServer', welcomeMessage);
     });
 
     globalThis.io = io;
