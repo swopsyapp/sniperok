@@ -8,6 +8,7 @@
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
+    import { clientMessageHandler, type Message } from "$lib/components/messages.svelte";
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';
@@ -21,7 +22,7 @@
 
     let { data }: { data: PageData } = $props();
     const games = $derived(data.games);
-    const username = $derived(data.user?.user_metadata.username);
+    const username = $derived(data.user?.user_metadata.username ?? 'Guest');
     const isRegistered = $derived(data.user && !data.user.is_anonymous);
 
     let countdown = $state(10);
@@ -92,9 +93,11 @@
             return;
         }
 
+        clientMessageHandler.joinGame(gameId);
+
         $flash = { type: 'success', message: 'Joined game' };
 
-        goto(`/games/[${gameId}]`);
+        goto(`/games/[${gameId}]`, { invalidateAll: true });
     }
 
     async function deleteGame(gameId : string) {

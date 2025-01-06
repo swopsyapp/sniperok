@@ -44,6 +44,8 @@
             clientMessageHandler.sendWorldMessage(username, msgText);
         } else if (activeTab == 'userChat') {
             clientMessageHandler.sendUserMessage(username, msgText);
+        } else if (activeTab == 'gameChat') {
+            clientMessageHandler.sendGameMessage('6', username, msgText);
         }
         
         msgText = '';

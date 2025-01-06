@@ -10,6 +10,7 @@ export interface Message {
     type: string;
     sender: string;
     receiver: string | undefined;
+    gameId: string | undefined;
     text: string;
 }
 
@@ -72,6 +73,9 @@ export class ClientMessageHandler {
             })
             .on('userChat', (message) => {
                 this.addUserMessage(message);
+            })
+            .on('gameChat', (message) => {
+                this.addGameMessage(message);
             });
         
         logger.debug('socket connected as ', this.username);
@@ -99,7 +103,7 @@ export class ClientMessageHandler {
     }
 
     public addWorldMessage(messageType: string, messageSender: string, messageText: string) {
-        logger.debug(messageText);
+        logger.trace('worldChat received ', messageText);
         const msg = {} as ActionableMessage;
         msg.type = messageType;
         msg.sender = messageSender;
@@ -115,8 +119,21 @@ export class ClientMessageHandler {
         worldMessages.push(msg);
     }
 
+    public addGameMessage(gameMessage: Message) {
+        logger.trace('gameChat received ', gameMessage);
+        const msg = {} as ActionableMessage;
+        msg.type = gameMessage.type;
+        msg.sender = gameMessage.sender;
+        msg.gameId = gameMessage.gameId;
+        msg.text = gameMessage.text;
+        if (msg.type == 'joinGame') {
+            msg.text = 'joined'
+        }
+        gameMessages.push(msg);
+    }
+
     public addUserMessage(message: Message) {
-        logger.debug(message);
+        logger.trace('userChat received ', message);
         const msg = {} as ActionableMessage;
         msg.type = message.type;
         msg.sender = message.sender;
@@ -135,7 +152,7 @@ export class ClientMessageHandler {
                 return;
             }
             const username = user.user_metadata.username;
-            logger.debug('sender = ', username);
+            logger.trace('sender = ', username);
     
             const msg = {} as Message;
             msg.type = 'worldChat';
@@ -146,7 +163,7 @@ export class ClientMessageHandler {
                 this.socket = this.connect();
             }
             this.socket.emit('worldChat', msg);
-            logger.debug('sent @', messageSender, ' : ', messageText);
+            logger.debug('sent worldChat @', messageSender, ' : ', messageText);
         } else {
             logger.warn('Not sent, messageText is empty');
         }
@@ -162,7 +179,7 @@ export class ClientMessageHandler {
                 return;
             }
             const username = user.user_metadata.username;
-            logger.debug('sender = ', username);
+            logger.trace('sender = ', username);
     
             // TODO validate the receiver is a buddy
             // messagetext = '@user1 hello' ... receiver = 'user1'
@@ -180,13 +197,35 @@ export class ClientMessageHandler {
             }
             this.socket.emit('userChat', msg);
             this.addUserMessage(msg);
-            logger.debug('sent @', messageSender, ' : ', messageText);
+            logger.debug('sent userChat @', messageSender, ' : ', messageText);
         } else {
             logger.warn('Not sent, messageText is empty');
         }
     }
 
-    public sendGameMessage(gameId: number, messageSender: string, messageText: string) {
+    public joinGame(gameId: string) {
+        const currentPage = get(page);
+        const user : User = currentPage.data?.user;
+        if (!user || user.is_anonymous) {
+            logger.warn('Unregistered users cannot join games');
+            return;
+        }
+        const username = user.user_metadata.username;
+        logger.trace('sender = ', username);
+
+        const msg = {} as Message;
+        msg.type = 'joinGame';
+        msg.sender = username;
+        msg.gameId = gameId;
+
+        if (!this.socket || this.socket.disconnected) {
+            this.socket = this.connect();
+        }
+        this.socket.emit('joinGame', msg);
+        logger.debug('joining gameRoom @', username, ' : ', gameId);
+    }
+
+    public sendGameMessage(gameId: string, messageSender: string, messageText: string) {
         if (messageText) {
 
             const currentPage = get(page);
@@ -199,13 +238,14 @@ export class ClientMessageHandler {
             const msg = {} as Message;
             msg.type = 'gameChat';
             msg.sender = messageSender;
+            msg.gameId = gameId;
             msg.text = messageText;
 
             if (!this.socket || this.socket.disconnected) {
                 this.socket = this.connect();
             }
-            this.socket.emit('worldChat', msg);
-            logger.debug('sent @', messageSender, ' : ', messageText);
+            this.socket.emit('gameChat', msg);
+            logger.debug('sent gameChat @', messageSender, ' : ', messageText);
         } else {
             logger.warn('Not sent, messageText is empty');
         }

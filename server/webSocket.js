@@ -15,6 +15,20 @@ function webSocket(server, welcomeMessage) {
             console.log('Received: ', worldChatMsg);
             io.emit('worldChat', worldChatMsg);
         });
+
+        socket.on('joinGame', (joinGameMsg) => {
+            console.log('Received: ', joinGameMsg);
+            const gameRoom = `gameRoom:${joinGameMsg.gameId}`
+            socket.join(gameRoom);
+
+            socket.on('gameChat', (gameChatMsg) => {
+                console.log('Received: ', gameChatMsg);
+                io.to(gameRoom).emit('gameChat', gameChatMsg);
+            });
+
+            io.to(gameRoom).emit('gameChat', joinGameMsg);
+        });
+        
         const username = socket.handshake.query?.username;
         console.log('Connected as ', username);
         if (username) {
@@ -23,10 +37,11 @@ function webSocket(server, welcomeMessage) {
 
             socket.on('userChat', (userChatMsg) => {
                 console.log('Received: ', userChatMsg);
-                const outgoingRoomName = `userRoom:${userChatMsg.receiver}`
+                const outgoingRoomName = `userRoom:${userChatMsg.receiver}`;
                 io.to(outgoingRoomName).emit('userChat', userChatMsg);
             });
         }
+
         socket.emit('eventFromServer', welcomeMessage);
     });
 
