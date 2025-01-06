@@ -21,7 +21,7 @@
 
     let { data }: { data: PageData } = $props();
     const games = $derived(data.games);
-    const userName = $derived(data.user?.user_metadata.username);
+    const username = $derived(data.user?.user_metadata.username);
     const isRegistered = $derived(data.user && !data.user.is_anonymous);
 
     let countdown = $state(10);
@@ -175,7 +175,7 @@
                                             <Tooltip.Content><p>Join</p></Tooltip.Content>
                                         </Tooltip.Root>
                                     </Tooltip.Provider>
-                                    {#if game.curator == userName}
+                                    {#if game.curator == username}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger

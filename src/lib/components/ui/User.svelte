@@ -11,8 +11,8 @@
 
     let menuOpen = $state(false);
     let user : User = $page.data.user;
-    const userName = !user ? 'Visitor' : user.is_anonymous ? 'Ghost' : user.user_metadata.username;
-    const userIcon = userName == 'Visitor' ? 'mdi:anonymous' : userName == 'Ghost' ? 'mdi:ghost-outline' : 'lucide:user-round';
+    const username = !user ? 'Visitor' : user.is_anonymous ? 'Ghost' : user.user_metadata.username;
+    const userIcon = username == 'Visitor' ? 'mdi:anonymous' : username == 'Ghost' ? 'mdi:ghost-outline' : 'lucide:user-round';
 
     logger.trace(`User.svelte $page : `, JSON.stringify(Object.keys($page)));
     logger.trace(`User.svelte $page.data : `, JSON.stringify(Object.keys($page.data)));
@@ -40,7 +40,7 @@
                 <span class="sr-only">User</span>
             </Tooltip.Trigger>
             <Tooltip.Content>
-                <p>{userName}</p>
+                <p>{username}</p>
             </Tooltip.Content>
         </Tooltip.Root>
     </Tooltip.Provider>

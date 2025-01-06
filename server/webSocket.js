@@ -15,6 +15,18 @@ function webSocket(server, welcomeMessage) {
             console.log('Received: ', worldChatMsg);
             io.emit('worldChat', worldChatMsg);
         });
+        const username = socket.handshake.query?.username;
+        console.log('Connected as ', username);
+        if (username) {
+            const incomingRoomName = `userRoom:${username}`
+            socket.join(incomingRoomName);
+
+            socket.on('userChat', (userChatMsg) => {
+                console.log('Received: ', userChatMsg);
+                const outgoingRoomName = `userRoom:${userChatMsg.receiver}`
+                io.to(outgoingRoomName).emit('userChat', userChatMsg);
+            });
+        }
         socket.emit('eventFromServer', welcomeMessage);
     });
 

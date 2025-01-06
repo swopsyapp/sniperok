@@ -28,7 +28,7 @@
 
     $effect(() => {
         const { data: authData } = supabase.auth.onAuthStateChange((event, newSession) => {
-            logger.trace(`eff: running layout effect ${event} ${newSession}`);
+            logger.debug(`eff: running layout effect ${event} ${newSession}`);
 
             if (!newSession) {
                 logger.trace(`Triggering goto root for missing session`);
@@ -54,9 +54,8 @@
 <div class="flex min-h-screen flex-col">
     <nav class="border-b p-2">
         <div class="mx-auto flex w-full max-w-2xl items-center justify-between">
-            
             <a href="/" class="text-2xl font-bold italic">rps-2.0!</a>
-            
+
             <div class="flex items-center justify-center gap-8">
                 <a href="/"><Icon icon="fa:hand-rock-o" class="h-16 w-16 text-red-600" /></a>
                 <div>|</div>
@@ -69,15 +68,16 @@
                 {#key $page.url.pathname}
                     <User />
                 {/key}
-            </div>  
+            </div>
         </div>
     </nav>
 
     <main class="mx-auto w-full max-w-2xl flex-grow px-2 py-5 md:px-0">
         {#if $flash}
-            {@const flashClass = 'rounded-lg border shadow-sm text-center mx-auto max-w-md h-10 pt-2 '.concat(
-                $flash.type == 'success' ? 'bg-emerald-400' : 'bg-rose-600'
-            )}
+            {@const flashClass =
+                'rounded-lg border shadow-sm text-center mx-auto max-w-md h-10 pt-2 '.concat(
+                    $flash.type == 'success' ? 'bg-emerald-400' : 'bg-rose-600'
+                )}
             <div class="pb-1">
                 <div class={flashClass}>
                     <div><span class="pl-1">{$flash.message}</span></div>
@@ -91,7 +91,7 @@
             <div>
                 {#key $page.url.pathname}
                     <MessagePanel />
-                {/key}                
+                {/key}
             </div>
         </div>
     </main>

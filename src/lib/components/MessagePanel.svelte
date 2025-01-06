@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
-    import { io } from 'socket.io-client';
+    import { onMount } from 'svelte';
     import Icon from '@iconify/svelte';
 
     import { page } from '$app/stores';
@@ -14,9 +13,15 @@
     let user = $page.data.user;
     let username = user?.user_metadata.username ?? 'Guest';
 
-    let activeTab: string = $state('worldChat');
+    logger.trace('route = ', $page.route.id);
+    
+    let activeTab: string = $state($page.route.id == '/games/[game_id]' ? 'gameChat' : 'worldChat');
     let msgText: string = $state('');
     let messages = $derived(clientMessageHandler.getMessages(activeTab));
+
+    onMount(() => {
+        clientMessageHandler.connect();
+    })
 
     function isSendDisabled() : boolean {
         return username == 'Guest' ? true : false;
@@ -34,8 +39,13 @@
         activeTab = tabName;
     }
 
-    function sendWorldChatMessage() {
-        clientMessageHandler.sendWorldMessage(username, msgText);
+    function sendChatMessage() {
+        if (activeTab == 'worldChat') {
+            clientMessageHandler.sendWorldMessage(username, msgText);
+        } else if (activeTab == 'userChat') {
+            clientMessageHandler.sendUserMessage(username, msgText);
+        }
+        
         msgText = '';
     }
 </script>
@@ -68,24 +78,24 @@
     <Card.Header>
         <Card.Title class="text-center text-4xl font-thin">Messages</Card.Title>
     </Card.Header>
-    <Card.Content class="flex h-5/6 flex-col">
+    <Card.Content class="h-5/6 flex grow flex-col">
         <div class="grid grid-cols-3 gap-1">
             {@render messageTab('worldChat', 'lucide:globe')}
             {@render messageTab('userChat', 'lucide:user-round')}
             {@render messageTab('gameChat', 'icon-park-outline:three')}
         </div>
-        <div class="flex-grow">
+        <div class="flex-1">
             <ul>
                 {#each messages as msg}
                     {@render messageItem(msg)}
                 {/each}
             </ul>
         </div>
-        <div class="pb-1">
+        <div>
             <span class="flex gap-1">
-                <Input disabled={isSendDisabled()} bind:value={msgText} autocomplete="off" />
+                <Input disabled={isSendDisabled()} bind:value={msgText} onchange={sendChatMessage} autocomplete="off" />
                 <Button disabled={isSendDisabled()}
-                    onclick={sendWorldChatMessage}>Send</Button
+                    onclick={sendChatMessage}>Send</Button
                 >
             </span>
         </div>

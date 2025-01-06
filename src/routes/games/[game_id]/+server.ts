@@ -31,14 +31,14 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
-    const userName = user ? user.user_metadata.username : null;
+    const username = user ? user.user_metadata.username : null;
 
     if ( gameRecord == undefined ) {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    if (userName != gameRecord.curator ) {
-        logger.warn(`Not the game curator ${userName} != ${gameRecord.curator}`);
+    if (username != gameRecord.curator ) {
+        logger.warn(`Not the game curator ${username} != ${gameRecord.curator}`);
         error(HttpStatus.FORBIDDEN, 'Not the game curator');
     }
 
@@ -70,7 +70,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
-    const userName = user ? user.user_metadata.username : null;
+    const username = user ? user.user_metadata.username : null;
     const userId = user ? user.id : null;
 
     if ( userId == undefined ) {
@@ -86,7 +86,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const activeStatus = (userName == gameRecord.curator) ? Status.activeCurator : Status.active;
+    const activeStatus = (username == gameRecord.curator) ? Status.activeCurator : Status.active;
 
     /*
     const upsertStmt =  db.withSchema('sniperok')
