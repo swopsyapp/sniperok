@@ -17,7 +17,49 @@
     
     let activeTab: string = $state($page.route.id == '/games/[game_id]' ? 'gameChat' : 'worldChat');
     let msgText: string = $state('');
-    let messages = $derived(clientMessageHandler.getMessages(activeTab));
+    let messageList = $derived(clientMessageHandler.getMessages(activeTab));
+
+    let worldMessages = $state(clientMessageHandler.getWorldMessages());
+    let userMessages = $state(clientMessageHandler.getUserMessages());
+    let gameMessages = $state(clientMessageHandler.getGameMessages());
+
+    let worldMsgCountPrev = worldMessages.length;
+    let worldMsgCount = $derived(worldMessages.length);
+    let worldMsgUnseen = $state(false);
+
+    let userMsgCountPrev = userMessages.length;
+    let userMsgCount = $derived(userMessages.length);
+    let userMsgUnseen = $state(false);
+
+    let gameMsgCountPrev = gameMessages.length;
+    let gameMsgCount = $derived(gameMessages.length);
+    let gameMsgUnseen = $state(false);
+
+    let unseenMap = $derived.by(() => {
+        let map : { [key: string]: boolean} = {
+            worldChat: worldMsgUnseen,
+            userChat: userMsgUnseen
+        };
+        
+        return map;
+    });
+
+    $effect(() => {
+        if (activeTab == 'worldChat') {
+            worldMsgCountPrev = worldMsgCount;
+        }
+        worldMsgUnseen = (worldMsgCountPrev != worldMsgCount);
+
+        if (activeTab == 'userChat') {
+            userMsgCountPrev = userMsgCount;
+        }
+        userMsgUnseen = (userMsgCountPrev != userMsgCount);
+
+        if (activeTab == 'gameChat') {
+            gameMsgCountPrev = gameMsgCount;
+        }
+        gameMsgUnseen = (gameMsgCountPrev != gameMsgCount);
+    });
 
     onMount(() => {
         clientMessageHandler.connect();
@@ -31,8 +73,17 @@
         return tabName == activeTab ? 'default' : 'outline';
     }
 
-    function getTabtextColor(tabName: string) {
-        return tabName == activeTab ? '' : 'text-gray-500';
+    function getTabClass(tabName: string) {
+        let tabClass = '';
+        
+        if (tabName != activeTab) {
+            tabClass = 'text-gray-500';
+            if (unseenMap[tabName] == true) {
+                tabClass = tabClass + ' border-2 border-green-500 ';
+            }
+        }
+
+        return tabClass;
     }
 
     function selectMessageTab(tabName: string) {
@@ -58,7 +109,7 @@
             selectMessageTab(tabName);
         }}
         variant={getTabVariant(tabName)}
-        class={getTabtextColor(tabName)}
+        class={getTabClass(tabName)}
     >
         <Icon {icon} class="h-[1.2rem] w-[1.2rem] scale-100" />
     </Button>
@@ -88,7 +139,7 @@
         </div>
         <div class="flex-1">
             <ul>
-                {#each messages as msg}
+                {#each messageList as msg}
                     {@render messageItem(msg)}
                 {/each}
             </ul>

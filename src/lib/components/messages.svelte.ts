@@ -165,7 +165,7 @@ export class ClientMessageHandler {
             this.socket.emit('worldChat', msg);
             logger.debug('sent worldChat @', messageSender, ' : ', messageText);
         } else {
-            logger.warn('Not sent, messageText is empty');
+            logger.debug('Not sent, messageText is empty');
         }
     }
 
@@ -199,7 +199,7 @@ export class ClientMessageHandler {
             this.addUserMessage(msg);
             logger.debug('sent userChat @', messageSender, ' : ', messageText);
         } else {
-            logger.warn('Not sent, messageText is empty');
+            logger.debug('Not sent, messageText is empty');
         }
     }
 
@@ -247,7 +247,7 @@ export class ClientMessageHandler {
             this.socket.emit('gameChat', msg);
             logger.debug('sent gameChat @', messageSender, ' : ', messageText);
         } else {
-            logger.warn('Not sent, messageText is empty');
+            logger.debug('Not sent, messageText is empty');
         }
     }
 
