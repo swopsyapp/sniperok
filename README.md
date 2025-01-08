@@ -4,8 +4,8 @@ sniperok is a game of rock-paper-scissors.
 
 ## Description
 
-A simple SvelteKit app that uses Supabase for authentication via GitHub authentication.
-from https://sveltethemes.dev/engageintellect/sveltekit-supabase  
+A simple SvelteKit app that uses Supabase for authentication via GitHub authentication.  
+From https://sveltethemes.dev/engageintellect/sveltekit-supabase  
 and https://github.com/engageintellect/sveltekit-supabase
 
 ## Features
@@ -20,6 +20,7 @@ and https://github.com/engageintellect/sveltekit-supabase
 - [SvelteKit](https://kit.svelte.dev/): A framework for building web applications with Svelte
 - [TypeScript](https://www.typescriptlang.org/): A typed superset of JavaScript that compiles to plain JavaScript
 - [Supabase](https://supabase.io/): An open-source Firebase alternative
+- [Kysely](https://kysely.dev/): type-safe SQL query builder for TypeScript
 - [shadcn-svelte](https://shadcn-svelte.com): A Tailwind CSS component library for Svelte, based on [shadcn](https://shadcn.com)
 - [Tailwind CSS](https://tailwindcss.com/): A utility-first CSS framework
 - [Iconify](https://iconify.design): A unified icon framework using icons from [icones.js](https://icones.js.org/collection/all)
