@@ -33,8 +33,10 @@ and https://github.com/engageintellect/sveltekit-supabase
 
 #### Prerequisites
 
-- docker: https://docs.docker.com/desktop/insta...
-- supabase cli: https://supabase.com/docs/guides/cli/...
+- docker: https://docs.docker.com/desktop/
+- supabase cli: https://supabase.com/docs/guides/local-development/cli/getting-started
+- node.js: https://nodejs.org/en/download
+- pnpm: https://pnpm.io/installation
 
 1. Clone the repo
 
