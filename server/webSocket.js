@@ -18,10 +18,14 @@ function webSocket(server, welcomeMessage) {
 
         socket.on('joinGame', (joinGameMsg) => {
             console.log('Received: ', joinGameMsg);
-            const gameRoom = `gameRoom:${joinGameMsg.gameId}`
+            const username = joinGameMsg.sender;
+            const gameRoom = `gameRoom:${joinGameMsg.gameId}`;
             socket.join(gameRoom);
 
             socket.on('gameChat', (gameChatMsg) => {
+                if (gameChatMsg.sender == 'Guest') {
+                    gameChatMsg.sender = username;
+                }
                 console.log('Received: ', gameChatMsg);
                 io.to(gameRoom).emit('gameChat', gameChatMsg);
             });

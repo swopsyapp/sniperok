@@ -11,7 +11,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"db:reset": "supabase db reset",
-		"db:pull": "kysely-codegen --schema sniperok --out-file ./src/lib/server/db/sniperok-schema.d.ts --include-pattern=\"sniperok.*\" --log-level info",
+		"db:codegen": "kysely-codegen --schema sniperok --out-file ./src/lib/server/db/sniperok-schema.d.ts --include-pattern=\"sniperok.*\" --log-level info",
 		"test": "vitest",
 		"serve": "cross-env ORIGIN=http://localhost:3000 node server/index.js"
 	},

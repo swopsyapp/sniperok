@@ -19,10 +19,11 @@ export const load = (async () => {
         .select(['g.id', 'g.status_id', 'u.username as curator', 'g.is_public', 'pc.tally as player_count', 'g.min_players', 'g.rounds', 'g.start_time'])
         .where('g.status_id', '=', Status.pending.valueOf())
         .where('gp.status_id', '=', Status.activeCurator)
-        .orderBy('g.start_time desc');
+        .orderBy('g.start_time desc')
+        ;
 
     const compiledQry = gamesQry.compile();
-    logger.trace('leaguesQry : ', compiledQry);
+    logger.trace('gamesQry : ', compiledQry);
 
     const games = await db.executeQuery(compiledQry);
 

@@ -20,7 +20,7 @@ export class StringUtils {
      * @param text - The string to be trimmed
      * @returns The trimmed string or null;
      */
-    static trimEndMarkers(text: string): string | null {
+    static trimEndMarkers(text: string): string {
         if (text) {
             if (
                 text.startsWith('(') ||

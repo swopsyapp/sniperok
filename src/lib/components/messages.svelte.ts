@@ -203,14 +203,14 @@ export class ClientMessageHandler {
         }
     }
 
-    public joinGame(gameId: string) {
+    public joinGameChannel(gameId: string, playerSeq: number) {
         const currentPage = get(page);
         const user : User = currentPage.data?.user;
-        if (!user || user.is_anonymous) {
+        if (!user) {
             logger.warn('Unregistered users cannot join games');
             return;
         }
-        const username = user.user_metadata.username;
+        const username = user.user_metadata.username ?? `guest#${playerSeq}`;
         logger.trace('sender = ', username);
 
         const msg = {} as Message;

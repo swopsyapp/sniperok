@@ -66,6 +66,10 @@
             method: 'PATCH',
         });
 
+        const json = await response.json();
+        logger.debug('joinGame response.json : ', json);
+        const playerSeq = json.playerSeq;
+
         if (response.status == HttpStatus.SEE_OTHER) {
             const redirectLocation = response.headers.get('location') ?? '/#';
             logger.warn('redirecting to ', redirectLocation);
@@ -93,7 +97,7 @@
             return;
         }
 
-        clientMessageHandler.joinGame(gameId);
+        clientMessageHandler.joinGameChannel(gameId, playerSeq);
 
         $flash = { type: 'success', message: 'Joined game' };
 

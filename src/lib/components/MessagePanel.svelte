@@ -10,14 +10,17 @@
     import { Button } from './ui/button';
     import { clientMessageHandler, type ActionableMessage } from './messages.svelte';
 
+    const GUEST = 'Guest';
     let user = $page.data.user;
-    let username = user?.user_metadata.username ?? 'Guest';
+    let username = user?.user_metadata.username ?? GUEST;
 
     logger.trace('route = ', $page.route.id);
+    logger.trace($page.data);
     
     let activeTab: string = $state($page.route.id == '/games/[game_id]' ? 'gameChat' : 'worldChat');
     let msgText: string = $state('');
     let messageList = $derived(clientMessageHandler.getMessages(activeTab));
+    let isSendBlocked: boolean = $state(getSendBlocked());
 
     let worldMessages = $state(clientMessageHandler.getWorldMessages());
     let userMessages = $state(clientMessageHandler.getUserMessages());
@@ -65,8 +68,24 @@
         clientMessageHandler.connect();
     })
 
-    function isSendDisabled() : boolean {
-        return username == 'Guest' ? true : false;
+    function getSendBlocked() : boolean {
+        let isBlocked = true;
+        if (user) {
+            if (username == GUEST) {
+                if (activeTab == 'gameChat' && $page.route.id == '/games/[game_id]') {
+                    logger.trace('send enabled, Guest in game on gameChat tab ', activeTab);
+                    isBlocked = false;
+                } else {
+                    logger.trace('send disabled, Guest not in game or not on gameChat tab ', activeTab, $page.route.id);
+                }
+            } else {
+                logger.trace('send enabled, user not Guest', username);
+                isBlocked = false;
+            }
+        } else {
+            logger.trace('send disabled, no user');
+        }
+        return isBlocked;
     }
 
     function getTabVariant(tabName: string) {
@@ -88,6 +107,7 @@
 
     function selectMessageTab(tabName: string) {
         activeTab = tabName;
+        isSendBlocked = getSendBlocked();
     }
 
     function sendChatMessage() {
@@ -117,7 +137,7 @@
 
 {#snippet messageItem(message: ActionableMessage)}
     <li>@{message.sender}
-        {#if (username != 'Guest' && message.actions && message.actions.length > 0)}
+        {#if (username != GUEST && message.actions && message.actions.length > 0)}
             [
             {#each message.actions as action}
                 <a href={action.url} class={action.promptClass}>{action.prompt}</a>
@@ -146,8 +166,8 @@
         </div>
         <div>
             <span class="flex gap-1">
-                <Input disabled={isSendDisabled()} bind:value={msgText} onchange={sendChatMessage} autocomplete="off" />
-                <Button disabled={isSendDisabled()}
+                <Input disabled={isSendBlocked} bind:value={msgText} onchange={sendChatMessage} autocomplete="off" />
+                <Button disabled={isSendBlocked}
                     onclick={sendChatMessage}>Send</Button
                 >
             </span>

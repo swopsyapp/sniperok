@@ -4,7 +4,7 @@ create schema if not exists "sniperok";
 create or replace view "sniperok"."user"
     with (security_invoker=on)
 as
-select id, email, raw_user_meta_data ->> 'username' as username
+select id, email, raw_user_meta_data ->> 'username' as username, created_at
   from auth.users u
 ;
 

@@ -55,6 +55,7 @@ export interface Status {
 }
 
 export interface User {
+  created_at: Timestamp | null;
   email: string | null;
   id: string | null;
   username: string | null;
