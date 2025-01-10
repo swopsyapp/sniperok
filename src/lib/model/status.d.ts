@@ -6,19 +6,23 @@ export enum Status {
     activeCurator = 4
 }
 
-// TODO make this less dumb
-export function getStatus(statusId : number) : Status {
-    if (statusId == Status.pending.valueOf()) {
-        return Status.pending;
-    }
-    if (statusId == Status.active.valueOf()) {
-        return Status.active;
-    }
-    if (statusId == Status.inactive.valueOf()) {
-        return Status.inactive;
-    }
-    if (statusId == Status.activeCurator.valueOf()) {
-        return Status.activeCurator;
-    }
-    return Status.unknown;
+export function getStatus(statusId: number): Status {
+    const statusMap: { [key: number]: Status } = {
+        [Status.pending]: Status.pending,
+        [Status.active]: Status.active,
+        [Status.inactive]: Status.inactive,
+        [Status.activeCurator]: Status.activeCurator,
+    };
+
+    return statusMap[statusId] ?? Status.unknown;
 }
+
+export function getStatusText(status: Status) {
+    switch (status) {
+        case Status.pending: return 'Pending';
+        case Status.active: return 'Active';
+        case Status.inactive: return 'Inactive';
+        case Status.activeCurator: return 'Active Curator';
+        default: return 'Unknown';
+    }
+};

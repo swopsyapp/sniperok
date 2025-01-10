@@ -7,7 +7,7 @@
     import { goto, invalidateAll } from '$app/navigation';
 
     import { logger } from '$lib/logger';
-    import { HttpStatus } from '$lib/utils';
+    import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, type Message } from "$lib/components/messages.svelte";
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
@@ -40,20 +40,12 @@
         }
     });
 
-    function timeDiff(startTime : Date, countdown : number) : number {
-        const now = new Date();
-        const diff = startTime.getTime() - now.getTime();
-
-        return Math.trunc(diff / 1000);
+    function getTimeDiff(startTime : Date, countdown : number) : TimeDiff {
+        return calculateTimeDifference(startTime);
     }
 
-    function timeColor(startTime : Date, countdown : number) : string {
-        let textColor = '';
-        const diff = timeDiff(startTime, countdown);
-        if (diff < 0) {
-            textColor = ' text-red-500';
-        }
-        return textColor;
+    function timeColor(diff: number) : string {
+        return (diff < 0) ? ' text-red-500' : '';
     }
 
     async function joinGame(gameId : string) {
@@ -132,6 +124,10 @@
 
 </script>
 
+{#snippet startTime(timeDiff: TimeDiff)}
+    <Table.Cell class="px-1 w-20 font-medium {timeColor(timeDiff.diff)}">{timeDiff.formatted}</Table.Cell>
+{/snippet}
+
 <div>
     <Card.Root class="mx-auto max-w-md">
         <Card.Header>
@@ -150,77 +146,80 @@
             </span>
         </Card.Header>
         <Card.Content>
-            <Table.Root>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.Head>Start</Table.Head>
-                        <Table.Head>Players</Table.Head>
-                        <Table.Head>Rounds</Table.Head>
-                        <Table.Head class="w-28 text-right">Action</Table.Head>
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {#each games as game}
+            <div class="overflow-x-hidden">
+                <Table.Root class="w-full">
+                    <Table.Header>
                         <Table.Row>
-                            <Table.Cell class="font-medium {timeColor(game.startTime, countdown)}">{timeDiff(game.startTime, countdown)}</Table.Cell>
-                            <Table.Cell class="font-medium">{game.players} / {game.minPlayers}</Table.Cell>
-                            <Table.Cell class="font-medium">{game.rounds}</Table.Cell>
-                            <Table.Cell class="font-medium">
-                                <span class="flex">
-                                    <Tooltip.Provider>
-                                        <Tooltip.Root>
-                                            <Tooltip.Trigger
-                                                onclick={() => joinGame(game.id)}
-                                                class={iconGhost}
-                                            >
-                                                <Icon
-                                                    icon='gg:enter'
-                                                    class='text-green-600'
-                                                />
-                                            <span class="sr-only">Join</span>
-                                            </Tooltip.Trigger>
-                                            <Tooltip.Content><p>Join</p></Tooltip.Content>
-                                        </Tooltip.Root>
-                                    </Tooltip.Provider>
-                                    {#if game.curator == username}
+                            <Table.Head class="px-1">Start</Table.Head>
+                            <Table.Head class="px-1">Players</Table.Head>
+                            <Table.Head class="px-1">Rounds</Table.Head>
+                            <Table.Head class="w-28 text-right">Action</Table.Head>
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                        {#each games as game}
+                            <Table.Row>
+                                {@render startTime(getTimeDiff(game.startTime, countdown))}
+                                <Table.Cell class="px-1 font-medium">{game.players} / {game.minPlayers}</Table.Cell>
+                                <Table.Cell class="px-1 font-medium">{game.rounds}</Table.Cell>
+                                <Table.Cell class="font-medium">
+                                    <span class="flex">
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                    class={iconGhost}
-                                                >
-                                                    <a href="/games/[{game.id}]">
-                                                        <Icon
-                                                            icon='line-md:edit'
-                                                            class='text-green-600'
-                                                        />
-                                                    </a>
-                                                <span class="sr-only">Edit</span>
-                                                </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Edit</p></Tooltip.Content>
-                                            </Tooltip.Root>
-                                        </Tooltip.Provider>
-                                        <Tooltip.Provider>
-                                            <Tooltip.Root>
-                                                <Tooltip.Trigger
-                                                    onclick={() => deleteGame(game.id)}
+                                                    onclick={() => joinGame(game.id)}
                                                     class={iconGhost}
                                                 >
                                                     <Icon
-                                                        icon='flowbite:trash-bin-outline'
-                                                        class='text-red-600'
+                                                        icon='gg:enter'
+                                                        class='text-green-600'
                                                     />
-                                                <span class="sr-only">Delete</span>
+                                                <span class="sr-only">Join</span>
                                                 </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Delete</p></Tooltip.Content>
+                                                <Tooltip.Content><p>Join</p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
-                                    {/if}
-                                </span>
-                            </Table.Cell>
-                        </Table.Row>
-                    {/each}
-                </Table.Body>
-            </Table.Root>
+                                        {#if game.curator == username}
+                                            <Tooltip.Provider>
+                                                <Tooltip.Root>
+                                                    <Tooltip.Trigger
+                                                        class={iconGhost}
+                                                    >
+                                                        <a href="/games/[{game.id}]">
+                                                            <Icon
+                                                                icon='line-md:edit'
+                                                                class='text-green-600'
+                                                            />
+                                                        </a>
+                                                    <span class="sr-only">Edit</span>
+                                                    </Tooltip.Trigger>
+                                                    <Tooltip.Content><p>Edit</p></Tooltip.Content>
+                                                </Tooltip.Root>
+                                            </Tooltip.Provider>
+                                            <Tooltip.Provider>
+                                                <Tooltip.Root>
+                                                    <Tooltip.Trigger
+                                                        onclick={() => deleteGame(game.id)}
+                                                        class={iconGhost}
+                                                    >
+                                                        <Icon
+                                                            icon='flowbite:trash-bin-outline'
+                                                            class='text-red-600'
+                                                        />
+                                                    <span class="sr-only">Delete</span>
+                                                    </Tooltip.Trigger>
+                                                    <Tooltip.Content><p>Delete</p></Tooltip.Content>
+                                                </Tooltip.Root>
+                                            </Tooltip.Provider>
+                                        {/if}
+                                    </span>
+                                </Table.Cell>
+                            </Table.Row>
+                        {/each}
+                    </Table.Body>
+                </Table.Root>
+            </div>
+
 
         </Card.Content>
     </Card.Root>

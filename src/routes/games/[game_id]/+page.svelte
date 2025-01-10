@@ -1,12 +1,33 @@
 <script lang="ts">
-    import * as Card from '$lib/components/ui/card/index';
+    import { onMount } from 'svelte';
+
     import { logger } from '$lib/logger';
+    import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
+    import * as Card from '$lib/components/ui/card/index';
+    import { getStatusText } from '$lib/model/status.d';
 
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
-
     logger.debug(data.game);
+
+    let game = $derived(data.game);
+
+    let timeDifference = $state(calculateTimeDifference(game.startTime));
+    let timeColor = $derived(getTimeColor(timeDifference));
+
+    onMount(() => {
+        const interval = setInterval(() => {
+            timeDifference = calculateTimeDifference(game.startTime);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    });
+
+    function getTimeColor(timeDiff: TimeDiff) : string {
+        return (timeDiff.diff < 0 ) ? 'text-red-500' : '';
+    }
+
 </script>
 
 <Card.Root class="mx-auto max-w-md">
@@ -14,14 +35,39 @@
         <Card.Title class="w-10/12 text-center text-4xl font-thin">Game</Card.Title>                
     </Card.Header>
     <Card.Content>
-        fun goes here
-        <br/>get start conditions and counts of joined and connected players.
-        <br/>see
-        <ul>
-            <li>- <a href="https://socket.io/docs/v4/server-api/#serverinroom" target="_blank">#serverinroom</a></li>
-            <li>- <a href="https://socket.io/docs/v4/server-api/#servertoroom" target="_blank">#servertoroom</a></li>
-            <li>- <a href="https://github.com/socketio/socket.io/blob/7427109658591e7ce677a183a664d1f5327f37ea/packages/socket.io/lib/broadcast-operator.ts#L359C10-L359C23" target="_blank">BroadcastOperator.fetchSockets()</a></li>
-            
-        </ul>
+
+        <table class="w-full text-lg">
+            <tbody>
+                <tr class="text-center">
+                    <td>
+                        <div class="text-sm text-gray-500">Status</div>
+                        <div class="font-bold text-gray-700">{getStatusText(game.status)}</div>
+                    </td>
+                    <td>
+                        <div class="text-sm text-gray-500">Curator</div>
+                        <div class="font-bold text-gray-700">{game.curator}</div>
+                    </td>
+                    <td>
+                        <div class="text-sm text-gray-500">Start Time</div>
+                        <div class="font-bold {timeColor}">{timeDifference.formatted}</div>
+                    </td>
+                </tr>
+                <tr class="text-center">
+                    <td>
+                        <div class="text-sm text-gray-500">Players</div>
+                        <div class="font-bold text-gray-700">{game.players} / {game.connected} ({game.minPlayers})</div>
+                    </td>
+                    <td>
+                        <div class="text-sm text-gray-500">Public</div>
+                        <div class="font-bold text-gray-700">{game.isPublic ? 'Yes' : 'No'}</div>
+                    </td>
+                    <td>
+                        <div class="text-sm text-gray-500">Round</div>
+                        <div class="font-bold text-gray-700">1 of {game.rounds}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
     </Card.Content>
 </Card.Root>
