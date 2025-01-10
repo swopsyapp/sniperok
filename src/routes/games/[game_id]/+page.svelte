@@ -2,9 +2,10 @@
     import { onMount } from 'svelte';
 
     import { logger } from '$lib/logger';
+    import { getStatusText } from '$lib/model/status.d';
     import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
     import * as Card from '$lib/components/ui/card/index';
-    import { getStatusText } from '$lib/model/status.d';
+    import * as Tooltip from '$lib/components/ui/tooltip/index';
 
     import type { PageData } from './$types';
 
@@ -28,6 +29,9 @@
         return (timeDiff.diff < 0 ) ? 'text-red-500' : '';
     }
 
+    function getPlayersColor(): string {
+        return ( game.players < game.minPlayers) ? 'text-red-500' : '';
+    }
 </script>
 
 <Card.Root class="mx-auto max-w-md">
@@ -55,7 +59,16 @@
                 <tr class="text-center">
                     <td>
                         <div class="text-sm text-gray-500">Players</div>
-                        <div class="font-bold text-gray-700">{game.players} / {game.connected} ({game.minPlayers})</div>
+                        <div class="font-bold text-gray-700">
+                            <Tooltip.Provider>
+                                <Tooltip.Root>
+                                  <Tooltip.Trigger>{game.connected} / <span class="{getPlayersColor()}">{game.players}</span> ({game.minPlayers})</Tooltip.Trigger>
+                                  <Tooltip.Content>
+                                    <p class="text-sm text-gray-500">{game.connected} connected of {game.players} joined, with a min of ({game.minPlayers}) required</p>
+                                  </Tooltip.Content>
+                                </Tooltip.Root>
+                              </Tooltip.Provider>
+                        </div>
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Public</div>
