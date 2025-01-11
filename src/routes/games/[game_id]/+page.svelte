@@ -4,15 +4,18 @@
     import { logger } from '$lib/logger';
     import { getStatusText } from '$lib/model/status.d';
     import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
+    import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
     import * as Card from '$lib/components/ui/card/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
 
+    import { invalidateAll } from '$app/navigation';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
     logger.debug(data.game);
 
     let game = $derived(data.game);
+    let username = $derived(data.user?.user_metadata.username);
 
     let timeDifference = $state(calculateTimeDifference(game.startTime));
     let timeColor = $derived(getTimeColor(timeDifference));
@@ -21,6 +24,12 @@
         const interval = setInterval(() => {
             timeDifference = calculateTimeDifference(game.startTime);
         }, 1000);
+
+        clientMessageHandler.on(MessageType.JoinGame, (message) => {
+            if (message.sender != username) {
+                invalidateAll();
+            }
+        });
 
         return () => clearInterval(interval);
     });
@@ -45,11 +54,11 @@
                 <tr class="text-center">
                     <td>
                         <div class="text-sm text-gray-500">Status</div>
-                        <div class="font-bold text-gray-700">{getStatusText(game.status)}</div>
+                        <div class="font-bold text-gray-600 dark:text-gray-300">{getStatusText(game.status)}</div>
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Curator</div>
-                        <div class="font-bold text-gray-700">{game.curator}</div>
+                        <div class="font-bold text-gray-600 dark:text-gray-300">{game.curator}</div>
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Start Time</div>
@@ -59,7 +68,7 @@
                 <tr class="text-center">
                     <td>
                         <div class="text-sm text-gray-500">Players</div>
-                        <div class="font-bold text-gray-700">
+                        <div class="font-bold text-gray-600 dark:text-gray-300">
                             <Tooltip.Provider>
                                 <Tooltip.Root>
                                   <Tooltip.Trigger>{game.connected} / <span class="{getPlayersColor()}">{game.players}</span> ({game.minPlayers})</Tooltip.Trigger>
@@ -72,11 +81,11 @@
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Public</div>
-                        <div class="font-bold text-gray-700">{game.isPublic ? 'Yes' : 'No'}</div>
+                        <div class="font-bold text-gray-600 dark:text-gray-300">{game.isPublic ? 'Yes' : 'No'}</div>
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Round</div>
-                        <div class="font-bold text-gray-700">1 of {game.rounds}</div>
+                        <div class="font-bold text-gray-600 dark:text-gray-300">1 of {game.rounds}</div>
                     </td>
                 </tr>
             </tbody>

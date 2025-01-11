@@ -41,7 +41,8 @@
     let unseenMap = $derived.by(() => {
         let map : { [key: string]: boolean} = {
             worldChat: worldMsgUnseen,
-            userChat: userMsgUnseen
+            userChat: userMsgUnseen,
+            gameChat: gameMsgUnseen
         };
         
         return map;

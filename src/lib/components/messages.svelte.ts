@@ -6,6 +6,11 @@ import { page } from '$app/stores';
 import { logger } from '$lib/logger';
 import type { User } from '@supabase/supabase-js';
 
+export enum MessageType {
+    JoinGame = 'joinGame',
+    Welcome = 'welcome'
+}
+
 export interface Message {
     type: string;
     sender: string;
@@ -33,6 +38,8 @@ export class ClientMessageHandler {
 
     private socket: Socket | undefined;
     private username : string | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    private messageTypeCallbackMap = new Map<MessageType, Function>();
 
     private constructor() {
     }
@@ -108,7 +115,7 @@ export class ClientMessageHandler {
         msg.type = messageType;
         msg.sender = messageSender;
         msg.text = messageText;
-        if (messageType == 'welcome') {
+        if (messageType == MessageType.Welcome) {
             const buddyname = messageText.slice(messageText.indexOf('@') + 1);
             const addBuddyAction = {} as Action;
             addBuddyAction.url = '/buddies?action=add&buddyName=' + buddyname;
@@ -126,10 +133,11 @@ export class ClientMessageHandler {
         msg.sender = gameMessage.sender;
         msg.gameId = gameMessage.gameId;
         msg.text = gameMessage.text;
-        if (msg.type == 'joinGame') {
+        if (msg.type == MessageType.JoinGame) {
             msg.text = 'joined'
         }
         gameMessages.push(msg);
+        this.notifySubscribers(msg);
     }
 
     public addUserMessage(message: Message) {
@@ -214,14 +222,14 @@ export class ClientMessageHandler {
         logger.trace('sender = ', username);
 
         const msg = {} as Message;
-        msg.type = 'joinGame';
+        msg.type = MessageType.JoinGame;
         msg.sender = username;
         msg.gameId = gameId;
 
         if (!this.socket || this.socket.disconnected) {
             this.socket = this.connect();
         }
-        this.socket.emit('joinGame', msg);
+        this.socket.emit(MessageType.JoinGame, msg);
         logger.debug('joining gameRoom @', username, ' : ', gameId);
     }
 
@@ -273,6 +281,32 @@ export class ClientMessageHandler {
         worldMessages.length = 0;
         userMessages.length = 0;
         gameMessages.length = 0;
+    }
+
+    public on(messageType: MessageType, callback: (message: Message) => void) {
+        this.messageTypeCallbackMap.set(messageType, callback);
+    }
+
+    public static messageTypeTextToEnum(messageType: string) : MessageType | undefined {
+        switch (messageType) {
+            case MessageType.JoinGame:
+                return MessageType.JoinGame;
+            case MessageType.Welcome:
+                return MessageType.Welcome;
+            default:
+                return undefined;
+        }
+    }
+
+    private notifySubscribers(message: Message) {
+        const msgType = ClientMessageHandler.messageTypeTextToEnum(message.type);
+        if ( msgType && this.messageTypeCallbackMap.has(msgType) ) {
+            const subscriber = this.messageTypeCallbackMap.get(msgType);
+            if (subscriber) {
+                subscriber(message);
+            }
+        }
+
     }
 }
 
