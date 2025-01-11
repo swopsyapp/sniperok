@@ -1,26 +1,23 @@
-
 -- Created with `supabase migration new create_buddy_table`
 
 -- ----------------------------------------------------------------------------
 --         BUDDY
 -- ----------------------------------------------------------------------------
-create table "sniperok"."buddy" (
-    "player_uuid" uuid not null,
-    "buddy_uuid" uuid not null,
-    "status_id" smallint not null default 1
+create table sniperok.buddy (
+    player_uuid uuid not null,
+    buddy_uuid uuid not null,
+    status_id smallint not null default 1,
+    CONSTRAINT buddy_pk
+        PRIMARY KEY (player_uuid, buddy_uuid)
 );
 
 -- alter table "sniperok"."buddy" enable row level security;
 
-CREATE UNIQUE INDEX buddy_pk ON sniperok.buddy USING btree (player_uuid, buddy_uuid);
-
-alter table "sniperok"."buddy" add constraint "buddy_pk" PRIMARY KEY using index "buddy_pk";
-
 -- ----------------------------------------------------------------------------
 --         BUDDY_VW
 -- ----------------------------------------------------------------------------
-create or replace view "sniperok"."buddy_vw"
-    with (security_invoker=on)
+create or replace view sniperok.buddy_vw
+    with (security_invoker = on)
 as
 select p.raw_user_meta_data ->> 'username' as player, b.raw_user_meta_data ->> 'username' as buddy, t.status_id, s.code as status_code
   from sniperok.buddy t
