@@ -97,21 +97,6 @@ export const PATCH: RequestHandler = async (requestEvent) => {
 
     const activeStatus = username == gameRecord.curator ? Status.activeCurator : Status.active;
 
-    /*
-    const upsertStmt =  db.withSchema('sniperok')
-                            .insertInto('game_player')
-                            .values({
-                                game_id: gameRecord.id,
-                                player_uuid: userId,
-                                status_id: activeStatus
-                            })
-                            .onConflict((oc) => oc.column('game_id').column('player_uuid').doUpdateSet({ status_id: activeStatus }))
-                            .compile();
-
-    logger.debug(upsertStmt.sql);
-    logger.debug(upsertStmt.parameters);
-    */
-
     await db
         .withSchema('sniperok')
         .transaction()

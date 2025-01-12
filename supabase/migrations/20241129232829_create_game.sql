@@ -75,11 +75,11 @@ create table sniperok.weapon_victory (
 --          PLAYER_TURN
 -- ----------------------------------------------------------------------------
 create table sniperok.player_turn (
+    player_uuid text not null,
     game_id bigint not null,
     round_seq smallint not null,
-    player_uuid text not null,
-    weapon_code text,
-    response_time_millis smallint,
+    weapon_code text null,
+    response_time_millis smallint null,
     CONSTRAINT player_turn_pk
         PRIMARY KEY (game_id, round_seq, player_uuid),
     CONSTRAINT player_turn_game_fk

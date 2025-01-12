@@ -85,7 +85,7 @@
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Round</div>
-                        <div class="font-bold text-gray-600 dark:text-gray-300">1 of {game.rounds}</div>
+                        <div class="font-bold text-gray-600 dark:text-gray-300">{game.currentRound} of {game.rounds}</div>
                     </td>
                 </tr>
             </tbody>
