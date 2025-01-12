@@ -2,9 +2,9 @@ import { error, json } from '@sveltejs/kit';
 import { Transaction } from 'kysely';
 
 import { type DB } from '$lib/server/db/sniperok-schema.d';
-import { getPlayerSequence } from '$lib/server/db/gameUtil.d';
+import { getGameDetail, getPlayerSequence } from '$lib/server/db/gameRepository.d';
 import { db } from '$lib/server/db/db.d';
-import { Status } from '$lib/model/status.d';
+import { Status } from '$lib/model/model.d';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
@@ -12,42 +12,20 @@ import { StringUtils } from '$lib/StringUtils';
 
 import type { RequestHandler } from './$types';
 
-async function getGameRecord(gameId: string) {
-    const gameRecord = await db
-        .withSchema('sniperok')
-        .selectFrom('game as g')
-        .innerJoin('game_player as gp', 'gp.game_id', 'g.id')
-        .innerJoin('user as u', 'u.id', 'gp.player_uuid')
-        .select([
-            'g.id',
-            'g.status_id',
-            'u.username as curator',
-            'g.is_public',
-            'g.min_players',
-            'g.rounds',
-            'g.start_time'
-        ])
-        .where('g.id', '=', gameId)
-        .where('gp.status_id', '=', Status.activeCurator)
-        .executeTakeFirst();
-
-    return gameRecord;
-}
-
 export const DELETE: RequestHandler = async (requestEvent) => {
     const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
-    const gameRecord = await getGameRecord(gameId);
+    const gameDetail = await getGameDetail(gameId);
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
     const username = user ? user.user_metadata.username : null;
 
-    if (gameRecord == undefined) {
+    if (gameDetail == undefined) {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    if (username != gameRecord.curator) {
-        logger.warn(`Not the game curator ${username} != ${gameRecord.curator}`);
+    if (username != gameDetail.curator) {
+        logger.warn(`Not the game curator ${username} != ${gameDetail.curator}`);
         error(HttpStatus.FORBIDDEN, 'Not the game curator');
     }
 
@@ -89,13 +67,13 @@ export const PATCH: RequestHandler = async (requestEvent) => {
     }
 
     const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
-    const gameRecord = await getGameRecord(gameId);
+    const gameDetail = await getGameDetail(gameId);
 
-    if (gameRecord == undefined) {
+    if (gameDetail == undefined) {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const activeStatus = username == gameRecord.curator ? Status.activeCurator : Status.active;
+    const activeStatus = username == gameDetail.curator ? Status.activeCurator : Status.active;
 
     await db
         .withSchema('sniperok')
@@ -104,7 +82,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
             await trx
                 .insertInto('game_player')
                 .values({
-                    game_id: gameRecord.id,
+                    game_id: gameDetail.gameId,
                     player_uuid: userId,
                     status_id: activeStatus
                 })

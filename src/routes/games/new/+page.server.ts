@@ -6,7 +6,7 @@ import { db } from '$lib/server/db/db.d';
 import { type DB } from '$lib/server/db/sniperok-schema.d';
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
-import { Status } from '$lib/model/status.d';
+import { Status } from '$lib/model/model.d';
 
 /**
  * POST : Create Game

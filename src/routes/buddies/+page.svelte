@@ -7,7 +7,7 @@
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
-    import { Status } from '$lib/model/status.d';
+    import { Status } from '$lib/model/model.d';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';

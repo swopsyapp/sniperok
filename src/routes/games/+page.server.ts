@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db/db.d'
 import { logger } from '$lib/logger';
-import { Status, getStatus } from '$lib/model/status.d'
+import { Status, getStatus } from '$lib/model/model.d';
 
 import type { PageServerLoad } from './$types';
 

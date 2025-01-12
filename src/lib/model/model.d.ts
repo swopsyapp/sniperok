@@ -26,3 +26,19 @@ export function getStatusText(status: Status) {
         default: return 'Unknown';
     }
 };
+
+export interface GameDetail {
+    gameId: string;
+    status: Status;
+    curator: string;
+    isPublic: boolean;
+    startTime: Date;
+
+    minPlayers: number;
+    players: number;
+    connected: number | undefined;
+
+    rounds: number;
+    currentRound: number;
+}
+

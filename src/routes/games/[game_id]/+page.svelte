@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
 
     import { logger } from '$lib/logger';
-    import { getStatusText } from '$lib/model/status.d';
+    import { getStatusText } from '$lib/model/model.d';
     import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
     import * as Card from '$lib/components/ui/card/index';
@@ -12,9 +12,9 @@
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
-    logger.debug(data.game);
+    logger.trace('gameDetail : ', data.gameDetail);
 
-    let game = $derived(data.game);
+    let game = $derived(data.gameDetail);
     let username = $derived(data.user?.user_metadata.username);
 
     let timeDifference = $state(calculateTimeDifference(game.startTime));

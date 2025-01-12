@@ -5,7 +5,7 @@ import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { db } from '$lib/server/db/db.d'
 import { type DB } from '$lib/server/db/sniperok-schema.d';
-import { Status } from '$lib/model/status.d';
+import { Status } from '$lib/model/model.d';
 import type { RequestHandler } from './$types';
 
 
