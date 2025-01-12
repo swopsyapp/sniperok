@@ -1,12 +1,9 @@
 import { error } from '@sveltejs/kit';
 import { redirect as flashRedirect } from 'sveltekit-flash-message/server';
-import { Transaction } from 'kysely';
 
-import { db } from '$lib/server/db/db.d';
-import { type DB } from '$lib/server/db/sniperok-schema.d';
+import { createGame } from '$lib/server/db/gameRepository.d';
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
-import { Status } from '$lib/model/model.d';
 
 /**
  * POST : Create Game
@@ -28,32 +25,11 @@ export const actions = {
         const { user } = await locals.safeGetSession();
         const userId = user ? user.id : '';
 
-        await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
-            const game = await trx.insertInto('game')
-                .values({
-                    status_id: Status.pending.valueOf(),
-                    is_public: isPublic,
-                    min_players: minPlayers,
-                    start_time: startTime
-                })
-                .returning('id')
-                .executeTakeFirstOrThrow()
+        const gameId = createGame(isPublic, minPlayers, startTime, userId);
 
-                await trx.insertInto('game_player')
-                .values({
-                    game_id: game.id,
-                    player_uuid: userId,
-                    status_id: Status.activeCurator.valueOf()
-                })
-                .returningAll()
-                .executeTakeFirst()
-
-        }).catch(function(err){
-            logger.error('Error creating game', err);
+        if (!gameId) {
             error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-        });
-    
-        // return json({ success: true })
+        }
 
         flashRedirect(
             '/games',

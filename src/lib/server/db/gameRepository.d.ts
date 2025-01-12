@@ -1,9 +1,54 @@
-import { sql } from 'kysely';
+import { sql, Transaction } from 'kysely';
 
 import { db } from '$lib/server/db/db.d';
+import { type DB } from './sniperok-schema.d';
 import { GameDetail, Status, getStatus } from '$lib/model/model.d';
 
-export async function getGameDetail(gameId: string) : GameDetail | undefined {
+/**
+ * Creates a game, adds the first game_round and also adds the game curator as a game_player
+ * @returns gameId as string or undefined
+ */
+export async function createGame(isPublic: boolean, minPlayers: number, startTime: Date, userId: string): string {
+    let gameId: string | undefined;
+
+    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
+        const game = await trx.insertInto('game')
+            .values({
+                status_id: Status.pending.valueOf(),
+                is_public: isPublic,
+                min_players: minPlayers,
+                start_time: startTime
+            })
+            .returning('id')
+            .executeTakeFirstOrThrow();
+        
+        gameId = game.id;
+
+        await trx.insertInto('game_round')
+        .values({
+            game_id: gameId,
+            round_seq: 1,
+            status_id: Status.pending
+        })
+        .executeTakeFirst();
+
+        await trx.insertInto('game_player')
+        .values({
+            game_id: gameId,
+            player_uuid: userId,
+            status_id: Status.activeCurator.valueOf()
+        })
+        .executeTakeFirst();
+
+    }).catch(function(err){
+        gameId = undefined;
+        logger.error('Error creating game', err);
+    });
+
+    return gameId;
+}
+
+export async function getGameDetail(gameId: string): GameDetail | undefined {
     const gameRecord = await db
         .withSchema('sniperok')
         .with('player_count', (eb) =>
@@ -35,13 +80,12 @@ export async function getGameDetail(gameId: string) : GameDetail | undefined {
         .with('current_round', (eb) =>
             eb
                 .selectFrom('current_game as cg')
-                .leftJoin('player_turn as pt', 'pt.game_id', 'cg.id')
+                .leftJoin('game_round as gr', 'gr.game_id', 'cg.id')
                 .select(({ fn, val, ref }) => [
-                    ref('cg.id').as('game_id'),
-                    val<string>(gameId).as('cg.game_id'),
-                    fn.coalesce(fn.max('pt.round_seq'), val<number>(1)).as('currrent_round_seq')
+                    ref('gr.game_id'),
+                    fn.coalesce(fn.max('gr.round_seq'), val<number>(1)).as('currrent_round_seq')
                 ])
-                .groupBy(['cg.id'])
+                .groupBy(['gr.game_id'])
         )
         .selectFrom('current_game as cg')
         .innerJoin('current_round as cr', 'cr.game_id', 'cr.game_id')
@@ -57,8 +101,8 @@ export async function getGameDetail(gameId: string) : GameDetail | undefined {
             'cr.currrent_round_seq'
         ])
         .executeTakeFirst();
-    
-    const gameDetail : GameDetail = {
+
+    const gameDetail: GameDetail = {
         gameId: gameRecord.id,
         status: getStatus(gameRecord?.status_id),
         curator: gameRecord?.curator,
@@ -71,7 +115,7 @@ export async function getGameDetail(gameId: string) : GameDetail | undefined {
         rounds: gameRecord?.rounds,
         currentRound: gameRecord?.currrent_round_seq
     };
-    
+
     return gameDetail;
 }
 
@@ -102,5 +146,73 @@ export async function getPlayerSequence(gameId: string, userId: string) {
         .select(['p.username', 'p.player_seq'])
         .executeTakeFirst();
 
-    return playerSeq ? { username: playerSeq.username, playerSeq: playerSeq.player_seq } : undefined;
+    return playerSeq
+        ? { username: playerSeq.username, playerSeq: playerSeq.player_seq }
+        : undefined;
+}
+
+export async function deleteGame(gameId: string): boolean {
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            await trx.deleteFrom('game_player as gp').where('gp.game_id', '=', gameId).execute();
+
+            await trx.deleteFrom('game as g').where('g.id', '=', gameId).execute();
+        })
+        .then(() => {
+            logger.trace('Deleted game : ', gameId);
+        })
+        .catch(function (err) {
+            logger.error(`Error deleting game : ${gameId} - `, err);
+            return false;
+        });
+
+    return true;
+}
+
+export async function joinGame(gameId: string, userId: string): boolean {
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            const playerCount = await trx
+                .selectFrom('game_player as gp')
+                .leftJoin('game_player as c', 'c.game_id', 'gp.game_id')
+                .select(({ fn, ref }) => [
+                    ref('c.player_uuid').as('curator_uuid'),
+                    fn.countAll<number>().as('tally')
+                ])
+                .where('gp.game_id', '=', gameId)
+                .where('c.status_id', '=', Status.activeCurator)
+                .executeTakeFirstOrThrow;
+
+            const activeStatus: Status =
+                playerCount.tally == 0
+                    ? Status.activeCurator
+                    : playerCount.curator_uuid == userId
+                      ? Status.activeCurator
+                      : Status.active;
+
+            await trx
+                .insertInto('game_player')
+                .values({
+                    game_id: gameDetail.gameId,
+                    player_uuid: userId,
+                    status_id: activeStatus
+                })
+                .onConflict((oc) =>
+                    oc
+                        .column('game_id')
+                        .column('player_uuid')
+                        .doUpdateSet({ status_id: activeStatus })
+                )
+                .executeTakeFirst();            
+        })
+        .catch(function (err) {
+            logger.error(`Error joining game : ${gameId} - `, err);
+            return false;
+        });
+
+    return true;
 }

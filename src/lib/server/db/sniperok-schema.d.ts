@@ -41,6 +41,12 @@ export interface GamePlayer {
   status_id: Generated<number>;
 }
 
+export interface GameRound {
+  game_id: Int8;
+  round_seq: number;
+  status_id: Generated<number>;
+}
+
 export interface PlayerTurn {
   game_id: Int8;
   player_uuid: string;
@@ -76,6 +82,7 @@ export interface DB {
   buddy_vw: BuddyVw;
   game: Game;
   game_player: GamePlayer;
+  game_round: GameRound;
   player_turn: PlayerTurn;
   status: Status;
   user: User;

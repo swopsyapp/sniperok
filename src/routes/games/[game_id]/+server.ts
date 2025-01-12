@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { Transaction } from 'kysely';
 
 import { type DB } from '$lib/server/db/sniperok-schema.d';
-import { getGameDetail, getPlayerSequence } from '$lib/server/db/gameRepository.d';
+import { deleteGame, getGameDetail, getPlayerSequence } from '$lib/server/db/gameRepository.d';
 import { db } from '$lib/server/db/db.d';
 import { Status } from '$lib/model/model.d';
 
@@ -29,23 +29,9 @@ export const DELETE: RequestHandler = async (requestEvent) => {
         error(HttpStatus.FORBIDDEN, 'Not the game curator');
     }
 
-    await db
-        .withSchema('sniperok')
-        .transaction()
-        .execute(async (trx: Transaction<DB>) => {
-            await trx.deleteFrom('game_player as gp').where('gp.game_id', '=', gameId).execute();
+    const result: boolean = deleteGame(gameId);
 
-            await trx.deleteFrom('game as g').where('g.id', '=', gameId).execute();
-        })
-        .then(() => {
-            logger.trace('Deleted game : ', gameId);
-        })
-        .catch(function (err) {
-            logger.error(`Error deleting game : ${gameId} - `, err);
-            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-        });
-
-    return json({ success: true });
+    return json({ success: result });
 };
 
 /**
@@ -73,7 +59,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const activeStatus = username == gameDetail.curator ? Status.activeCurator : Status.active;
+    const activeStatus : Status = username == gameDetail.curator ? Status.activeCurator : Status.active;
 
     await db
         .withSchema('sniperok')

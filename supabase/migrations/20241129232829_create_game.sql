@@ -46,6 +46,19 @@ create table sniperok.game_player (
 -- alter table "sniperok"."game_player" enable row level security;
 
 -- ----------------------------------------------------------------------------
+--          GAME_ROUND
+-- ----------------------------------------------------------------------------
+create table sniperok.game_round (
+    game_id bigint not null,
+    round_seq smallint not null,
+    status_id smallint not null default 1,
+    CONSTRAINT game_round_pk
+        PRIMARY KEY (game_id, round_seq),
+    CONSTRAINT game_round_game_fk
+        FOREIGN key (game_id) REFERENCES sniperok.game(id)
+);
+
+-- ----------------------------------------------------------------------------
 --          WEAPON
 -- ----------------------------------------------------------------------------
 create table sniperok.weapon (
