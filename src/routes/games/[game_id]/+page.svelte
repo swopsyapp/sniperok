@@ -1,10 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import Icon from '@iconify/svelte';
 
     import { logger } from '$lib/logger';
-    import { getStatusText } from '$lib/model/model.d';
+    import { getStatusText, Status, type GameDetail } from '$lib/model/model.d';
     import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
+    import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
 
@@ -14,11 +16,13 @@
     let { data }: { data: PageData } = $props();
     logger.trace('gameDetail : ', data.gameDetail);
 
-    let game = $derived(data.gameDetail);
+    let game : GameDetail = $derived(data.gameDetail);
     let username = $derived(data.user?.user_metadata.username);
 
     let timeDifference = $state(calculateTimeDifference(game.startTime));
     let timeColor = $derived(getTimeColor(timeDifference));
+
+    let isGameReady = $derived(checkGameReady(game, timeDifference));
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -40,6 +44,20 @@
 
     function getPlayersColor(): string {
         return ( game.players < game.minPlayers) ? 'text-red-500' : '';
+    }
+
+    function checkGameReady(game : GameDetail, timeDiff : TimeDiff) : boolean {
+        let result = false;
+
+        if (game.players >= game.minPlayers && timeDiff.diff <= 0) {
+            result = true;
+        }
+
+        if (result && game.status == Status.pending) {
+
+        }
+
+        return result;
     }
 </script>
 
@@ -90,6 +108,17 @@
                 </tr>
             </tbody>
         </table>
+
+        <br/>
+        <Button disabled={!isGameReady} class="w-full">
+            <div class="flex items-center gap-2">
+                <Icon
+                    icon="charm:circle-tick"
+                    class="h-5 w-5 text-green-500"
+                />
+                <span>{isGameReady ? 'Ready' : 'Waiting' }</span>
+            </div>
+        </Button>
 
     </Card.Content>
 </Card.Root>

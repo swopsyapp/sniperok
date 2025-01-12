@@ -1,8 +1,9 @@
 import { sql, Transaction } from 'kysely';
 
+import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
 import { type DB } from './sniperok-schema.d';
-import { GameDetail, Status, getStatus } from '$lib/model/model.d';
+import { type GameDetail, Status, getStatus } from '$lib/model/model.d';
 
 /**
  * Creates a game, adds the first game_round and also adds the game curator as a game_player
@@ -94,10 +95,10 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
             'cg.status_id',
             'cg.curator',
             'cg.is_public',
-            'cg.player_count',
-            'cg.min_players',
-            'cg.rounds',
             'cg.start_time',
+            'cg.min_players',
+            'cg.player_count',
+            'cg.rounds',
             'cr.currrent_round_seq'
         ])
         .executeTakeFirst();
@@ -185,7 +186,10 @@ export async function joinGame(gameId: string, userId: string): boolean {
                 ])
                 .where('gp.game_id', '=', gameId)
                 .where('c.status_id', '=', Status.activeCurator)
-                .executeTakeFirstOrThrow;
+                .groupBy('c.player_uuid')
+                .executeTakeFirstOrThrow();
+
+            logger.debug('playerCount:', playerCount);
 
             const activeStatus: Status =
                 playerCount.tally == 0
@@ -193,11 +197,12 @@ export async function joinGame(gameId: string, userId: string): boolean {
                     : playerCount.curator_uuid == userId
                       ? Status.activeCurator
                       : Status.active;
+            logger.debug('activeStatus:', activeStatus);
 
             await trx
                 .insertInto('game_player')
                 .values({
-                    game_id: gameDetail.gameId,
+                    game_id: gameId,
                     player_uuid: userId,
                     status_id: activeStatus
                 })

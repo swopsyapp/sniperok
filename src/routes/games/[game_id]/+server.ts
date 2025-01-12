@@ -1,10 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import { Transaction } from 'kysely';
 
-import { type DB } from '$lib/server/db/sniperok-schema.d';
-import { deleteGame, getGameDetail, getPlayerSequence } from '$lib/server/db/gameRepository.d';
-import { db } from '$lib/server/db/db.d';
-import { Status } from '$lib/model/model.d';
+import { deleteGame, getGameDetail, getPlayerSequence, joinGame } from '$lib/server/db/gameRepository.d';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
@@ -59,31 +55,11 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const activeStatus : Status = username == gameDetail.curator ? Status.activeCurator : Status.active;
+    const joinResult: boolean = joinGame(gameId, userId);
 
-    await db
-        .withSchema('sniperok')
-        .transaction()
-        .execute(async (trx: Transaction<DB>) => {
-            await trx
-                .insertInto('game_player')
-                .values({
-                    game_id: gameDetail.gameId,
-                    player_uuid: userId,
-                    status_id: activeStatus
-                })
-                .onConflict((oc) =>
-                    oc
-                        .column('game_id')
-                        .column('player_uuid')
-                        .doUpdateSet({ status_id: activeStatus })
-                )
-                .executeTakeFirst();
-        })
-        .catch(function (err) {
-            logger.error(`Error joining game : ${gameId} - `, err);
-            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-        });
+    if (!joinResult) {
+        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+    }
 
     const playerSeq = await getPlayerSequence(gameId, userId);
 
