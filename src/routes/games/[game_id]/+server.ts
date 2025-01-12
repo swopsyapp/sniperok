@@ -39,7 +39,6 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 export const PATCH: RequestHandler = async (requestEvent) => {
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
-    const username = user ? user.user_metadata.username : null;
     const userId = user ? user.id : null;
 
     if (userId == undefined) {
