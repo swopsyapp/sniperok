@@ -1,32 +1,36 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Icon from '@iconify/svelte';
+    import { getFlash } from 'sveltekit-flash-message';
 
     import { logger } from '$lib/logger';
     import { getStatusText, Status, type GameDetail } from '$lib/model/model.d';
-    import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
+    import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
 
+    import { page } from '$app/stores';
     import { invalidateAll } from '$app/navigation';
     import type { PageData } from './$types';
+    
+    const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
     logger.trace('gameDetail : ', data.gameDetail);
 
     let game : GameDetail = $derived(data.gameDetail);
     let username = $derived(data.user?.user_metadata.username);
+    let isGameReady = $derived( (game.status == Status.active) );
 
     let timeDifference = $state(calculateTimeDifference(game.startTime));
     let timeColor = $derived(getTimeColor(timeDifference));
 
-    let isGameReady = $derived(checkGameReady(game, timeDifference));
-
     onMount(() => {
         const interval = setInterval(() => {
             timeDifference = calculateTimeDifference(game.startTime);
+            refreshGameStatus();
         }, 1000);
 
         clientMessageHandler.on(MessageType.JoinGame, (message) => {
@@ -46,18 +50,27 @@
         return ( game.players < game.minPlayers) ? 'text-red-500' : '';
     }
 
-    function checkGameReady(game : GameDetail, timeDiff : TimeDiff) : boolean {
-        let result = false;
+    async function refreshGameStatus() {
+        if (!isGameReady) {
+            if (timeDifference.diff <= 0 && game.players >= game.minPlayers) {
+                // PATCH status refresh
+                const statusRefreshUrl = $page.url.href.concat(`/status`);
+                const response = await fetch(statusRefreshUrl, {
+                    method: 'PATCH',
+                });
 
-        if (game.players >= game.minPlayers && timeDiff.diff <= 0) {
-            result = true;
+                const json = await response.json();
+                logger.debug('statusRefresh response.json : ', json);
+
+                if (response.status != HttpStatus.OK) {
+                    logger.error('error status : ', response.status);
+                    $flash = { type: 'error', message: 'An error occurred' };
+                    return;
+                }
+
+                invalidateAll();
+            }
         }
-
-        if (result && game.status == Status.pending) {
-
-        }
-
-        return result;
     }
 </script>
 
@@ -110,7 +123,7 @@
         </table>
 
         <br/>
-        <Button disabled={!isGameReady} class="w-full">
+        <Button disabled={ !isGameReady } class="w-full">
             <div class="flex items-center gap-2">
                 <Icon
                     icon="charm:circle-tick"

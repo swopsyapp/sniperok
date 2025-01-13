@@ -4,6 +4,7 @@ import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
 import { type DB } from './sniperok-schema.d';
 import { type GameDetail, Status, getStatus } from '$lib/model/model.d';
+import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
 
 /**
  * Creates a game, adds the first game_round and also adds the game curator as a game_player
@@ -159,6 +160,8 @@ export async function deleteGame(gameId: string): boolean {
         .execute(async (trx: Transaction<DB>) => {
             await trx.deleteFrom('game_player as gp').where('gp.game_id', '=', gameId).execute();
 
+            await trx.deleteFrom('game_round as gr').where('gr.game_id', '=', gameId).execute();
+
             await trx.deleteFrom('game as g').where('g.id', '=', gameId).execute();
         })
         .then(() => {
@@ -220,4 +223,36 @@ export async function joinGame(gameId: string, userId: string): boolean {
         });
 
     return true;
+}
+
+export async function refreshGameStatus(gameDetail: GameDetail): Status {
+    const oldStatus : Status = gameDetail.status;
+
+    if (gameDetail.status == Status.pending) {
+        if (gameDetail.players >= gameDetail.minPlayers) {
+            const timeDiff: TimeDiff = calculateTimeDifference(gameDetail.startTime);
+            if (timeDiff.diff <= 0) {
+                gameDetail.status = Status.active;
+            }
+        }
+    }
+
+    if (gameDetail.status != oldStatus) {
+        await db
+            .withSchema('sniperok')
+            .transaction()
+            .execute(async (trx: Transaction<DB>) => {
+                await trx.updateTable('game as g')
+                            .set({ status_id: gameDetail.status })
+                            .where('g.id', '=', gameDetail.gameId)
+                            .where('g.status_id', '=', oldStatus)
+                            .executeTakeFirst();
+            })
+            .catch(function (err) {
+                logger.error(`Error refreshing game status : ${gameDetail.gameId} - `, err);
+                return Status.unknown;
+            });
+    }
+
+    return gameDetail.status;
 }
