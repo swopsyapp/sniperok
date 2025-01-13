@@ -205,22 +205,25 @@
                       fill="none"
                       stroke="red"
                       stroke-width="30"
-                      on:click={() => isPlayable && play('rock')}
-                />
+                      on:click={() => isPlayable && play('rock')}>
+                      <title>Rock</title>
+                </path>
                 <path d={describeArc(100, 100, 80, 60, 180)}
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="yellow"
                       stroke-width="30"
-                      on:click={() => isPlayable && play('paper')}
-                />
+                      on:click={() => isPlayable && play('paper')}>
+                      <title>Paper</title>
+                </path>
                 <path d={describeArc(100, 100, 80, 180, 300)}
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="blue"
                       stroke-width="30"
-                      on:click={() => isPlayable && play('scissors')}
-                />
+                      on:click={() => isPlayable && play('scissors')}>
+                      <title>Scissors</title>
+                </path>
                 
                 <!-- Inner countdown circle (existing code) -->
                 <circle
