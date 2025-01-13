@@ -4,7 +4,9 @@ import { Status, getStatus } from '$lib/model/model.d';
 
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
+export const load = (async ({locals}) => {
+    const { user } = await locals.safeGetSession();
+    const userId = user ? user.id : '';
 
     const gamesQry = db
         .withSchema('sniperok')
@@ -13,12 +15,16 @@ export const load = (async () => {
                                         .groupBy('pc.game_id')
             )
         .selectFrom('game as g')
-        .innerJoin('game_player as gp', 'gp.game_id', 'g.id')
-        .innerJoin('user as u', 'u.id', 'gp.player_uuid')
+        .innerJoin('game_player as curator', 'curator.game_id', 'g.id')
+        .innerJoin('user as u', 'u.id', 'curator.player_uuid')
         .innerJoin('player_count as pc', 'pc.game_id', 'g.id')
+        .leftJoin('game_player as me', 'me.game_id', 'g.id')
         .select(['g.id', 'g.status_id', 'u.username as curator', 'g.is_public', 'pc.tally as player_count', 'g.min_players', 'g.rounds', 'g.start_time'])
-        .where('g.status_id', '=', Status.pending.valueOf())
-        .where('gp.status_id', '=', Status.activeCurator)
+        .where((eb) => eb.or([
+                            eb('g.is_public', '=', true),
+                            eb('me.player_uuid', '=', userId)
+                            ]))
+        .where('curator.status_id', '=', Status.activeCurator)
         .orderBy('g.start_time desc')
         ;
 
