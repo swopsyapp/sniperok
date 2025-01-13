@@ -204,7 +204,7 @@
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="red"
-                      stroke-width="30"
+                      stroke-width="40"
                       on:click={() => isPlayable && play('rock')}>
                       <title>Rock</title>
                 </path>
@@ -212,7 +212,7 @@
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="yellow"
-                      stroke-width="30"
+                      stroke-width="40"
                       on:click={() => isPlayable && play('paper')}>
                       <title>Paper</title>
                 </path>
@@ -220,7 +220,7 @@
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="blue"
-                      stroke-width="30"
+                      stroke-width="40"
                       on:click={() => isPlayable && play('scissors')}>
                       <title>Scissors</title>
                 </path>
