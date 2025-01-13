@@ -30,6 +30,7 @@
     let runCountdown = $state(false);
     let count = $state(3);
     let progress = $state(0);
+    let isPlayable = $state(false);
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -102,6 +103,39 @@
             startCountdown();
         }
     }
+
+    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+        const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
+    }
+
+    function describeArc(x, y, radius, startAngle, endAngle) {
+        const start = polarToCartesian(x, y, radius, endAngle);
+        const end = polarToCartesian(x, y, radius, startAngle);
+        const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+        return [
+            "M", start.x, start.y,
+            "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+        ].join(" ");
+    }
+
+    function handleCountdownComplete() {
+        isPlayable = true;
+    }
+
+    $effect(() => {
+        // $: if (count === 0) handleCountdownComplete();
+        if (count === 0) {
+            handleCountdownComplete();
+        }
+    });
+
+    function play(weapon: string) {
+        logger.debug('played ', weapon);
+    }
 </script>
 
 <Card.Root class="mx-auto max-w-md">
@@ -164,29 +198,53 @@
         </Button>
 
         <div class="flex justify-center mt-4">
-            <svg width="100" height="100" viewBox="0 0 100 100">
+            <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
+                <!-- Outer ring segments -->
+                <path d={describeArc(100, 100, 80, 300, 60)}
+                      class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                      fill="none"
+                      stroke="red"
+                      stroke-width="30"
+                      on:click={() => isPlayable && play('rock')}
+                />
+                <path d={describeArc(100, 100, 80, 60, 180)}
+                      class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                      fill="none"
+                      stroke="yellow"
+                      stroke-width="30"
+                      on:click={() => isPlayable && play('paper')}
+                />
+                <path d={describeArc(100, 100, 80, 180, 300)}
+                      class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                      fill="none"
+                      stroke="blue"
+                      stroke-width="30"
+                      on:click={() => isPlayable && play('scissors')}
+                />
+                
+                <!-- Inner countdown circle (existing code) -->
                 <circle
-                    cx="50"
-                    cy="50"
+                    cx="100"
+                    cy="100"
                     r="45"
                     fill="none"
                     stroke="#e2e8f0"
                     stroke-width="8"
                 />
                 <circle
-                    cx="50"
-                    cy="50"
+                    cx="100"
+                    cy="100"
                     r="45"
                     fill="none"
                     stroke="#22c55e"
                     stroke-width="8"
                     stroke-linecap="round"
-                    transform="rotate(-90 50 50)"
+                    transform="rotate(-90 100 100)"
                     style="stroke-dasharray: 283; stroke-dashoffset: {283 - (283 * progress)}"
                 />
                 <text
-                    x="50"
-                    y="50"
+                    x="100"
+                    y="100"
                     text-anchor="middle"
                     dy="7"
                     font-size="30"
