@@ -27,6 +27,10 @@
     let timeDifference = $state(calculateTimeDifference(game.startTime));
     let timeColor = $derived(getTimeColor(timeDifference));
 
+    let runCountdown = $state(false);
+    let count = $state(3);
+    let progress = $state(0);
+
     onMount(() => {
         const interval = setInterval(() => {
             timeDifference = calculateTimeDifference(game.startTime);
@@ -70,6 +74,32 @@
 
                 invalidateAll();
             }
+        }
+    }
+
+    function startCountdown() {
+        runCountdown = true;
+        count = 3;
+        progress = 0;
+        
+        const countdownInterval = setInterval(() => {
+            progress += 1/30;
+            
+            if (progress >= 1) {
+                count -= 1;
+                progress = 0;
+            }
+            
+            if (count === 0) {
+                clearInterval(countdownInterval);
+                runCountdown = false;
+            }
+        }, 33.33); // ~30fps
+    }
+
+    function handleStartClick() {
+        if (isGameReady) {
+            startCountdown();
         }
     }
 </script>
@@ -123,7 +153,7 @@
         </table>
 
         <br/>
-        <Button disabled={ !isGameReady } class="w-full">
+        <Button id="roundStart" disabled={ !isGameReady } class="w-full" onclick={handleStartClick}>
             <div class="flex items-center gap-2">
                 <Icon
                     icon="charm:circle-tick"
@@ -132,6 +162,40 @@
                 <span>{isGameReady ? 'Ready' : 'Waiting' }</span>
             </div>
         </Button>
+
+        <div class="flex justify-center mt-4">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#e2e8f0"
+                    stroke-width="8"
+                />
+                <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#22c55e"
+                    stroke-width="8"
+                    stroke-linecap="round"
+                    transform="rotate(-90 50 50)"
+                    style="stroke-dasharray: 283; stroke-dashoffset: {283 - (283 * progress)}"
+                />
+                <text
+                    x="50"
+                    y="50"
+                    text-anchor="middle"
+                    dy="7"
+                    font-size="30"
+                    fill="currentColor"
+                >
+                    {count}
+                </text>
+            </svg>
+        </div>
 
     </Card.Content>
 </Card.Root>
