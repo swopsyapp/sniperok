@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({locals}) => {
     const { user } = await locals.safeGetSession();
-    const userId = user ? user.id : '';
+    const userId = user ? user.id : null;
 
     const gamesQry = db
         .withSchema('sniperok')
