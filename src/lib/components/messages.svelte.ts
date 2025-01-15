@@ -7,8 +7,12 @@ import { logger } from '$lib/logger';
 import type { User } from '@supabase/supabase-js';
 
 export enum MessageType {
+    GameChat = 'gameChat',
     JoinGame = 'joinGame',
-    Welcome = 'welcome'
+    StartRound = 'startRound',
+    UserChat = 'userChat',
+    Welcome = 'welcome',
+    WorldChat = 'worldChat'
 }
 
 export interface Message {
@@ -75,13 +79,13 @@ export class ClientMessageHandler {
             .on('eventFromServer', (message) => {
                 logger.debug('eventFromServer', message);
             })
-            .on('worldChat', (message) => {
+            .on(MessageType.WorldChat, (message) => {
                 this.addWorldMessage(message.type, message.sender, message.text);
             })
-            .on('userChat', (message) => {
+            .on(MessageType.UserChat, (message) => {
                 this.addUserMessage(message);
             })
-            .on('gameChat', (message) => {
+            .on(MessageType.GameChat, (message) => {
                 this.addGameMessage(message);
             });
         
@@ -90,9 +94,9 @@ export class ClientMessageHandler {
     }
 
     public getMessages(context: string): ActionableMessage[] {
-        return context == 'gameChat'
+        return context == MessageType.GameChat
             ? gameMessages
-            : context == 'userChat'
+            : context == MessageType.UserChat
               ? userMessages
               : worldMessages;
     }
@@ -134,7 +138,9 @@ export class ClientMessageHandler {
         msg.gameId = gameMessage.gameId;
         msg.text = gameMessage.text;
         if (msg.type == MessageType.JoinGame) {
-            msg.text = 'joined'
+            msg.text = 'joined';
+        } else if (msg.type == MessageType.StartRound) {
+            msg.text = 'round #' + msg.text;
         }
         gameMessages.push(msg);
         this.notifySubscribers(msg);
@@ -163,14 +169,14 @@ export class ClientMessageHandler {
             logger.trace('sender = ', username);
     
             const msg = {} as Message;
-            msg.type = 'worldChat';
+            msg.type = MessageType.WorldChat;
             msg.sender = messageSender;
             msg.text = messageText;
 
             if (!this.socket || this.socket.disconnected) {
                 this.socket = this.connect();
             }
-            this.socket.emit('worldChat', msg);
+            this.socket.emit(msg.type, msg);
             logger.debug('sent worldChat @', messageSender, ' : ', messageText);
         } else {
             logger.debug('Not sent, messageText is empty');
@@ -195,7 +201,7 @@ export class ClientMessageHandler {
             const strippedMessageText = messageText.slice(messageText.indexOf(' '));
             
             const msg = {} as Message;
-            msg.type = 'worldChat';
+            msg.type = MessageType.UserChat;
             msg.sender = messageSender;
             msg.receiver = receiver;
             msg.text = strippedMessageText;
@@ -203,7 +209,7 @@ export class ClientMessageHandler {
             if (!this.socket || this.socket.disconnected) {
                 this.socket = this.connect();
             }
-            this.socket.emit('userChat', msg);
+            this.socket.emit(msg.type, msg);
             this.addUserMessage(msg);
             logger.debug('sent userChat @', messageSender, ' : ', messageText);
         } else {
@@ -229,7 +235,7 @@ export class ClientMessageHandler {
         if (!this.socket || this.socket.disconnected) {
             this.socket = this.connect();
         }
-        this.socket.emit(MessageType.JoinGame, msg);
+        this.socket.emit(msg.type, msg);
         logger.debug('joining gameRoom @', username, ' : ', gameId);
     }
 
@@ -244,7 +250,7 @@ export class ClientMessageHandler {
             }
 
             const msg = {} as Message;
-            msg.type = 'gameChat';
+            msg.type = MessageType.GameChat;
             msg.sender = messageSender;
             msg.gameId = gameId;
             msg.text = messageText;
@@ -252,11 +258,32 @@ export class ClientMessageHandler {
             if (!this.socket || this.socket.disconnected) {
                 this.socket = this.connect();
             }
-            this.socket.emit('gameChat', msg);
-            logger.debug('sent gameChat @', messageSender, ' : ', messageText);
+            this.socket.emit(msg.type, msg);
+            logger.debug('sent gameChat @', messageSender, ' : ', msg.text);
         } else {
             logger.debug('Not sent, messageText is empty');
         }
+    }
+
+    public sendStartRound(gameId: string, messageSender: string, roundSeq: number) {
+        const currentPage = get(page);
+        const user : User = currentPage.data?.user;
+        if (!user) {
+            logger.warn('You must be logged in to send startRound');
+            return;
+        }
+
+        const msg = {} as Message;
+        msg.type = MessageType.StartRound;
+        msg.sender = messageSender;
+        msg.gameId = gameId;
+        msg.text = roundSeq.toString();
+
+        if (!this.socket || this.socket.disconnected) {
+            this.socket = this.connect();
+        }
+        this.socket.emit(msg.type, msg);
+        logger.debug('sent startRound @', messageSender, ' : ', msg.text);
     }
 
     public logout() {
@@ -287,12 +314,21 @@ export class ClientMessageHandler {
         this.messageTypeCallbackMap.set(messageType, callback);
     }
 
+    // TODO : Is this really necessary?
     public static messageTypeTextToEnum(messageType: string) : MessageType | undefined {
         switch (messageType) {
+            case MessageType.GameChat:
+                return MessageType.GameChat
             case MessageType.JoinGame:
                 return MessageType.JoinGame;
+            case MessageType.StartRound:
+                return MessageType.StartRound;
+            case MessageType.UserChat:
+                return MessageType.UserChat;
             case MessageType.Welcome:
                 return MessageType.Welcome;
+            case MessageType.WorldChat:
+                return MessageType.WorldChat;
             default:
                 return undefined;
         }

@@ -5,7 +5,7 @@
 
     import { logger } from '$lib/logger';
     import { getStatusText, Status, type GameDetail } from '$lib/model/model.d';
-    import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
+    import { calculateTimeDifference, HttpStatus, sleep, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
@@ -15,6 +15,16 @@
     import { invalidateAll } from '$app/navigation';
     import type { PageData } from './$types';
     
+    const roundStatusWaiting = 'Waiting';
+    const roundStatusStart = 'Start';
+    const roundStatusReady = 'Ready';
+    const roundStatusPlaying = 'Playing';
+    const roundStatusDone = 'Done';
+
+    const countdownAmber = '#ffa200';
+    const countdownGreen = '#22c55e';
+    const countdownDefault = 'currentColor';
+
     const flash = getFlash(page);
 
     let { data }: { data: PageData } = $props();
@@ -24,13 +34,17 @@
     let username = $derived(data.user?.user_metadata.username);
     let isGameReady = $derived( (game.status == Status.active) );
 
+    // svelte-ignore state_referenced_locally
     let timeDifference = $state(calculateTimeDifference(game.startTime));
     let timeColor = $derived(getTimeColor(timeDifference));
 
+    let isRoundStarted = $state(false);
     let runCountdown = $state(false);
     let count = $state(3);
     let progress = $state(0);
-    let isPlayable = $state(false);
+    let countdownColor = $state(countdownAmber);
+    let roundStatus = $derived(getRoundStatus(isGameReady, isRoundStarted, countdownColor));
+    let isPlayable = $derived( roundStatus == roundStatusPlaying );
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -40,7 +54,18 @@
 
         clientMessageHandler.on(MessageType.JoinGame, (message) => {
             if (message.sender != username) {
-                invalidateAll();
+                if (isRoundStarted) {
+                    logger.debug('join message ignored during play');
+                } else {
+                    invalidateAll();
+                }
+            }
+        });
+
+        clientMessageHandler.on(MessageType.StartRound, (message) => {
+            if (!isRoundStarted) {
+                isRoundStarted = true;
+                startCountdown();
             }
         });
 
@@ -53,6 +78,24 @@
 
     function getPlayersColor(): string {
         return ( game.players < game.minPlayers) ? 'text-red-500' : '';
+    }
+
+    function getRoundStatus(isGameReady: boolean, isRoundStarted: boolean, countdownColor: string) : string {
+        let roundStatus = roundStatusWaiting;
+        if (isGameReady) {
+            if (countdownColor == countdownAmber) {
+                if (isRoundStarted) {
+                    roundStatus = roundStatusReady;
+                } else {
+                    roundStatus = roundStatusStart;
+                }
+            } else if (countdownColor == countdownGreen) {
+                roundStatus = roundStatusPlaying;
+            } else {
+                roundStatus = roundStatusDone;
+            }
+        }
+        return roundStatus;
     }
 
     async function refreshGameStatus() {
@@ -83,7 +126,7 @@
         count = 3;
         progress = 0;
         
-        const countdownInterval = setInterval(() => {
+        const countdownInterval = setInterval(async () => {
             progress += 1/30;
             
             if (progress >= 1) {
@@ -94,17 +137,29 @@
             if (count === 0) {
                 clearInterval(countdownInterval);
                 runCountdown = false;
+                if (countdownColor == countdownAmber) {
+                    countdownColor = countdownGreen;
+                    count = -1;
+                    await sleep(1000);
+                    startCountdown();
+                } else {
+                    countdownColor = countdownDefault;
+                }
             }
         }, 33.33); // ~30fps
     }
 
     function handleStartClick() {
         if (isGameReady) {
-            startCountdown();
+            if (isRoundStarted) {
+                logger.debug('Round already started');
+            } else {
+                clientMessageHandler.sendStartRound(game.gameId, username, game.currentRound);
+            }
         }
     }
 
-    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
         const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
         return {
             x: centerX + (radius * Math.cos(angleInRadians)),
@@ -112,7 +167,7 @@
         };
     }
 
-    function describeArc(x, y, radius, startAngle, endAngle) {
+    function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
         const start = polarToCartesian(x, y, radius, endAngle);
         const end = polarToCartesian(x, y, radius, startAngle);
         const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
@@ -122,18 +177,8 @@
         ].join(" ");
     }
 
-    function handleCountdownComplete() {
-        isPlayable = true;
-    }
-
-    $effect(() => {
-        // $: if (count === 0) handleCountdownComplete();
-        if (count === 0) {
-            handleCountdownComplete();
-        }
-    });
-
     function play(weapon: string) {
+        
         logger.debug('played ', weapon);
     }
 </script>
@@ -187,41 +232,50 @@
         </table>
 
         <br/>
-        <Button id="roundStart" disabled={ !isGameReady } class="w-full" onclick={handleStartClick}>
+        <Button id="roundStart" disabled={ !isGameReady || isRoundStarted } class="w-full" onclick={handleStartClick}>
             <div class="flex items-center gap-2">
                 <Icon
                     icon="charm:circle-tick"
                     class="h-5 w-5 text-green-500"
                 />
-                <span>{isGameReady ? 'Ready' : 'Waiting' }</span>
+                <span>{roundStatus}</span>
             </div>
         </Button>
 
         <div class="flex justify-center mt-4">
             <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
                 <!-- Outer ring segments -->
+                <!-- svelte-ignore event_directive_deprecated -->
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <path d={describeArc(100, 100, 80, 300, 60)}
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="red"
                       stroke-width="40"
-                      on:click={() => isPlayable && play('rock')}>
+                      on:click={() => play('rock')}>
                       <title>Rock</title>
                 </path>
+                <!-- svelte-ignore event_directive_deprecated -->
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <path d={describeArc(100, 100, 80, 60, 180)}
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="yellow"
                       stroke-width="40"
-                      on:click={() => isPlayable && play('paper')}>
+                      on:click={() => play('paper')}>
                       <title>Paper</title>
                 </path>
+                <!-- svelte-ignore event_directive_deprecated -->
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <path d={describeArc(100, 100, 80, 180, 300)}
                       class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                       fill="none"
                       stroke="blue"
                       stroke-width="40"
-                      on:click={() => isPlayable && play('scissors')}>
+                      on:click={() => play('scissors')}>
                       <title>Scissors</title>
                 </path>
                 
@@ -239,7 +293,7 @@
                     cy="100"
                     r="45"
                     fill="none"
-                    stroke="#22c55e"
+                    stroke="{countdownColor}"
                     stroke-width="8"
                     stroke-linecap="round"
                     transform="rotate(-90 100 100)"
@@ -251,9 +305,9 @@
                     text-anchor="middle"
                     dy="7"
                     font-size="30"
-                    fill="currentColor"
+                    fill="{countdownColor}"
                 >
-                    {count}
+                    {count == -1 ? 'Go!' : count }
                 </text>
             </svg>
         </div>
