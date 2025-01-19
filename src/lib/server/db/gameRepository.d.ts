@@ -3,7 +3,7 @@ import { sql, Transaction } from 'kysely';
 import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
 import { type DB } from './sniperok-schema.d';
-import { type GameDetail, Status, getStatus } from '$lib/model/model.d';
+import { type GameDetail, Status } from '$lib/model/model.d';
 import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
 
 /**
@@ -16,7 +16,7 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
     await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
         const game = await trx.insertInto('game')
             .values({
-                status_id: Status.pending.valueOf(),
+                status_id: Status.PENDING.valueOf(),
                 is_public: isPublic,
                 min_players: minPlayers,
                 start_time: startTime
@@ -30,7 +30,7 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
         .values({
             game_id: gameId,
             round_seq: 1,
-            status_id: Status.pending
+            status_id: Status.PENDING.valueOf()
         })
         .executeTakeFirst();
 
@@ -38,7 +38,7 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
         .values({
             game_id: gameId,
             player_uuid: userId,
-            status_id: Status.activeCurator.valueOf()
+            status_id: Status.ACTIVE_CURATOR.valueOf()
         })
         .executeTakeFirst();
 
@@ -77,17 +77,16 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
                     'g.start_time'
                 ])
                 .where('g.id', '=', gameId)
-                .where('gp.status_id', '=', Status.activeCurator)
+                .where('gp.status_id', '=', Status.ACTIVE_CURATOR.valueOf())
         )
         .with('current_round', (eb) =>
             eb
                 .selectFrom('current_game as cg')
-                .leftJoin('game_round as gr', 'gr.game_id', 'cg.id')
-                .select(({ fn, val, ref }) => [
-                    ref('gr.game_id'),
-                    fn.coalesce(fn.max('gr.round_seq'), val<number>(1)).as('currrent_round_seq')
-                ])
-                .groupBy(['gr.game_id'])
+                .innerJoin('game_round as gr', 'gr.game_id', 'cg.id')
+                .innerJoin('status as s', 's.id', 'gr.status_id')
+                .select(['gr.game_id', 'gr.round_seq as current_round_seq', 's.code as current_round_status'])
+                .groupBy(['gr.game_id', 'gr.round_seq', 's.code'])
+                .having(({eb, fn}) => eb('gr.round_seq', '=', fn.max('gr.round_seq')))
         )
         .selectFrom('current_game as cg')
         .innerJoin('current_round as cr', 'cr.game_id', 'cr.game_id')
@@ -100,13 +99,14 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
             'cg.min_players',
             'cg.player_count',
             'cg.rounds',
-            'cr.currrent_round_seq'
+            'cr.current_round_seq',
+            'cr.current_round_status'
         ])
         .executeTakeFirst();
 
     const gameDetail: GameDetail = {
         gameId: gameRecord.id,
-        status: getStatus(gameRecord?.status_id),
+        status: Status.statusForValue(gameRecord?.status_id ?? 0).toString(),
         curator: gameRecord?.curator,
         isPublic: gameRecord?.is_public,
         startTime: gameRecord?.start_time,
@@ -114,8 +114,9 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
         minPlayers: gameRecord?.min_players,
         players: gameRecord?.player_count,
 
-        rounds: gameRecord?.rounds,
-        currentRound: gameRecord?.currrent_round_seq
+        rounds: gameRecord.rounds,
+        currentRound: gameRecord.current_round_seq,
+        currentRoundStatus: gameRecord.current_round_status
     };
 
     return gameDetail;
@@ -123,7 +124,7 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
 
 export async function getPlayerSequence(gameId: string, userId: string) {
     /*
-        select gp.*, coalesce(u.username, 'guest') as username, row_number() over(order by u.created_at) as player_seq
+        select gp.*, coalesce(u.username, 'Guest') as username, row_number() over(order by u.created_at) as player_seq
         from sniperok.game_player gp
         join sniperok.user u
             on u.id = gp.player_uuid
@@ -139,7 +140,7 @@ export async function getPlayerSequence(gameId: string, userId: string) {
                 .where('gp.game_id', '=', gameId)
                 .select(({ fn, val }) => [
                     'gp.player_uuid',
-                    fn.coalesce('u.username', val<string>('guest')).as('username'),
+                    fn.coalesce('u.username', val<string>('Guest')).as('username'),
                     sql<number>`row_number() over(order by u.created_at)`.as('player_seq')
                 ])
         )
@@ -147,6 +148,12 @@ export async function getPlayerSequence(gameId: string, userId: string) {
         .where('p.player_uuid', '=', userId)
         .select(['p.username', 'p.player_seq'])
         .executeTakeFirst();
+    
+    if (playerSeq) {
+        logger.debug('getPlayerSequence:', playerSeq);
+    } else {
+        logger.error('getPlayerSequence: playerSeq is undefined for gameId:', gameId, 'userId:', userId);
+    }
 
     return playerSeq
         ? { username: playerSeq.username, playerSeq: playerSeq.player_seq }
@@ -176,6 +183,7 @@ export async function deleteGame(gameId: string): boolean {
 }
 
 export async function joinGame(gameId: string, userId: string): boolean {
+    logger.debug(`joinGame() gameId: ${gameId} userId: ${userId}`);
     await db
         .withSchema('sniperok')
         .transaction()
@@ -188,32 +196,32 @@ export async function joinGame(gameId: string, userId: string): boolean {
                     fn.countAll<number>().as('tally')
                 ])
                 .where('gp.game_id', '=', gameId)
-                .where('c.status_id', '=', Status.activeCurator)
+                .where('c.status_id', '=', Status.ACTIVE_CURATOR.valueOf())
                 .groupBy('c.player_uuid')
                 .executeTakeFirstOrThrow();
 
-            logger.debug('playerCount:', playerCount);
+            logger.debug('joinGame() playerCount:', playerCount);
 
             const activeStatus: Status =
                 playerCount.tally == 0
-                    ? Status.activeCurator
+                    ? Status.ACTIVE_CURATOR
                     : playerCount.curator_uuid == userId
-                      ? Status.activeCurator
-                      : Status.active;
-            logger.debug('activeStatus:', activeStatus);
+                      ? Status.ACTIVE_CURATOR
+                      : Status.ACTIVE;
+            logger.debug('joinGame() activeStatus:', activeStatus);
 
             await trx
                 .insertInto('game_player')
                 .values({
                     game_id: gameId,
                     player_uuid: userId,
-                    status_id: activeStatus
+                    status_id: activeStatus.valueOf()
                 })
                 .onConflict((oc) =>
                     oc
                         .column('game_id')
                         .column('player_uuid')
-                        .doUpdateSet({ status_id: activeStatus })
+                        .doUpdateSet({ status_id: activeStatus.valueOf() })
                 )
                 .executeTakeFirst();            
         })
@@ -222,37 +230,142 @@ export async function joinGame(gameId: string, userId: string): boolean {
             return false;
         });
 
+    logger.debug('joinGame() ok', gameId, userId);
+
     return true;
 }
 
 export async function refreshGameStatus(gameDetail: GameDetail): Status {
-    const oldStatus : Status = gameDetail.status;
+    const oldStatus : Status = Status.statusForDescription(gameDetail.status);
 
-    if (gameDetail.status == Status.pending) {
+    if (Status.PENDING.equals(gameDetail.status)) {
         if (gameDetail.players >= gameDetail.minPlayers) {
             const timeDiff: TimeDiff = calculateTimeDifference(gameDetail.startTime);
             if (timeDiff.diff <= 0) {
-                gameDetail.status = Status.active;
+                gameDetail.status = Status.ACTIVE.toString();
             }
         }
     }
 
-    if (gameDetail.status != oldStatus) {
+    if ( !oldStatus.equals(gameDetail.status)) {
         await db
             .withSchema('sniperok')
             .transaction()
             .execute(async (trx: Transaction<DB>) => {
                 await trx.updateTable('game as g')
-                            .set({ status_id: gameDetail.status })
+                            .set({ status_id: Status.statusForDescription(gameDetail.status).valueOf() })
                             .where('g.id', '=', gameDetail.gameId)
-                            .where('g.status_id', '=', oldStatus)
+                            .where('g.status_id', '=', oldStatus.valueOf())
                             .executeTakeFirst();
             })
             .catch(function (err) {
                 logger.error(`Error refreshing game status : ${gameDetail.gameId} - `, err);
-                return Status.unknown;
+                return Status.UNKNOWN;
             });
     }
 
     return gameDetail.status;
+}
+
+/**
+ * Confirm player has joined game, then insert player_turn.
+ * On conflict ignore, cannot change weapon once it has been played.
+ * @param gameId 
+ * @param userId 
+ * @param roundSeq 
+ * @param weaponPlayed 
+ * @param responseTimeMIllis 
+ * @returns booean : true if successful
+ */
+export async function playTurn(gameId: string, userId: string, roundSeq: number, weaponPlayed: string, responseTimeMIllis: number): boolean {
+
+    // This confirms that the game_player exists
+    const playerSeq = await getPlayerSequence(gameId, userId);
+
+    if (!playerSeq) {
+        logger.warn(`Cannot find game(${gameid}) or player(${userId})`);
+        return false;
+    }
+
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            const weapon = await trx
+                .selectFrom('weapon as w')
+                .selectAll()
+                .where('w.code', '=', weaponPlayed)
+                .executeTakeFirstOrThrow()
+                .catch(function (err) {
+                    logger.warn(`weapon(${weaponPlayed}) not found : `, err);
+                    return false;
+                });
+
+            logger.debug('weaponPlayed:', weapon);
+
+            await trx
+                .insertInto('player_turn')
+                .values({
+                    game_id: gameId,
+                    player_uuid: userId,
+                    round_seq: roundSeq,
+                    weapon_code: weapon.code,
+                    response_time: responseTimeMIllis
+                })
+                .onConflict((oc) =>
+                    oc
+                        .column('game_id')
+                        .column('player_uuid')
+                        .column('round_seq')
+                        .doNothing()
+                )
+                .executeTakeFirst();            
+        })
+        .catch(function (err) {
+            logger.error(`Error playing turn : game(${gameId}) user(${userId}) roundSeq(${roundSeq}) - `, err);
+            return false;
+        });
+
+    return true;
+}
+
+export async function getCurrentRound(gameId: string) : number {
+    const currentRound = await db
+        .withSchema('sniperok')
+        .selectFrom('game_round as gr')
+        .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
+        .where('gr.game_id', '=', gameId)
+        .executeTakeFirstOrThrow();
+
+    return currentRound.current_round;
+}
+
+export async function updateCurrentRoundStatus(gameId: string, status: string): boolean {
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            const currentRound = await trx.selectFrom('game_round as gr')
+                                    .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
+                                    .where('gr.game_id', '=', gameId)
+                                    .executeTakeFirstOrThrow();
+
+            const statusRow = await trx.selectFrom('status as s')
+                                .selectAll()
+                                .where('s.code', '=', status)
+                                .executeTakeFirstOrThrow();
+            
+            await trx
+                .updateTable('game_round as gr')
+                .set({ status_id: statusRow.id })
+                .where('gr.game_id', '=', gameId)
+                .where('gr.round_seq', '=', currentRound.current_round)
+                .executeTakeFirst();
+        })
+        .catch(function (err) {
+            logger.error(`Error updating current round status : game(${gameId}) status(${status}) - `, err);
+            return false;
+        });
+
+    return true;
 }

@@ -9,6 +9,7 @@ import type { User } from '@supabase/supabase-js';
 export enum MessageType {
     GameChat = 'gameChat',
     JoinGame = 'joinGame',
+    RoundPlayed = 'roundPlayed',
     StartRound = 'startRound',
     UserChat = 'userChat',
     Welcome = 'welcome',
@@ -286,6 +287,27 @@ export class ClientMessageHandler {
         logger.debug('sent startRound @', messageSender, ' : ', msg.text);
     }
 
+    public sendRoundPlayed(gameId: string, roundSeq: number) {
+        const currentPage = get(page);
+        const user : User = currentPage.data?.user;
+        if (!user) {
+            logger.warn('You must be logged in to send startRound');
+            return;
+        }
+
+        const msg = {} as Message;
+        msg.type = MessageType.StartRound;
+        msg.sender = user.user_metadata.username ?? 'Guest';
+        msg.gameId = gameId;
+        msg.text = roundSeq.toString();
+
+        if (!this.socket || this.socket.disconnected) {
+            this.socket = this.connect();
+        }
+        this.socket.emit(msg.type, msg);
+        logger.debug('sent roundPlayed @', msg.sender, ' : ', msg.text);
+    }
+
     public logout() {
         userMessages.length = 0;
         gameMessages.length = 0;
@@ -321,9 +343,11 @@ export class ClientMessageHandler {
                 return MessageType.GameChat
             case MessageType.JoinGame:
                 return MessageType.JoinGame;
+            case MessageType.RoundPlayed:
+                return MessageType.RoundPlayed;
             case MessageType.StartRound:
                 return MessageType.StartRound;
-            case MessageType.UserChat:
+                case MessageType.UserChat:
                 return MessageType.UserChat;
             case MessageType.Welcome:
                 return MessageType.Welcome;

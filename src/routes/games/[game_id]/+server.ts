@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 
-import { deleteGame, getGameDetail, getPlayerSequence, joinGame } from '$lib/server/db/gameRepository.d';
+import { deleteGame, getGameDetail, playTurn } from '$lib/server/db/gameRepository.d';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
@@ -31,12 +31,11 @@ export const DELETE: RequestHandler = async (requestEvent) => {
 };
 
 /**
- * PATCH : this method is being used to join the current user to the game,
- * it adds a game_player if necessary, or updates the status
+ * PUT : this method is being used for players to play their turn.
  * @param requestEvent
- * @returns
+ * @returns { success: true }
  */
-export const PATCH: RequestHandler = async (requestEvent) => {
+export const PUT: RequestHandler = async (requestEvent) => {
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : null;
@@ -48,23 +47,14 @@ export const PATCH: RequestHandler = async (requestEvent) => {
     }
 
     const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
-    const gameDetail = await getGameDetail(gameId);
 
-    if (gameDetail == undefined) {
-        error(HttpStatus.NOT_FOUND, 'Game not found');
-    }
+    const json = await requestEvent.request.json();
 
-    const joinResult: boolean = joinGame(gameId, userId);
+    const roundSeq : number = json.roundSeq;
+    const weaponPlayed : string = json.weaponPlayed;
+    const responseTimeMillis : number = json.responseTimeMillis;
 
-    if (!joinResult) {
-        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-    }
+    const result = playTurn(gameId, userId, roundSeq, weaponPlayed, responseTimeMillis);
 
-    const playerSeq = await getPlayerSequence(gameId, userId);
-
-    if (!playerSeq) {
-        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred, after joining');
-    }
-
-    return json(playerSeq);
+    return json({ success: result });
 };

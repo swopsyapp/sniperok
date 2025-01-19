@@ -144,14 +144,14 @@
                             <Table.Cell class="font-medium">
                                 {buddyRecord.counterparty}
                                 <!-- If record is pending and invitor is viewing the list -->
-                                {#if buddyRecord.status == Status.pending && buddyRecord.buddy == buddyRecord.counterparty}
+                                {#if Status.PENDING.equals(buddyRecord.status) && buddyRecord.buddy == buddyRecord.counterparty}
                                     &nbsp;...&nbsp;{hourglassNotDone}
                                 {/if}
                             </Table.Cell>
                             <Table.Cell class="font-medium">
                                 <span class="flex">
                                     <!-- If record is pending and invitee is viewing the list -->
-                                    {#if buddyRecord.status == Status.pending && buddyRecord.player == buddyRecord.counterparty}
+                                    {#if Status.PENDING.equals(buddyRecord.status) && buddyRecord.player == buddyRecord.counterparty}
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger

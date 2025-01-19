@@ -36,7 +36,7 @@
 
     onDestroy(() => {
         if (timer) {
-        clearInterval(timer);
+            clearInterval(timer);
         }
     });
 
@@ -53,14 +53,10 @@
             $flash = { type: 'error', message: 'User not logged in' };
             return;
         }
-        const gameUrl = $page.url.href.concat(`/[${gameId}]`);
-        const response = await fetch(gameUrl, {
-            method: 'PATCH',
+        const joinGameUrl = $page.url.href.concat(`/[${gameId}]/join`);
+        const response = await fetch(joinGameUrl, {
+            method: 'POST',
         });
-
-        const json = await response.json();
-        logger.debug('joinGame response.json : ', json);
-        const playerSeq = json.playerSeq;
 
         if (response.status == HttpStatus.SEE_OTHER) {
             const redirectLocation = response.headers.get('location') ?? '/#';
@@ -83,11 +79,15 @@
             return;
         }
 
-        if (response.status != HttpStatus.OK) {
-            logger.error('error status : ', response.status);
+        if (response.status != HttpStatus.OK || response.url != joinGameUrl) {
+            logger.error('error status : ', response.status, response.url);
             $flash = { type: 'error', message: 'An error occurred' };
             return;
         }
+
+        const json = await response.json();
+        logger.debug('joinGame response.json : ', json);
+        const playerSeq = json.playerSeq;
 
         clientMessageHandler.joinGameChannel(gameId, playerSeq);
 

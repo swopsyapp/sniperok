@@ -55,7 +55,9 @@ create table sniperok.game_round (
     CONSTRAINT game_round_pk
         PRIMARY KEY (game_id, round_seq),
     CONSTRAINT game_round_game_fk
-        FOREIGN key (game_id) REFERENCES sniperok.game(id)
+        FOREIGN key (game_id) REFERENCES sniperok.game(id),
+    CONSTRAINT game_round_status_fk
+        FOREIGN KEY (status_id) REFERENCES sniperok.status(id)
 );
 
 -- ----------------------------------------------------------------------------
@@ -91,10 +93,12 @@ create table sniperok.player_turn (
     game_id bigint not null,
     player_uuid text not null,
     round_seq smallint not null,
-    weapon_code text null,
-    response_time_millis smallint null,
+    weapon_code text not null,
+    response_time_millis smallint not null,
     CONSTRAINT player_turn_pk
         PRIMARY KEY (game_id, round_seq, player_uuid),
     CONSTRAINT player_turn_game_fk
-        FOREIGN key (game_id) REFERENCES sniperok.game(id)
+        FOREIGN key (game_id) REFERENCES sniperok.game(id),
+    CONSTRAINT player_turn_weapon_fk
+        FOREIGN KEY (weapon_code) REFERENCES sniperok.weapon(code)
 );

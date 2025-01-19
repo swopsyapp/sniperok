@@ -90,7 +90,7 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 
     await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
         await trx.updateTable('buddy as b')
-                .set({ status_id: Status.active })
+                .set({ status_id: Status.ACTIVE.valueOf() })
                 .where('b.player_uuid', '=', buddyRecord.player_uuid)
                 .where('b.buddy_uuid', '=', buddyRecord.buddy_uuid)
                 .execute();

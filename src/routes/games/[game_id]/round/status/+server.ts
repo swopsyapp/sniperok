@@ -1,20 +1,20 @@
 import { error, json } from '@sveltejs/kit';
 
-import { getGameDetail, refreshGameStatus } from '$lib/server/db/gameRepository.d';
+import { getGameDetail, updateCurrentRoundStatus } from '$lib/server/db/gameRepository.d';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { StringUtils } from '$lib/StringUtils';
-import { Status } from '$lib/model/model.d';
+// import { getStatus, Status } from '$lib/model/model.d';
 
 import type { RequestHandler } from './$types';
 
 /**
- * PATCH : this method is being used to refresh the game status.
+ * PUT : this method is being used to update the status of the current round.
  * @param requestEvent
  * @returns
  */
-export const PATCH: RequestHandler = async (requestEvent) => {
+export const PUT: RequestHandler = async (requestEvent) => {
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : null;
@@ -32,11 +32,17 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const newStatus: Status = refreshGameStatus(gameDetail);
+    const jsonBody = await requestEvent.request.json();
 
-    if (Status.UNKNOWN.equals(newStatus)) {
-        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+    const status = jsonBody.status;
+    const success: boolean = updateCurrentRoundStatus(gameId, status);
+
+    if (success) {
+        logger.debug(`Updated current round status to ${status} for game ${gameId}`);
+    } else {
+        logger.error(`Failed to update current round status to ${status} for game ${gameId}`);
+        return json( { success: false } );
     }
 
-    return json({ newStatus: gameDetail.status.toString() });
+    return json( { success: true } );
 };

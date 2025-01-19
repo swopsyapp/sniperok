@@ -93,12 +93,15 @@ const authGuard: Handle = async ({ event, resolve }) => {
             event.route.id == '/' ||
             event.route.id == '/auth/logout' ||
             event.route.id == '/games' ||
-            event.route.id == '/games/[game_id]'
+            event.route.id == '/games/[game_id]' ||
+            event.route.id == '/games/[game_id]/join' ||
+            event.route.id == '/games/[game_id]/status' ||
+            event.route.id == '/games/[game_id]/round/status'
+
         )
     ) {
         logger.error(`User not registered, route=${event.route.id}`);
-        redirect('/', { type: 'error', message: 'You are not a registered user' }, event);
-
+        redirect('/', { type: 'error', message: 'Not allowed for guest users' }, event);
     }
 
     return resolve(event);

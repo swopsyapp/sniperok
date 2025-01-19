@@ -1,20 +1,20 @@
 import { error, json } from '@sveltejs/kit';
 
-import { getGameDetail, refreshGameStatus } from '$lib/server/db/gameRepository.d';
+import { getGameDetail, getPlayerSequence, joinGame } from '$lib/server/db/gameRepository.d';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { StringUtils } from '$lib/StringUtils';
-import { Status } from '$lib/model/model.d';
 
 import type { RequestHandler } from './$types';
 
 /**
- * PATCH : this method is being used to refresh the game status.
+ * POST : this method is being used to join the current user to the game,
+ * it adds a game_player if necessary, or updates the status
  * @param requestEvent
- * @returns
+ * @returns {username: string, playerSeq: number}
  */
-export const PATCH: RequestHandler = async (requestEvent) => {
+export const POST: RequestHandler = async (requestEvent) => {
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await requestEvent.locals.safeGetSession();
     const userId = user ? user.id : null;
@@ -32,11 +32,17 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const newStatus: Status = refreshGameStatus(gameDetail);
+    const joinResult: boolean = await joinGame(gameId, userId);
 
-    if (Status.UNKNOWN.equals(newStatus)) {
+    if (!joinResult) {
         error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
     }
 
-    return json({ newStatus: gameDetail.status.toString() });
+    const playerSeq = await getPlayerSequence(gameId, userId);
+
+    if (!playerSeq) {
+        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred, after joining');
+    }
+
+    return json(playerSeq);
 };

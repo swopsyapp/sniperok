@@ -5,7 +5,7 @@ import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { db } from '$lib/server/db/db.d'
 import { type DB } from '$lib/server/db/sniperok-schema.d';
-import { Status, getStatus } from '$lib/model/model.d';
+import { Status } from '$lib/model/model.d';
 
 import type { PageServerLoad } from './$types';
 
@@ -45,7 +45,7 @@ async function addBuddy(userId : string, buddyName : string) {
             .values({
                 player_uuid: buddyRecord.player_uuid,
                 buddy_uuid: buddyRecord.buddy_uuid,
-                status_id: Status.pending.valueOf()
+                status_id: Status.PENDING.valueOf()
             })
             .execute()
     }).catch(function(err){
@@ -94,7 +94,7 @@ export const load = (async (requestEvent) => {
             player: buddyRecord.player,
             buddy: buddyRecord.buddy,
             counterparty: buddyRecord.counterparty,
-            status: getStatus(buddyRecord.status_id ?? Status.pending)
+            status: Status.statusForValue(buddyRecord?.status_id ?? 0).toString()
         }
     })
 

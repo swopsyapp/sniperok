@@ -38,7 +38,15 @@ function webSocket(server, welcomeMessage) {
                 io.to(gameRoom).emit('gameChat', startRoundMsg);
             });
 
-            io.to(gameRoom).emit('startRound', joinGameMsg);
+            socket.on('roundPlayed', (roundPlayedMsg) => {
+                if (roundPlayedMsg.sender == 'Guest') {
+                    roundPlayedMsg.sender = username;
+                }
+                console.log('Received: ', roundPlayedMsg);
+                io.to(gameRoom).emit('gameChat', roundPlayedMsg);
+            });
+
+            io.to(gameRoom).emit('gameChat', joinGameMsg);
         });
         
         const username = socket.handshake.query?.username;

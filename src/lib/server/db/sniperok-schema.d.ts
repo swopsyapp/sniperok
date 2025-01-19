@@ -50,9 +50,9 @@ export interface GameRound {
 export interface PlayerTurn {
   game_id: Int8;
   player_uuid: string;
-  response_time_millis: number | null;
+  response_time_millis: number;
   round_seq: number;
-  weapon_code: string | null;
+  weapon_code: string;
 }
 
 export interface Status {
