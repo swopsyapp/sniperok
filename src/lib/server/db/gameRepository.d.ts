@@ -277,7 +277,7 @@ export async function refreshGameStatus(gameDetail: GameDetail): Status {
  * @param responseTimeMIllis 
  * @returns booean : true if successful
  */
-export async function playTurn(gameId: string, userId: string, roundSeq: number, weaponPlayed: string, responseTimeMIllis: number): boolean {
+export async function playTurn(gameId: string, userId: string, roundSeq: number, weaponPlayed: string, responseTimeMillis: number): boolean {
 
     // This confirms that the game_player exists
     const playerSeq = await getPlayerSequence(gameId, userId);
@@ -310,7 +310,7 @@ export async function playTurn(gameId: string, userId: string, roundSeq: number,
                     player_uuid: userId,
                     round_seq: roundSeq,
                     weapon_code: weapon.code,
-                    response_time: responseTimeMIllis
+                    response_time_millis: responseTimeMillis
                 })
                 .onConflict((oc) =>
                     oc

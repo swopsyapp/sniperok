@@ -48,13 +48,13 @@ export const PUT: RequestHandler = async (requestEvent) => {
 
     const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
 
-    const json = await requestEvent.request.json();
+    const jsonBody = await requestEvent.request.json();
 
-    const roundSeq : number = json.roundSeq;
-    const weaponPlayed : string = json.weaponPlayed;
-    const responseTimeMillis : number = json.responseTimeMillis;
+    const roundSeq : number = jsonBody.roundSeq;
+    const weaponPlayed : string = jsonBody.weaponPlayed;
+    const responseTimeMillis : number = jsonBody.responseTimeMillis;
 
-    const result = playTurn(gameId, userId, roundSeq, weaponPlayed, responseTimeMillis);
+    const result = await playTurn(gameId, userId, roundSeq, weaponPlayed, responseTimeMillis);
 
     return json({ success: result });
 };
