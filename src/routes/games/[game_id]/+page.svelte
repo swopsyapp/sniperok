@@ -27,6 +27,7 @@
     let game: GameDetail = $derived(data.gameDetail);
     let username = $derived(data.user?.user_metadata.username ?? 'Guest');
     let isGamePending = $derived(Status.PENDING.equals(game.status));
+    let isUserGameCurator = $derived(game.curator == username);
 
     const roundStatusWaiting = 'Waiting';
     const roundStatusReady = 'Start';
@@ -360,7 +361,7 @@
         <br />
         <Button
             id="roundStart"
-            disabled={username == 'Guest' || (roundStatus != roundStatusReady &&  roundStatus != roundStatusDone)}
+            disabled={ !isUserGameCurator || (roundStatus != roundStatusReady &&  roundStatus != roundStatusDone)}
             class="w-full"
             onclick={handleStartClick}
         >
