@@ -155,6 +155,9 @@
     }
 
     async function updateRoundStatus(status: string) : Promise<boolean> {
+        if (!isUserGameCurator) {
+            return false;
+        }
         // PUT Update round.status
         const updateRoundStatusUrl = $page.url.href.concat('/round/status');
         const response = await fetch(updateRoundStatusUrl, {
@@ -372,72 +375,76 @@
         </Button>
 
         <div class="mt-4 flex justify-center">
-            <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
-                <!-- Outer ring segments -->
-                <!-- svelte-ignore event_directive_deprecated -->
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <path
-                    d={describeArc(100, 100, 80, 300, 60)}
-                    class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
-                    fill="none"
-                    stroke="red"
-                    stroke-width="40"
-                    on:click={() => play('rock')}
-                >
-                    <title>Rock</title>
-                </path>
-                <!-- svelte-ignore event_directive_deprecated -->
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <path
-                    d={describeArc(100, 100, 80, 60, 180)}
-                    class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
-                    fill="none"
-                    stroke="yellow"
-                    stroke-width="40"
-                    on:click={() => play('paper')}
-                >
-                    <title>Paper</title>
-                </path>
-                <!-- svelte-ignore event_directive_deprecated -->
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <path
-                    d={describeArc(100, 100, 80, 180, 300)}
-                    class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="40"
-                    on:click={() => play('scissors')}
-                >
-                    <title>Scissors</title>
-                </path>
+            {#if roundStatus == roundStatusDone}
+                <p>show scores</p>
+            {:else}
+                <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
+                    <!-- Outer ring segments -->
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <path
+                        d={describeArc(100, 100, 80, 300, 60)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none"
+                        stroke="red"
+                        stroke-width="40"
+                        on:click={() => play('rock')}
+                    >
+                        <title>Rock</title>
+                    </path>
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <path
+                        d={describeArc(100, 100, 80, 60, 180)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none"
+                        stroke="yellow"
+                        stroke-width="40"
+                        on:click={() => play('paper')}
+                    >
+                        <title>Paper</title>
+                    </path>
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <path
+                        d={describeArc(100, 100, 80, 180, 300)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none"
+                        stroke="blue"
+                        stroke-width="40"
+                        on:click={() => play('scissors')}
+                    >
+                        <title>Scissors</title>
+                    </path>
 
-                <!-- Inner countdown circle (existing code) -->
-                <circle cx="100" cy="100" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
-                <circle
-                    cx="100"
-                    cy="100"
-                    r="45"
-                    fill="none"
-                    stroke={countdownColor}
-                    stroke-width="8"
-                    stroke-linecap="round"
-                    transform="rotate(-90 100 100)"
-                    style="stroke-dasharray: 283; stroke-dashoffset: {283 - 283 * progress}"
-                />
-                <text
-                    x="100"
-                    y="100"
-                    text-anchor="middle"
-                    dy="7"
-                    font-size="30"
-                    fill={countdownColor}
-                >
-                    {count == -1 ? 'Go!' : count}
-                </text>
-            </svg>
+                    <!-- Inner countdown circle (existing code) -->
+                    <circle cx="100" cy="100" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                    <circle
+                        cx="100"
+                        cy="100"
+                        r="45"
+                        fill="none"
+                        stroke={countdownColor}
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        transform="rotate(-90 100 100)"
+                        style="stroke-dasharray: 283; stroke-dashoffset: {283 - 283 * progress}"
+                    />
+                    <text
+                        x="100"
+                        y="100"
+                        text-anchor="middle"
+                        dy="7"
+                        font-size="30"
+                        fill={countdownColor}
+                    >
+                        {count == -1 ? 'Go!' : count}
+                    </text>
+                </svg>    
+            {/if}
         </div>
     </Card.Content>
 </Card.Root>
