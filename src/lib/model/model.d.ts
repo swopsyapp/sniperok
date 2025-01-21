@@ -3,7 +3,6 @@ export class Status {
     public static readonly PENDING = new Status(1, 'pending');
     public static readonly ACTIVE = new Status(2, 'active');
     public static readonly INACTIVE = new Status(3, 'inactive');
-    public static readonly ACTIVE_CURATOR = new Status(4, 'activeCurator');
 
     private value: number;
     private description: string;
@@ -39,7 +38,6 @@ export class Status {
             case 1: return Status.PENDING;
             case 2: return Status.ACTIVE;
             case 3: return Status.INACTIVE;
-            case 4: return Status.ACTIVE_CURATOR;
             default: return Status.UNKNOWN;
         }
     }
@@ -50,7 +48,6 @@ export class Status {
             case 'pending': return Status.PENDING;
             case 'active': return Status.ACTIVE;
             case 'inactive': return Status.INACTIVE;
-            case 'activeCurator': return Status.ACTIVE_CURATOR;
             default: return Status.UNKNOWN;
         }
     }

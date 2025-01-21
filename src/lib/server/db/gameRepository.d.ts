@@ -38,7 +38,8 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
         .values({
             game_id: gameId,
             player_uuid: userId,
-            status_id: Status.ACTIVE_CURATOR.valueOf()
+            player_seq: 1,
+            status_id: Status.ACTIVE.valueOf()
         })
         .executeTakeFirst();
 
@@ -77,7 +78,7 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
                     'g.start_time'
                 ])
                 .where('g.id', '=', gameId)
-                .where('gp.status_id', '=', Status.ACTIVE_CURATOR.valueOf())
+                .where('gp.player_seq', '=', 1)
         )
         .with('current_round', (eb) =>
             eb
@@ -133,20 +134,11 @@ export async function getPlayerSequence(gameId: string, userId: string) {
     */
     const playerSeq = await db
         .withSchema('sniperok')
-        .with('players', (db) =>
-            db
-                .selectFrom('game_player as gp')
-                .innerJoin('user as u', 'u.id', 'gp.player_uuid')
-                .where('gp.game_id', '=', gameId)
-                .select(({ fn, val }) => [
-                    'gp.player_uuid',
-                    fn.coalesce('u.username', val<string>('Guest')).as('username'),
-                    sql<number>`row_number() over(order by u.created_at)`.as('player_seq')
-                ])
-        )
-        .selectFrom('players as p')
-        .where('p.player_uuid', '=', userId)
-        .select(['p.username', 'p.player_seq'])
+        .selectFrom('game_player as gp')
+        .innerJoin('user as u', 'u.id', 'gp.player_uuid')
+        .select(['u.username', 'gp.player_seq'])
+        .where('gp.game_id', '=', gameId)
+        .where('gp.player_uuid', '=', userId)
         .executeTakeFirst();
     
     if (playerSeq) {
@@ -188,40 +180,34 @@ export async function joinGame(gameId: string, userId: string): boolean {
         .withSchema('sniperok')
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
-            const playerCount = await trx
-                .selectFrom('game_player as gp')
-                .leftJoin('game_player as c', 'c.game_id', 'gp.game_id')
-                .select(({ fn, ref }) => [
-                    ref('c.player_uuid').as('curator_uuid'),
-                    fn.countAll<number>().as('tally')
-                ])
-                .where('gp.game_id', '=', gameId)
-                .where('c.status_id', '=', Status.ACTIVE_CURATOR.valueOf())
-                .groupBy('c.player_uuid')
-                .executeTakeFirstOrThrow();
-
-            logger.debug('joinGame() playerCount:', playerCount);
-
-            const activeStatus: Status =
-                playerCount.tally == 0
-                    ? Status.ACTIVE_CURATOR
-                    : playerCount.curator_uuid == userId
-                      ? Status.ACTIVE_CURATOR
-                      : Status.ACTIVE;
-            logger.debug('joinGame() activeStatus:', activeStatus);
+            const playerSeq = await trx
+                                .selectFrom('game_player as tot')
+                                .leftJoin('game_player as gp', (join) => join
+                                                                        .onRef('gp.game_id', '=', 'tot.game_id')
+                                                                        .on('gp.player_uuid', '=', userId))
+                                .select(({ fn, ref }) => [
+                                    fn.coalesce(ref('gp.player_seq'), sql<number>('count(*) + 1')).as('player_seq'),
+                                    fn.countAll<number>().as('tally')
+                                ])
+                                .where('tot.game_id', '=', gameId)
+                                .groupBy('gp.player_seq')
+                                .executeTakeFirstOrThrow();
+            
+            logger.debug('joinGame() playerSeq:', playerSeq);
 
             await trx
                 .insertInto('game_player')
                 .values({
                     game_id: gameId,
                     player_uuid: userId,
-                    status_id: activeStatus.valueOf()
+                    player_seq: playerSeq.player_seq,
+                    status_id: Status.ACTIVE.valueOf()
                 })
                 .onConflict((oc) =>
                     oc
                         .column('game_id')
                         .column('player_uuid')
-                        .doUpdateSet({ status_id: activeStatus.valueOf() })
+                        .doUpdateSet({ status_id: Status.ACTIVE.valueOf() })
                 )
                 .executeTakeFirst();            
         })

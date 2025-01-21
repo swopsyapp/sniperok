@@ -26,7 +26,7 @@ export const load = (async ({locals}) => {
                             eb('g.is_public', '=', true),
                             eb('me.player_uuid', '=', userId)
                             ]))
-        .where('curator.status_id', '=', Status.ACTIVE_CURATOR.valueOf() )
+        .where('curator.player_seq', '=', 1 )
         .orderBy('g.start_time desc')
         ;
 

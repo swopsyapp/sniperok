@@ -37,6 +37,7 @@ export interface Game {
 
 export interface GamePlayer {
   game_id: Int8;
+  player_seq: Generated<number>;
   player_uuid: string;
   status_id: Generated<number>;
 }

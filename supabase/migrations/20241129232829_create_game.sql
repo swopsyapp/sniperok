@@ -34,9 +34,12 @@ create table sniperok.game (
 create table sniperok.game_player (
     game_id bigint not null,
     player_uuid uuid not null,
+    player_seq smallint not null default 1,
     status_id smallint not null default 1,
     CONSTRAINT game_player_pk
         PRIMARY KEY (game_id, player_uuid),
+    CONSTRAINT game_player_game_seq_uq
+        UNIQUE (game_id, player_seq),
     CONSTRAINT game_player_game_fk
         FOREIGN KEY (game_id) REFERENCES sniperok.game(id),
     CONSTRAINT game_player_status_fk
@@ -91,7 +94,7 @@ create table sniperok.weapon_victory (
 -- ----------------------------------------------------------------------------
 create table sniperok.player_turn (
     game_id bigint not null,
-    player_uuid text not null,
+    player_uuid uuid not null,
     round_seq smallint not null,
     weapon_code text not null,
     response_time_millis smallint not null,
