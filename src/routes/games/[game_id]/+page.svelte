@@ -33,6 +33,7 @@
     const roundStatusReady = 'Start';
     const roundStatusStarting = 'Starting ...';
     const roundStatusPlaying = 'Playing ...';
+    const roundStatusPlayed = 'Played ...';
     const roundStatusScoring = 'Scoring ...';
     // svelte-ignore state_referenced_locally
     const roundStatusDone = (game.currentRound < game.rounds ) ? 'Next' :  'Done';
@@ -271,6 +272,7 @@
 
     async function play(weapon: string) {
         if (roundStatus == roundStatusPlaying && roundStartTime) {
+            roundStatus = roundStatusPlayed;
             const now = new Date();
             roundPlayMillis = now.getTime() - roundStartTime.getTime();
             logger.debug(`Played ${weapon} in ${roundPlayMillis} millis`);
@@ -291,6 +293,7 @@
             if (response.status != HttpStatus.OK || !json.success) {
                 logger.error('error status : ', response.status);
                 $flash = { type: 'error', message: 'An error occurred' };
+                roundStatus = roundStatusPlaying;
                 return;
             } else {
                 clientMessageHandler.sendRoundPlayed(game.gameId, game.currentRound);
