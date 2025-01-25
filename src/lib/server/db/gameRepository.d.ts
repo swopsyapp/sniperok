@@ -10,8 +10,8 @@ import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
  * Creates a game, adds the first game_round and also adds the game curator as a game_player
  * @returns gameId as string or undefined
  */
-export async function createGame(isPublic: boolean, minPlayers: number, startTime: Date, userId: string): string {
-    let gameId: string | undefined;
+export async function createGame(isPublic: boolean, minPlayers: number, startTime: Date, userId: string): number {
+    let gameId: number | undefined;
 
     await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
         const game = await trx.insertInto('game')
@@ -24,7 +24,7 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
             .returning('id')
             .executeTakeFirstOrThrow();
         
-        gameId = game.id;
+        gameId = parseInt(game.id);
 
         await trx.insertInto('game_round')
         .values({

@@ -40,8 +40,8 @@
         const json = await response.json();
         logger.trace('json : ', json);
 
-        if (response.status == HttpStatus.OK) {
-            goto('/games', {
+        if (json.status == HttpStatus.SEE_OTHER) {
+            goto(json.location, {
                 replaceState: true,
                 invalidateAll: true
             } );
