@@ -74,7 +74,7 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
                     'g.is_public',
                     'pc.tally as player_count',
                     'g.min_players',
-                    'g.rounds',
+                    'g.max_rounds',
                     'g.start_time'
                 ])
                 .where('g.id', '=', gameId)
@@ -99,7 +99,7 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
             'cg.start_time',
             'cg.min_players',
             'cg.player_count',
-            'cg.rounds',
+            'cg.max_rounds',
             'cr.current_round_seq',
             'cr.current_round_status'
         ])
@@ -115,7 +115,7 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
         minPlayers: gameRecord?.min_players,
         players: gameRecord?.player_count,
 
-        rounds: gameRecord.rounds,
+        maxRounds: gameRecord.max_rounds,
         currentRound: gameRecord.current_round_seq,
         currentRoundStatus: gameRecord.current_round_status
     };
@@ -404,7 +404,7 @@ export async function nextRound(gameId: number) : GameDetail | undefined {
         return undefined;
     }
 
-    if (gameDetail.currentRound >= gameDetail.rounds) {
+    if (gameDetail.currentRound >= gameDetail.maxRounds) {
         logger.warn(`Game(${gameId}) already completed`);
         return gameDetail;
     }

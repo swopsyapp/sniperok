@@ -29,8 +29,8 @@ export interface BuddyVw {
 export interface Game {
   id: Generated<Int8>;
   is_public: Generated<boolean>;
+  max_rounds: Generated<number>;
   min_players: Generated<number>;
-  rounds: Generated<number>;
   start_time: Timestamp;
   status_id: Generated<number>;
 }

@@ -64,7 +64,7 @@ export interface GameDetail {
     players: number;
     connected: number | undefined;
 
-    rounds: number;
+    maxRounds: number;
     currentRound: number;
     currentRoundStatus: string;
 }

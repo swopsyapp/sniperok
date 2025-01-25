@@ -37,7 +37,7 @@
     const roundStatusPlayed = 'Played ...';
     const roundStatusScoring = 'Scoring ...';
     // svelte-ignore state_referenced_locally
-    const roundStatusDone = (game.currentRound < game.rounds ) ? 'Next' :  'Done';
+    const roundStatusDone = (game.currentRound < game.maxRounds ) ? 'Next' :  'Done';
 
     // svelte-ignore state_referenced_locally
     let timeDifference = $state(calculateTimeDifference(game.startTime));
@@ -383,7 +383,7 @@
                     <td>
                         <div class="text-sm text-gray-500">Round</div>
                         <div class="font-bold text-gray-600 dark:text-gray-300">
-                            {game.currentRound} of {game.rounds}
+                            {game.currentRound} of {game.maxRounds}
                         </div>
                     </td>
                 </tr>

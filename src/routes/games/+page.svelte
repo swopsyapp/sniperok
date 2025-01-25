@@ -161,7 +161,7 @@
                             <Table.Row>
                                 {@render startTime(getTimeDiff(game.startTime, countdown))}
                                 <Table.Cell class="px-1 font-medium">{game.players} / {game.minPlayers}</Table.Cell>
-                                <Table.Cell class="px-1 font-medium">{game.rounds}</Table.Cell>
+                                <Table.Cell class="px-1 font-medium">{game.maxRounds}</Table.Cell>
                                 <Table.Cell class="font-medium">
                                     <span class="flex">
                                         <Tooltip.Provider>

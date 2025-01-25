@@ -21,7 +21,7 @@ export const load = (async ({locals}) => {
         .leftJoin('game_player as me', (join) => join
                                         .onRef('me.game_id', '=', 'g.id')
                                         .on('g.is_public', '=', false) )
-        .select(['g.id', 'g.status_id', 'u.username as curator', 'g.is_public', 'pc.tally as player_count', 'g.min_players', 'g.rounds', 'g.start_time'])
+        .select(['g.id', 'g.status_id', 'u.username as curator', 'g.is_public', 'pc.tally as player_count', 'g.min_players', 'g.max_rounds', 'g.start_time'])
         .where((eb) => eb.or([
                             eb('g.is_public', '=', true),
                             eb('me.player_uuid', '=', userId)
@@ -43,7 +43,7 @@ export const load = (async ({locals}) => {
             isPublic: gameRow.is_public,
             players: gameRow.player_count,
             minPlayers: gameRow.min_players,
-            rounds: gameRow.rounds,
+            maxRounds: gameRow.max_rounds,
             startTime: gameRow.start_time
         }
     })
