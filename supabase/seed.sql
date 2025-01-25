@@ -51,5 +51,5 @@ insert into sniperok.weapon ("code", "level") values
 ('rock', 1), ('paper', 1), ('scissors', 1),
 ('bazooka', 2), ('dynamite', 2), ('shotgun', 2);
 
-insert into sniperok.weapon_victory (weapon_code, versus_code) VALUES
+insert into sniperok.weapon_victory (winner_weapon_code, loser_weapon_code) VALUES
 ('paper', 'rock'), ('scissors', 'paper'), ('rock', 'scissors');

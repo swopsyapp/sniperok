@@ -4,11 +4,12 @@
     import { getFlash } from 'sveltekit-flash-message';
 
     import { logger } from '$lib/logger';
-    import { Status, type GameDetail } from '$lib/model/model.d';
+    import { Status, type GameDetail, type RoundScore } from '$lib/model/model.d';
     import { calculateTimeDifference, HttpStatus, sleep, type TimeDiff } from '$lib/utils';
     import { clientMessageHandler, MessageType } from '$lib/components/messages.svelte';
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
+    import * as Table from '$lib/components/ui/table/index';
     import * as Tooltip from '$lib/components/ui/tooltip/index';
 
     import { page } from '$app/stores';
@@ -56,6 +57,7 @@
     let count = $state(3);
     let progress = $state(0);
     let roundPlayMillis: number | undefined = $state(undefined);
+    let roundScore : RoundScore | undefined = $state(undefined);
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -89,6 +91,10 @@
                 roundResponseCount = roundResponseCount + 1;
             }
         });
+
+        if (roundStatus == roundStatusDone) {
+            loadRoundScore();
+        }
 
         return () => clearInterval(interval);
     });
@@ -185,6 +191,24 @@
         return json.success;
     }
 
+    async function loadRoundScore() {
+        // GET round score
+        const updateRoundStatusUrl = $page.url.href.concat(`/round/[${game.currentRound}]/score`);
+        const response = await fetch(updateRoundStatusUrl, {
+            method: 'GET',
+        });
+
+        if (response.status != HttpStatus.OK || response.url != updateRoundStatusUrl) {
+            logger.error('error status : ', response.status, response.url);
+            $flash = { type: 'error', message: 'An error occurred' };
+            return false;
+        }
+
+        roundScore = await response.json();
+        logger.debug('roundScore ', roundScore);
+
+    }
+
     function startCountdown() {
         roundStartTime = new Date();
         runCountdown = true;
@@ -220,6 +244,7 @@
                         } else {
                             logger.error('Error finalising round');
                         }
+                        loadRoundScore();
                         invalidateAll();
                     }
                 }
@@ -378,8 +403,32 @@
         </Button>
 
         <div class="mt-4 flex justify-center">
-            {#if roundStatus == roundStatusDone}
-                <p>show scores</p>
+            {#if roundStatus == roundStatusDone && roundScore}
+                <Table.Root class="w-full">
+                    <Table.Header>
+                        <Table.Row>
+                            <Table.Head class="px-1">Player</Table.Head>
+                            <Table.Head class="px-1">Weapon</Table.Head>
+                            <Table.Head class="px-1">Wins</Table.Head>
+                            <Table.Head class="px-1">Losses</Table.Head>
+                            <Table.Head class="px-1">Ties</Table.Head>
+                            <Table.Head class="px-1">score</Table.Head>
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                        {#each roundScore.scores as playerScore}
+                        <Table.Row>
+                            <Table.Cell class="px-1 font-medium">{playerScore.username}</Table.Cell>
+                            <Table.Cell class="px-1 font-medium">{playerScore.weapon}</Table.Cell>
+                            <Table.Cell class="px-1 font-medium">{playerScore.wins}</Table.Cell>
+                            <Table.Cell class="px-1 font-medium">{playerScore.losses}</Table.Cell>
+                            <Table.Cell class="px-1 font-medium">{playerScore.ties}</Table.Cell>
+                            <Table.Cell class="px-1 font-medium">{playerScore.score}</Table.Cell>
+                        </Table.Row>
+                        {/each}
+                    </Table.Body>
+                </Table.Root>
+
             {:else}
                 <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
                     <!-- Outer ring segments -->

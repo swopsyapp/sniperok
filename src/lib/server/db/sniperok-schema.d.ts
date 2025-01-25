@@ -56,6 +56,19 @@ export interface PlayerTurn {
   weapon_code: string;
 }
 
+export interface RoundScore {
+  game_id: Int8 | null;
+  losses: Int8 | null;
+  player_seq: number | null;
+  response_time_millis: number | null;
+  round_seq: number | null;
+  score: Int8 | null;
+  ties: Int8 | null;
+  username: string | null;
+  weapon_code: string | null;
+  wins: Int8 | null;
+}
+
 export interface Status {
   code: string;
   id: Generated<number>;
@@ -74,8 +87,8 @@ export interface Weapon {
 }
 
 export interface WeaponVictory {
-  versus_code: string;
-  weapon_code: string;
+  loser_weapon_code: string;
+  winner_weapon_code: string;
 }
 
 export interface DB {
@@ -85,6 +98,7 @@ export interface DB {
   game_player: GamePlayer;
   game_round: GameRound;
   player_turn: PlayerTurn;
+  round_score: RoundScore;
   status: Status;
   user: User;
   weapon: Weapon;

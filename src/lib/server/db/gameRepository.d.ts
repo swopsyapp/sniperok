@@ -355,3 +355,52 @@ export async function updateCurrentRoundStatus(gameId: string, status: string): 
 
     return true;
 }
+
+export async function getRoundScore(gameId: number, roundSeq: number) : RoundScore {
+    const roundScoreResult = await db
+        .withSchema('sniperok')
+        .selectFrom('game_round as gr')
+        .innerJoin('status as s', 's.id', 'gr.status_id')
+        .innerJoin('round_score as rs', (join) => join.onRef('rs.game_id', '=', 'gr.game_id').onRef('rs.round_seq', '=', 'gr.round_seq'))
+        .select([
+            'rs.game_id',
+            'rs.round_seq',
+            's.code as round_status',
+            'rs.username',
+            'rs.player_seq',
+            'rs.weapon_code',
+            'rs.response_time_millis',
+            'rs.wins',
+            'rs.losses',
+            'rs.ties',
+            'rs.score'
+        ])
+        .where('gr.game_id', '=', gameId)
+        .where('gr.round_seq', '=', roundSeq)
+        .execute();
+    
+    const roundScore: RoundScore = {
+        gameId: gameId,
+        status: Status.UNKNOWN.toString(),
+        roundSeq: roundSeq,
+        scores: []
+    };
+
+    if (roundScoreResult) {
+        roundScoreResult.forEach((row) => {
+            roundScore.scores.push({
+                username: row.username,
+                playerSeq: row.player_seq,
+                weapon: row.weapon_code,
+                responseTimeMillis: row.response_time_millis,
+                wins: row.wins,
+                losses: row.losses,
+                ties: row.ties,
+                score: row.score
+            });
+        });
+        roundScore.status = roundScoreResult[0].round_status;
+    }
+
+    return roundScore;
+}

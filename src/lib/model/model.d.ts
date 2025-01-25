@@ -69,3 +69,18 @@ export interface GameDetail {
     currentRoundStatus: string;
 }
 
+export interface PlayerScore {
+    username: string;
+    weapon: string;
+    wins: number;
+    losses: number;
+    ties: number;
+    score: number;
+}
+
+export interface RoundScore {
+    gameId: number;
+    status: string;
+    roundSeq: number;
+    scores: PlayerScore[];
+}

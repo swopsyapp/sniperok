@@ -75,18 +75,18 @@ create table sniperok.weapon (
 
 -- ----------------------------------------------------------------------------
 --          WEAPON_VICTORY
---          weapon_code beats versus_code
+--          winner_weapon_code beats loser_weapon_code
 --          rock beats scissors, scissors beats paper, paper beats rock
 -- ----------------------------------------------------------------------------
 create table sniperok.weapon_victory (
-    weapon_code text not null,
-    versus_code text not null,
+    winner_weapon_code text not null,
+    loser_weapon_code text not null,
     CONSTRAINT weapon_victory_pk
-        PRIMARY KEY (weapon_code, versus_code),
+        PRIMARY KEY (winner_weapon_code, loser_weapon_code),
     CONSTRAINT weapon_victory_fk1
-        FOREIGN KEY (weapon_code) REFERENCES sniperok.weapon(code),
+        FOREIGN KEY (winner_weapon_code) REFERENCES sniperok.weapon(code),
     CONSTRAINT weapon_victory_fk2
-        FOREIGN KEY (versus_code) REFERENCES sniperok.weapon(code)
+        FOREIGN KEY (loser_weapon_code) REFERENCES sniperok.weapon(code)
 );
 
 -- ----------------------------------------------------------------------------
@@ -104,4 +104,64 @@ create table sniperok.player_turn (
         FOREIGN key (game_id) REFERENCES sniperok.game(id),
     CONSTRAINT player_turn_weapon_fk
         FOREIGN KEY (weapon_code) REFERENCES sniperok.weapon(code)
+);
+
+create or replace view sniperok.round_score as (
+    with turns as (
+        select gr.game_id, gr.round_seq
+            ,u.username
+            ,gp.player_seq
+            ,pt.weapon_code
+            ,pt.response_time_millis
+        from sniperok.game_round gr
+        join sniperok.game_player gp
+            on gp.game_id = gr.game_id
+        join sniperok.status gps
+            on gps.id = gp.status_id
+        and gps.code = 'active'
+        join sniperok.user u
+            on u.id = gp.player_uuid
+        left join sniperok.player_turn pt
+            on pt.game_id = gr.game_id
+        and pt.round_seq = gr.round_seq
+        and pt.player_uuid = gp.player_uuid
+        where gr.game_id = 1
+        and gr.round_seq = 1
+    ),
+    scores as (
+        select player.*,
+                sum(case when
+                    (player.weapon_code = ww.winner_weapon_code and opponent.weapon_code = ww.loser_weapon_code)
+                    or (player.weapon_code is not null and opponent.weapon_code is null)
+                    then 1 else 0 end) as wins,
+                sum(case when
+                    (player.weapon_code = wl.loser_weapon_code and opponent.weapon_code = wl.winner_weapon_code)
+                    or (player.weapon_code is null and opponent.weapon_code is not null)
+                    then 1 else 0 end) as losses,
+                sum(case when
+                    (player.weapon_code = opponent.weapon_code)
+                    or (player.weapon_code is null and opponent.weapon_code is null)
+                    then 1 else 0 end) as ties
+            from turns player
+            cross join turns opponent
+            left join sniperok.weapon_victory ww
+            on ww.winner_weapon_code = player.weapon_code
+            left join sniperok.weapon_victory wl
+            on wl.loser_weapon_code = player.weapon_code
+            where player.player_seq != opponent.player_seq
+            group by player.game_id, player.round_seq, player.username, player.player_seq, 
+                    player.weapon_code, player.response_time_millis
+    )
+    select game_id,
+        round_seq,
+        username,
+        player_seq,
+        weapon_code,
+        response_time_millis,
+        wins,
+        losses,
+        ties,
+        wins - losses as score
+    from scores
+    order by score desc, response_time_millis
 );
