@@ -157,6 +157,8 @@ export async function deleteGame(gameId: number): boolean {
         .withSchema('sniperok')
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
+            await trx.deleteFrom('player_turn as pt').where('pt.game_id', '=', gameId).execute();
+            
             await trx.deleteFrom('game_player as gp').where('gp.game_id', '=', gameId).execute();
 
             await trx.deleteFrom('game_round as gr').where('gr.game_id', '=', gameId).execute();
