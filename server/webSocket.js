@@ -46,6 +46,14 @@ function webSocket(server, welcomeMessage) {
                 io.to(gameRoom).emit('gameChat', roundPlayedMsg);
             });
 
+            socket.on('nextRound', (msg) => {
+                if (msg.sender == 'Guest') {
+                    msg.sender = username;
+                }
+                console.log('Received: ', msg);
+                io.to(gameRoom).emit('gameChat', msg);
+            });
+
             io.to(gameRoom).emit('gameChat', joinGameMsg);
         });
         

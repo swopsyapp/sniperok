@@ -54,7 +54,7 @@ export class Status {
 }
 
 export interface GameDetail {
-    gameId: string;
+    gameId: number;
     status: string;
     curator: string;
     isPublic: boolean;

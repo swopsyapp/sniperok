@@ -9,6 +9,7 @@ import type { User } from '@supabase/supabase-js';
 export enum MessageType {
     GameChat = 'gameChat',
     JoinGame = 'joinGame',
+    NextRound = 'nextRound',
     RoundPlayed = 'roundPlayed',
     StartRound = 'startRound',
     UserChat = 'userChat',
@@ -20,7 +21,7 @@ export interface Message {
     type: string;
     sender: string;
     receiver: string | undefined;
-    gameId: string | undefined;
+    gameId: number | undefined;
     text: string;
 }
 
@@ -142,6 +143,10 @@ export class ClientMessageHandler {
             msg.text = 'joined';
         } else if (msg.type == MessageType.StartRound) {
             msg.text = 'round #' + msg.text;
+        } else if (msg.type == MessageType.RoundPlayed) {
+            msg.text = 'played :' + msg.text;
+        } else if (msg.type == MessageType.NextRound) {
+            msg.text = 'round #' + msg.text;
         }
         gameMessages.push(msg);
         this.notifySubscribers(msg);
@@ -218,7 +223,7 @@ export class ClientMessageHandler {
         }
     }
 
-    public joinGameChannel(gameId: string, playerSeq: number) {
+    public joinGameChannel(gameId: number, playerSeq: number) {
         const currentPage = get(page);
         const user : User = currentPage.data?.user;
         if (!user) {
@@ -240,7 +245,7 @@ export class ClientMessageHandler {
         logger.debug('joining gameRoom @', username, ' : ', gameId);
     }
 
-    public sendGameMessage(gameId: string, messageSender: string, messageText: string) {
+    public sendGameMessage(gameId: number, messageSender: string, messageText: string) {
         if (messageText) {
 
             const currentPage = get(page);
@@ -266,7 +271,7 @@ export class ClientMessageHandler {
         }
     }
 
-    public sendStartRound(gameId: string, messageSender: string, roundSeq: number) {
+    public sendStartRound(gameId: number, messageSender: string, roundSeq: number) {
         const currentPage = get(page);
         const user : User = currentPage.data?.user;
         if (!user) {
@@ -287,7 +292,7 @@ export class ClientMessageHandler {
         logger.debug('sent startRound @', messageSender, ' : ', msg.text);
     }
 
-    public sendRoundPlayed(gameId: string, roundSeq: number) {
+    public sendRoundPlayed(gameId: number, roundSeq: number) {
         const currentPage = get(page);
         const user : User = currentPage.data?.user;
         if (!user) {
@@ -296,7 +301,7 @@ export class ClientMessageHandler {
         }
 
         const msg = {} as Message;
-        msg.type = MessageType.StartRound;
+        msg.type = MessageType.RoundPlayed;
         msg.sender = user.user_metadata.username ?? 'Guest';
         msg.gameId = gameId;
         msg.text = roundSeq.toString();
@@ -306,6 +311,27 @@ export class ClientMessageHandler {
         }
         this.socket.emit(msg.type, msg);
         logger.debug('sent roundPlayed @', msg.sender, ' : ', msg.text);
+    }
+
+    public sendNextRound(gameId: number, roundSeq: number) {
+        const currentPage = get(page);
+        const user : User = currentPage.data?.user;
+        if (!user) {
+            logger.warn('You must be logged in as curator to send nextRound');
+            return;
+        }
+
+        const msg = {} as Message;
+        msg.type = MessageType.NextRound;
+        msg.sender = user.user_metadata.username ?? 'Guest';
+        msg.gameId = gameId;
+        msg.text = roundSeq.toString();
+
+        if (!this.socket || this.socket.disconnected) {
+            this.socket = this.connect();
+        }
+        this.socket.emit(msg.type, msg);
+        logger.debug('sent nextRound @', msg.sender, ' : ', msg.text);
     }
 
     public logout() {
@@ -343,11 +369,13 @@ export class ClientMessageHandler {
                 return MessageType.GameChat
             case MessageType.JoinGame:
                 return MessageType.JoinGame;
+            case MessageType.NextRound:
+                return MessageType.NextRound;
             case MessageType.RoundPlayed:
                 return MessageType.RoundPlayed;
             case MessageType.StartRound:
                 return MessageType.StartRound;
-                case MessageType.UserChat:
+            case MessageType.UserChat:
                 return MessageType.UserChat;
             case MessageType.Welcome:
                 return MessageType.Welcome;

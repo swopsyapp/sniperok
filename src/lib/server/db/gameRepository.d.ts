@@ -103,10 +103,11 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
             'cr.current_round_seq',
             'cr.current_round_status'
         ])
+        .orderBy('cr.current_round_seq desc')
         .executeTakeFirst();
 
     const gameDetail: GameDetail = {
-        gameId: gameRecord.id,
+        gameId: parseInt(gameRecord.id),
         status: Status.statusForValue(gameRecord?.status_id ?? 0).toString(),
         curator: gameRecord?.curator,
         isPublic: gameRecord?.is_public,
@@ -158,7 +159,7 @@ export async function deleteGame(gameId: number): boolean {
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
             await trx.deleteFrom('player_turn as pt').where('pt.game_id', '=', gameId).execute();
-            
+
             await trx.deleteFrom('game_player as gp').where('gp.game_id', '=', gameId).execute();
 
             await trx.deleteFrom('game_round as gr').where('gr.game_id', '=', gameId).execute();
@@ -232,6 +233,10 @@ export async function refreshGameStatus(gameDetail: GameDetail): Status {
             if (timeDiff.diff <= 0) {
                 gameDetail.status = Status.ACTIVE.toString();
             }
+        }
+    } else if (Status.ACTIVE.equals(gameDetail.status)) {
+        if (gameDetail.currentRound === gameDetail.maxRounds && gameDetail.currentRoundStatus === Status.INACTIVE.toString()) {
+            gameDetail.status = Status.INACTIVE.toString();
         }
     }
 

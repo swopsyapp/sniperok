@@ -48,7 +48,7 @@
         return (diff < 0) ? ' text-red-500' : '';
     }
 
-    async function joinGame(gameId : string) {
+    async function joinGame(gameId : number) {
         if ( !data.user ) {
             $flash = { type: 'error', message: 'User not logged in' };
             return;
@@ -96,7 +96,7 @@
         goto(`/games/[${gameId}]`, { invalidateAll: true });
     }
 
-    async function deleteGame(gameId : string) {
+    async function deleteGame(gameId : number) {
         const gameUrl = $page.url.href.concat(`/[${gameId}]`);
         const response = await fetch(gameUrl, {
             method: 'DELETE',
@@ -176,7 +176,7 @@
                                                     />
                                                 <span class="sr-only">Join</span>
                                                 </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Join</p></Tooltip.Content>
+                                                <Tooltip.Content><p>Join<sup class="text-gray-400">{game.id}</sup></p></Tooltip.Content>
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                         {#if game.curator == username}

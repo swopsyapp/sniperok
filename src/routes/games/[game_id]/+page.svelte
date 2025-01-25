@@ -92,6 +92,14 @@
             }
         });
 
+        clientMessageHandler.on(MessageType.NextRound, (message) => {
+            logger.debug('NextRound message received : ', message);
+            if (roundStatus === roundStatusDone) {
+                roundStatus = roundStatusReady;
+            }
+            invalidateAll();
+        });
+
         if (roundStatus == roundStatusDone) {
             loadRoundScore();
         }
@@ -263,8 +271,37 @@
         }
         if (roundStatus == roundStatusDone) {
             logger.debug('Clicked ', roundStatus);
+            
+            if (game.currentRound < game.maxRounds) {
+                // POST next round
+                const response = await fetch($page.url.href.concat('/round'), {
+                    method: 'POST'
+                });
 
-            // TODO handle Next or Done
+                const json = await response.json();
+                logger.debug('nextRound response.json : ', json);
+
+                if (response.status != HttpStatus.OK) {
+                    logger.error('error status : ', response.status);
+                    $flash = { type: 'error', message: 'An error occurred' };
+                    roundStatus = roundStatusScoring;
+                    count = -1;
+                    startCountdown();
+                    return;
+                } else {
+                    clientMessageHandler.sendNextRound(json.gameId, json.currentRound);
+                }
+            } else {
+                // PATCH status refresh
+                const statusRefreshUrl = $page.url.href.concat(`/status`);
+                const response = await fetch(statusRefreshUrl, {
+                    method: 'PATCH'
+                });
+
+                logger.debug(`response.status=${response.status}, url=${statusRefreshUrl}`);
+
+                goto('/games', {replaceState: true, invalidateAll: true});
+            }
         }
     }
 
