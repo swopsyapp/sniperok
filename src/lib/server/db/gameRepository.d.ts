@@ -51,7 +51,7 @@ export async function createGame(isPublic: boolean, minPlayers: number, startTim
     return gameId;
 }
 
-export async function getGameDetail(gameId: string): GameDetail | undefined {
+export async function getGameDetail(gameId: number): GameDetail | undefined {
     const gameRecord = await db
         .withSchema('sniperok')
         .with('player_count', (eb) =>
@@ -123,7 +123,7 @@ export async function getGameDetail(gameId: string): GameDetail | undefined {
     return gameDetail;
 }
 
-export async function getPlayerSequence(gameId: string, userId: string) {
+export async function getPlayerSequence(gameId: number, userId: string) {
     /*
         select gp.*, coalesce(u.username, 'Guest') as username, row_number() over(order by u.created_at) as player_seq
         from sniperok.game_player gp
@@ -152,7 +152,7 @@ export async function getPlayerSequence(gameId: string, userId: string) {
         : undefined;
 }
 
-export async function deleteGame(gameId: string): boolean {
+export async function deleteGame(gameId: number): boolean {
     await db
         .withSchema('sniperok')
         .transaction()
@@ -174,7 +174,7 @@ export async function deleteGame(gameId: string): boolean {
     return true;
 }
 
-export async function joinGame(gameId: string, userId: string): boolean {
+export async function joinGame(gameId: number, userId: string): boolean {
     logger.debug(`joinGame() gameId: ${gameId} userId: ${userId}`);
     await db
         .withSchema('sniperok')
@@ -315,18 +315,7 @@ export async function playTurn(gameId: string, userId: string, roundSeq: number,
     return true;
 }
 
-export async function getCurrentRound(gameId: string) : number {
-    const currentRound = await db
-        .withSchema('sniperok')
-        .selectFrom('game_round as gr')
-        .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
-        .where('gr.game_id', '=', gameId)
-        .executeTakeFirstOrThrow();
-
-    return currentRound.current_round;
-}
-
-export async function updateCurrentRoundStatus(gameId: string, status: string): boolean {
+export async function updateCurrentRoundStatus(gameId: number, status: string): boolean {
     await db
         .withSchema('sniperok')
         .transaction()
@@ -388,6 +377,9 @@ export async function getRoundScore(gameId: number, roundSeq: number) : RoundSco
 
     if (roundScoreResult) {
         roundScoreResult.forEach((row) => {
+            if (Status.UNKNOWN.equals(roundScore.status)) {
+                roundScore.status = row.round_status;
+            }
             roundScore.scores.push({
                 username: row.username,
                 playerSeq: row.player_seq,
@@ -399,8 +391,49 @@ export async function getRoundScore(gameId: number, roundSeq: number) : RoundSco
                 score: row.score
             });
         });
-        roundScore.status = roundScoreResult[0].round_status;
     }
 
     return roundScore;
+}
+
+export async function nextRound(gameId: number) : GameDetail | undefined {
+    const gameDetail = await getGameDetail(gameId);
+
+    if (!gameDetail) {
+        logger.warn(`Game(${gameId}) not found`);
+        return undefined;
+    }
+
+    if (gameDetail.currentRound >= gameDetail.rounds) {
+        logger.warn(`Game(${gameId}) already completed`);
+        return gameDetail;
+    }
+
+    if (gameDetail.currentRoundStatus !== Status.INACTIVE.toString()) {
+        logger.warn(`Round(${gameDetail.currentRound}) of Game(${gameId}) not yet inactive`);
+        return gameDetail;
+    }
+
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            await trx
+                .insertInto('game_round')
+                .values({
+                    game_id: gameId,
+                    round_seq: gameDetail.currentRound + 1,
+                    status_id: Status.PENDING.valueOf()
+                })
+                .executeTakeFirst();
+            
+            gameDetail.currentRound = gameDetail.currentRound + 1;
+            gameDetail.currentRoundStatus = Status.PENDING.toString();
+        })
+        .catch(function (err) {
+            logger.error(`Error creating next round : game(${gameId}) - `, err);
+        });
+
+    
+    return gameDetail;
 }

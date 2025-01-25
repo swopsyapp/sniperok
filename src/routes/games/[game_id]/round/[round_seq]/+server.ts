@@ -10,7 +10,7 @@ import { StringUtils } from '$lib/StringUtils';
 import type { RequestHandler } from './$types';
 
 /**
- * PUT : this method returns the scores for the requested game + round combination.
+ * GET : this method returns the scores for the requested game + round combination.
  * @param requestEvent
  * @returns
  */

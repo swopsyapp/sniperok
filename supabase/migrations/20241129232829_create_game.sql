@@ -125,8 +125,6 @@ create or replace view sniperok.round_score as (
             on pt.game_id = gr.game_id
         and pt.round_seq = gr.round_seq
         and pt.player_uuid = gp.player_uuid
-        where gr.game_id = 1
-        and gr.round_seq = 1
     ),
     scores as (
         select player.*,
@@ -148,7 +146,9 @@ create or replace view sniperok.round_score as (
             on ww.winner_weapon_code = player.weapon_code
             left join sniperok.weapon_victory wl
             on wl.loser_weapon_code = player.weapon_code
-            where player.player_seq != opponent.player_seq
+            where player.game_id = opponent.game_id
+              and player.round_seq = opponent.round_seq
+              and player.player_seq != opponent.player_seq
             group by player.game_id, player.round_seq, player.username, player.player_seq, 
                     player.weapon_code, player.response_time_millis
     )
@@ -161,7 +161,7 @@ create or replace view sniperok.round_score as (
         wins,
         losses,
         ties,
-        wins - losses as score
+        wins as score
     from scores
     order by score desc, response_time_millis
 );

@@ -9,7 +9,7 @@ import { StringUtils } from '$lib/StringUtils';
 import type { RequestHandler } from './$types';
 
 export const DELETE: RequestHandler = async (requestEvent) => {
-    const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
+    const gameId = StringUtils.eventParamToNumber(requestEvent.params.game_id);
     const gameDetail = await getGameDetail(gameId);
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts

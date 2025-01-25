@@ -21,6 +21,7 @@ export enum HttpStatus {
     NOT_FOUND = 404,
     NOT_ACCEPTABLE = 406,
     CONFLICT = 409,
+    TOO_EARLY = 425,
     INTERNAL_SERVER_ERROR = 500
 }
 

@@ -193,7 +193,7 @@
 
     async function loadRoundScore() {
         // GET round score
-        const updateRoundStatusUrl = $page.url.href.concat(`/round/[${game.currentRound}]/score`);
+        const updateRoundStatusUrl = $page.url.href.concat(`/round/[${game.currentRound}]`);
         const response = await fetch(updateRoundStatusUrl, {
             method: 'GET',
         });
@@ -263,6 +263,7 @@
         }
         if (roundStatus == roundStatusDone) {
             logger.debug('Clicked ', roundStatus);
+
             // TODO handle Next or Done
         }
     }

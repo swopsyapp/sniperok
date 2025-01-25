@@ -38,4 +38,8 @@ export class StringUtils {
             return '';
         }
     }
+
+    static eventParamToNumber(eventParam: string): number {
+        return parseInt(StringUtils.trimEndMarkers(eventParam));
+    }
 }
