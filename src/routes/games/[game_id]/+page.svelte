@@ -468,13 +468,54 @@
                 </Table.Root>
 
             {:else}
-                <svg id="game-svg" width="200" height="200" viewBox="0 0 200 200">
+                <svg id="game-svg" width="350" height="350" viewBox="0 0 350 350">
                     <!-- Outer ring segments -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <path
+                        d={describeArc(175, 175, 125, 0, 120)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none"
+                        stroke="rgb(255, 100, 0)"
+                        stroke-width="40"
+                        on:click={() => play('dynamite')}
+                    >
+                        <title>Dynamite</title>
+                    </path>
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <path
+                        d={describeArc(175, 175, 125, 120, 240)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none" 
+                        stroke="rgb(0, 150, 0)"
+                        stroke-width="40"
+                        on:click={() => play('bazooka')}
+                    >
+                        <title>Bazooka</title>
+                    </path>
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- svelte-ignore event_directive_deprecated -->
+                    <path
+                        d={describeArc(175, 175, 125, 240, 360)}
+                        class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
+                        fill="none"
+                        stroke="purple" 
+                        stroke-width="40"
+                        on:click={() => play('shotgun')}
+                    >
+                        <title>Shotgun</title>
+                    </path>
+
+                    <!-- Main ring segments -->
                     <!-- svelte-ignore event_directive_deprecated -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
-                        d={describeArc(100, 100, 80, 300, 60)}
+                        d={describeArc(175, 175, 80, 300, 60)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
                         stroke="red"
@@ -487,7 +528,7 @@
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
-                        d={describeArc(100, 100, 80, 60, 180)}
+                        d={describeArc(175, 175, 80, 60, 180)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
                         stroke="yellow"
@@ -500,7 +541,7 @@
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
-                        d={describeArc(100, 100, 80, 180, 300)}
+                        d={describeArc(175, 175, 80, 180, 300)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
                         stroke="blue"
@@ -511,7 +552,7 @@
                     </path>
 
                     <!-- Inner countdown circle (existing code) -->
-                    <circle cx="100" cy="100" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                    <circle cx="175" cy="175" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
                     <circle
                         cx="100"
                         cy="100"
@@ -524,8 +565,8 @@
                         style="stroke-dasharray: 283; stroke-dashoffset: {283 - 283 * progress}"
                     />
                     <text
-                        x="100"
-                        y="100"
+                        x="175"
+                        y="175"
                         text-anchor="middle"
                         dy="7"
                         font-size="30"
