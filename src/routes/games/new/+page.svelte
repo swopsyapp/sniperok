@@ -22,9 +22,9 @@
     let minPlayers : number = $state(2);
     let startSeconds : number = $state(60);
 
-	onMount(() => {
+    onMount(() => {
         document.getElementById("isPublic")?.focus();
-	});
+    });
 
     async function newGame(event : SubmitEvent) {
         event.preventDefault();
