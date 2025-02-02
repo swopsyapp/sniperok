@@ -472,46 +472,65 @@
                     <!-- Outer ring segments -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
-                    <!-- svelte-ignore event_directive_deprecated -->
                     <path
                         d={describeArc(175, 175, 125, 0, 120)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
                         stroke="rgb(255, 100, 0)"
                         stroke-width="40"
-                        on:click={() => play('dynamite')}
+                        onclick={() => play('dynamite')}
                     >
                         <title>Dynamite</title>
                     </path>
+                    <!-- Dynamite icon -->
+                    <foreignObject x="264" y="95" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Dynamite" onclick={() => play('dynamite')} href="javascript:void(0)" >
+                            <Icon icon="fluent-emoji-high-contrast:thumbs-up" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
+
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
-                    <!-- svelte-ignore event_directive_deprecated -->
                     <path
                         d={describeArc(175, 175, 125, 120, 240)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none" 
                         stroke="rgb(0, 150, 0)"
                         stroke-width="40"
-                        on:click={() => play('bazooka')}
+                        onclick={() => play('bazooka')}
                     >
                         <title>Bazooka</title>
                     </path>
+                    <!-- Bazooka icon -->
+                    <foreignObject x="160" y="285" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Bazooka" onclick={() => play('bazooka')} href="javascript:void(0)" >
+                            <Icon icon="fluent-emoji-high-contrast:pinched-fingers" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
+
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
-                    <!-- svelte-ignore event_directive_deprecated -->
                     <path
                         d={describeArc(175, 175, 125, 240, 360)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
                         stroke="purple" 
                         stroke-width="40"
-                        on:click={() => play('shotgun')}
+                        onclick={() => play('shotgun')}
                     >
                         <title>Shotgun</title>
                     </path>
+                    <!-- Shotgun icon -->
+                    <foreignObject x="53" y="95" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Shotgun" onclick={() => play('shotgun')} href="javascript:void(0)" >
+                            <Icon icon="fluent-emoji-high-contrast:sign-of-the-horns" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
 
                     <!-- Main ring segments -->
-                    <!-- svelte-ignore event_directive_deprecated -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
@@ -520,11 +539,18 @@
                         fill="none"
                         stroke="red"
                         stroke-width="40"
-                        on:click={() => play('rock')}
+                        onclick={() => play('rock')}
                     >
                         <title>Rock</title>
                     </path>
-                    <!-- svelte-ignore event_directive_deprecated -->
+                    <!-- Rock icon -->
+                    <foreignObject x="155" y="80" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Rock" onclick={() => play('rock')} href="javascript:void(0)" >
+                            <Icon icon="fa:hand-rock-o" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
+
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
@@ -533,11 +559,18 @@
                         fill="none"
                         stroke="yellow"
                         stroke-width="40"
-                        on:click={() => play('paper')}
+                        onclick={() => play('paper')}
                     >
                         <title>Paper</title>
                     </path>
-                    <!-- svelte-ignore event_directive_deprecated -->
+                    <!-- Paper icon -->
+                    <foreignObject x="228" y="195" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Paper" onclick={() => play('paper')} href="javascript:void(0)" >
+                            <Icon icon="fa:hand-paper-o" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
+
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <path
@@ -546,22 +579,29 @@
                         fill="none"
                         stroke="blue"
                         stroke-width="40"
-                        on:click={() => play('scissors')}
+                        onclick={() => play('scissors')}
                     >
                         <title>Scissors</title>
                     </path>
+                    <!-- Scissors icon -->
+                    <foreignObject x="86" y="195" width="35" height="35">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a title="Scissors" onclick={() => play('scissors')} href="javascript:void(0)" >
+                            <Icon icon="fa:hand-scissors-o" class="h-8 w-8 text-gray-200" />
+                        </a>
+                    </foreignObject>
 
                     <!-- Inner countdown circle (existing code) -->
                     <circle cx="175" cy="175" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
                     <circle
-                        cx="100"
-                        cy="100"
+                        cx="175"
+                        cy="175"
                         r="45"
                         fill="none"
                         stroke={countdownColor}
                         stroke-width="8"
                         stroke-linecap="round"
-                        transform="rotate(-90 100 100)"
+                        transform="rotate(-90 175 175)"
                         style="stroke-dasharray: 283; stroke-dashoffset: {283 - 283 * progress}"
                     />
                     <text

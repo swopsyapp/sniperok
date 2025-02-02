@@ -52,4 +52,10 @@ insert into sniperok.weapon ("code", "level") values
 ('bazooka', 2), ('dynamite', 2), ('shotgun', 2);
 
 insert into sniperok.weapon_victory (winner_weapon_code, loser_weapon_code) VALUES
-('paper', 'rock'), ('scissors', 'paper'), ('rock', 'scissors');
+('paper', 'rock'), ('paper', 'shotgun'),
+('scissors', 'paper'), ('scissors', 'dynamite'),
+('rock', 'scissors'), ('rock', 'bazooka'),
+('dynamite', 'rock'), ('dynamite', 'paper'), ('dynamite', 'bazooka'),
+('bazooka', 'paper'), ('bazooka', 'scissors'), ('bazooka', 'shotgun'),
+('shotgun', 'scissors'), ('shotgun', 'rock'), ('shotgun', 'dynamite')
+;

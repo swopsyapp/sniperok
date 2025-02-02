@@ -106,6 +106,9 @@ create table sniperok.player_turn (
         FOREIGN KEY (weapon_code) REFERENCES sniperok.weapon(code)
 );
 
+-- ----------------------------------------------------------------------------
+--          ROUND_SCORE
+-- ----------------------------------------------------------------------------
 create or replace view sniperok.round_score as (
     with turns as (
         select gr.game_id, gr.round_seq
@@ -143,9 +146,11 @@ create or replace view sniperok.round_score as (
             from turns player
             cross join turns opponent
             left join sniperok.weapon_victory ww
-            on ww.winner_weapon_code = player.weapon_code
+                on ww.winner_weapon_code = player.weapon_code
+                and ww.loser_weapon_code = opponent.weapon_code
             left join sniperok.weapon_victory wl
-            on wl.loser_weapon_code = player.weapon_code
+                on wl.loser_weapon_code = player.weapon_code
+                and wl.winner_weapon_code = opponent.weapon_code
             where player.game_id = opponent.game_id
               and player.round_seq = opponent.round_seq
               and player.player_seq != opponent.player_seq
