@@ -15,3 +15,18 @@ test('trimEndMarkers trim"', () => {
     const text = StringUtils.trimEndMarkers('[abc]');
     expect(text).toBe('abc');
 });
+
+test('extractSlugFromPath noSeq"', () => {    
+    const text = StringUtils.extractSlugFromPath('/games/[3]');
+    expect(text).toBe('3');
+});
+
+test('extractSlugFromPath first"', () => {    
+    const text = StringUtils.extractSlugFromPath('/games/[5]', 1);
+    expect(text).toBe('5');
+});
+
+test('extractSlugFromPath second"', () => {    
+    const text = StringUtils.extractSlugFromPath('/games/[7]/round[1]', 2);
+    expect(text).toBe('1');
+});

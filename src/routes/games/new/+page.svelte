@@ -13,6 +13,8 @@
 
     import { logger } from '$lib/logger';
     import { HttpStatus } from '$lib/utils';
+    import { clientMessageHandler } from '$lib/components/messages.svelte';
+    import { StringUtils } from '$lib/StringUtils';
 
     const flash = getFlash(page);
 
@@ -38,10 +40,13 @@
         logger.trace('response.status : ', response.status);
 
         const json = await response.json();
-        logger.trace('json : ', json);
+        logger.debug('json : ', json);
 
         if (json.status == HttpStatus.SEE_OTHER) {
-            goto(json.location, {
+            const newGameUrl = json.location;
+            const gameId = parseInt(StringUtils.extractSlugFromPath(newGameUrl) ?? '0');
+            clientMessageHandler.joinGameChannel(gameId, 1);
+            goto(newGameUrl, {
                 replaceState: true,
                 invalidateAll: true
             } );

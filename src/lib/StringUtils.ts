@@ -42,4 +42,24 @@ export class StringUtils {
     static eventParamToNumber(eventParam: string): number {
         return parseInt(StringUtils.trimEndMarkers(eventParam));
     }
+
+    static extractSlugFromPath(path: string, slugSeq?: number): string | undefined {
+        if (slugSeq === undefined) {
+            slugSeq = 1;
+        }
+
+        const slugPattern = /\[(.*?)\]/g;
+        const slugs = [];
+        let match;
+
+        while ((match = slugPattern.exec(path)) !== null) {
+            slugs.push(match[1]);
+        }
+
+        if (slugSeq > 0 && slugSeq <= slugs.length) {
+            return slugs[slugSeq - 1];
+        }
+
+        return undefined;
+    }
 }
