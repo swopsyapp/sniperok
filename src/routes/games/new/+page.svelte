@@ -40,7 +40,7 @@
         logger.trace('response.status : ', response.status);
 
         const json = await response.json();
-        logger.debug('json : ', json);
+        logger.trace('json : ', json);
 
         if (json.status == HttpStatus.SEE_OTHER) {
             const newGameUrl = json.location;
