@@ -8,6 +8,7 @@
 
     import { logger } from '$lib/logger';
     import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
+    import { Status } from '$lib/model/model.d';
     import { clientMessageHandler, type Message } from "$lib/components/messages.svelte";
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
@@ -124,8 +125,12 @@
 
 </script>
 
-{#snippet startTime(timeDiff: TimeDiff)}
-    <Table.Cell class="px-1 w-20 font-medium {timeColor(timeDiff.diff)}">{timeDiff.formatted}</Table.Cell>
+{#snippet startTime(gameStatus: string, timeDiff: TimeDiff)}
+    {#if Status.INACTIVE.equals(gameStatus) }
+        <Table.Cell class="px-1 w-20 font-medium"><center>-</center></Table.Cell>
+    {:else}
+        <Table.Cell class="px-1 w-20 font-medium {timeColor(timeDiff.diff)}">{timeDiff.formatted}</Table.Cell>
+    {/if}
 {/snippet}
 
 <div>
@@ -159,7 +164,7 @@
                     <Table.Body>
                         {#each games as game}
                             <Table.Row>
-                                {@render startTime(getTimeDiff(game.startTime, countdown))}
+                                {@render startTime(game.status, getTimeDiff(game.startTime, countdown))}
                                 <Table.Cell class="px-1 font-medium">{game.players} / {game.minPlayers}</Table.Cell>
                                 <Table.Cell class="px-1 font-medium">{game.maxRounds}</Table.Cell>
                                 <Table.Cell class="font-medium">

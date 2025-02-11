@@ -387,7 +387,11 @@
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        <div class="font-bold {timeColor}">{timeDifference.formatted}</div>
+                        {#if Status.INACTIVE.equals(game.status) }
+                            <div class="font-bold"><center>-</center></div>
+                        {:else}
+                            <div class="font-bold {timeColor}">{timeDifference.formatted}</div>
+                        {/if}
                     </td>
                 </tr>
                 <tr class="text-center">
