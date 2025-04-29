@@ -11,7 +11,14 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
+export type Numeric = ColumnType<string, number | string, number | string>;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
+
+export interface BoostType {
+  code: string;
+  description: string;
+}
 
 export interface Buddy {
   buddy_uuid: string;
@@ -81,6 +88,22 @@ export interface User {
   username: string | null;
 }
 
+export interface UserBoost {
+  boost_type_code: string;
+  period: number;
+  quantity: Generated<Numeric>;
+  user_uuid: string;
+}
+
+export interface UserBoostJournal {
+  boost_type_code: string;
+  journal_timestamp: Generated<Timestamp>;
+  period: number;
+  quantity: Generated<Numeric>;
+  transaction_uuid: string;
+  user_uuid: string;
+}
+
 export interface Weapon {
   code: string;
   level: Generated<number>;
@@ -92,6 +115,7 @@ export interface WeaponVictory {
 }
 
 export interface DB {
+  boost_type: BoostType;
   buddy: Buddy;
   buddy_vw: BuddyVw;
   game: Game;
@@ -101,6 +125,8 @@ export interface DB {
   round_score: RoundScore;
   status: Status;
   user: User;
+  user_boost: UserBoost;
+  user_boost_journal: UserBoostJournal;
   weapon: Weapon;
   weapon_victory: WeaponVictory;
 }

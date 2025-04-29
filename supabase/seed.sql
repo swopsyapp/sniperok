@@ -59,3 +59,10 @@ insert into sniperok.weapon_victory (winner_weapon_code, loser_weapon_code) VALU
 ('bazooka', 'paper'), ('bazooka', 'scissors'), ('bazooka', 'shotgun'),
 ('shotgun', 'scissors'), ('shotgun', 'rock'), ('shotgun', 'dynamite')
 ;
+
+insert into sniperok.boost_type (code, description) values
+('snaps', 'Can be swapped for power-ups'),
+('dynamite', 'Beats rock, paper and bazooka'),
+('bazooka', 'Beats paper, scissors and shotgun'),
+('shotgun', 'Beats scissors, rock and dynamite')
+;
