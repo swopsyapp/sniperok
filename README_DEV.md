@@ -17,6 +17,8 @@ pnpm dev
 
 ## DB Migrations
 
+See https://supabase.com/docs/guides/local-development/declarative-database-schemas
+
 See https://supabase.com/docs/guides/local-development/overview#diffing-changes  
 
 `supabase db diff --schema public`
@@ -26,6 +28,8 @@ See https://supabase.com/docs/guides/local-development/overview#diffing-changes
 copy output from diff into newly created empty migration file.
 
 `supabase db reset`
+
+See https://supabase.com/docs/guides/deployment/database-migrations
 
 ## Troubleshooting
 - Supabase wont start because of port conflict after reboot  
