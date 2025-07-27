@@ -72,7 +72,7 @@
             })
         });
 
-        const json = await response.json();
+        await response.json();
 
         if (response.status == HttpStatus.OK) {
             $flash = { type: 'success', message: 'Buddy confirmed :)' };

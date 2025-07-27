@@ -9,7 +9,7 @@
     import { logger } from '$lib/logger';
     import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
     import { Status } from '$lib/model/model.d';
-    import { clientMessageHandler, type Message } from '$lib/components/messages.svelte';
+    import { clientMessageHandler } from '$lib/components/messages.svelte';
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';

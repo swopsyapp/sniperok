@@ -60,13 +60,14 @@ export default [
             parser: svelteParser,
             parserOptions: {
                 parser: tsParser,
-                extraFileExtensions: ['.svelte'],
+                extraFileExtensions: ['.svelte', '.ts', '.js'],
                 sourceType: 'module',
                 ecmaVersion: 2020
             },
             globals: {
                 ...globals.browser,
                 ...globals.node,
+                NodeJS: 'readonly',
                 ...globals.es2017
             }
         },
