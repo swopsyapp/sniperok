@@ -84,6 +84,9 @@ importers:
       eslint-plugin-svelte:
         specifier: ^2.46.1
         version: 2.46.1(eslint@9.17.0(jiti@1.21.6))(svelte@5.8.1)(ts-node@10.9.2(@types/node@22.10.1)(typescript@5.7.2))
+      eslint-plugin-vitest-globals:
+        specifier: ^1.5.0
+        version: 1.5.0
       formsnap:
         specifier: 2.0.0-next.1
         version: 2.0.0-next.1(svelte@5.8.1)(sveltekit-superforms@2.21.1(@sveltejs/kit@2.9.0(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.8.1)(vite@5.4.11(@types/node@22.10.1)))(svelte@5.8.1)(vite@5.4.11(@types/node@22.10.1)))(@types/json-schema@7.0.15)(svelte@5.8.1)(typescript@5.7.2))
@@ -1315,6 +1318,9 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  eslint-plugin-vitest-globals@1.5.0:
+    resolution: {integrity: sha512-ZSsVOaOIig0oVLzRTyk8lUfBfqzWxr/J3/NFMfGGRIkGQPejJYmDH3gXmSJxAojts77uzAGB/UmVrwi2DC4LYA==}
 
   eslint-scope@7.2.2:
     resolution: {integrity: sha512-dOt21O7lTMhDM+X9mB4GX+DZrZtCUJPL/wlcTqxyrx5IvO0IYtILdtrQGQp+8n5S0gwSVmOf9NQrjMOgfQZlIg==}
@@ -3705,6 +3711,8 @@ snapshots:
       svelte: 5.8.1
     transitivePeerDependencies:
       - ts-node
+
+  eslint-plugin-vitest-globals@1.5.0: {}
 
   eslint-scope@7.2.2:
     dependencies:

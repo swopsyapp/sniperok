@@ -6,6 +6,7 @@ import sveltePlugin from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
 import prettierConfig from 'eslint-config-prettier';
 import globals from 'globals';
+import vitestGlobals from 'eslint-plugin-vitest-globals';
 
 export default [
     // 1. Global Ignore patterns (move this to the top for effective ignoring)
@@ -78,6 +79,40 @@ export default [
         }
     },
 
-    // 5. Prettier configuration (should be last to override formatting rules)
+    // 5. Configuration for test files
+    {
+        files: ['**/*.test.ts', '**/*.spec.ts', '**/*.test.js', '**/*.spec.js'], // Ensure these patterns match your test files
+        languageOptions: {
+            // Include Vitest globals. This should override or merge with previous globals.
+            globals: {
+                ...vitestGlobals.configs.recommended.globals, // Provides 'vi', 'expect', 'test', etc.
+                // Keep browser/node if your tests still rely on these environments' globals
+                ...globals.browser,
+                ...globals.node
+            },
+            parser: tsParser, // Ensure TypeScript parser is still active for TS test files
+            parserOptions: {
+                sourceType: 'module',
+                ecmaVersion: 2020
+            }
+        },
+        plugins: {
+            // Also explicitly include @typescript-eslint plugin if your test files are TypeScript
+            '@typescript-eslint': tsEslint,
+            'vitest-globals': vitestGlobals // Register the plugin
+        },
+        rules: {
+            // This is the key part for `no-undef`
+            // If you are using `@typescript-eslint/no-unused-vars` (which is common)
+            // and still getting `no-undef`, you might need to explicitly disable it for this scope.
+            // However, the `vitest-globals` plugin's recommended config should handle this.
+            // If it still fails, try this:
+            'no-undef': 'off' // <--- Add this line ONLY if the problem persists
+            // You can also add specific Vitest rules from the plugin here
+            // e.g., 'vitest-globals/no-focused-tests': 'warn',
+        }
+    },
+
+    // 6. Prettier configuration (should be last to override formatting rules)
     prettierConfig
 ];
