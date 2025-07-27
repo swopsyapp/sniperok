@@ -12,11 +12,7 @@
     import { Label } from '$lib/components/ui/label';
     import { Input } from '$lib/components/ui/input';
 
-    import type { PageData } from './$types.js';
-
     const flash = getFlash(page);
-
-    let { data }: { data: PageData } = $props();
 
     let answer: string = $state('');
 

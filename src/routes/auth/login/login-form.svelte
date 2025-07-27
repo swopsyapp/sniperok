@@ -8,7 +8,6 @@
     import Password from '$lib/components/ui/Password.svelte';
 
     import { loginSchema, type LoginSchema } from './LoginSchema';
-    import type { PageData } from './$types.js';
 
     export let data: SuperValidated<Infer<LoginSchema>>;
 
