@@ -41,7 +41,7 @@
         }
     });
 
-    function getTimeDiff(startTime: Date, countdown: number): TimeDiff {
+    function getTimeDiff(startTime: Date, _countdown: number): TimeDiff {
         return calculateTimeDifference(startTime);
     }
 

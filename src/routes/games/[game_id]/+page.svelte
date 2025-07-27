@@ -56,9 +56,11 @@
     let isRoundStarted = $derived(setRoundStarted(roundStatus));
     let countdownColor = $derived(setCountDownColor(roundStatus));
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let roundPlayerCount = $state(0);
     let roundResponseCount = $state(0);
     let roundStartTime: Date | undefined = $state(undefined);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let runCountdown = $state(false);
     let count = $state(3);
     let progress = $state(0);
@@ -81,6 +83,7 @@
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         clientMessageHandler.on(MessageType.StartRound, (message) => {
             if (roundStatus == roundStatusReady) {
                 logger.debug('round starting');
@@ -92,6 +95,7 @@
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         clientMessageHandler.on(MessageType.RoundPlayed, (message) => {
             if (isRoundStarted) {
                 roundResponseCount = roundResponseCount + 1;

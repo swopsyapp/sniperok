@@ -3,7 +3,7 @@ import { sql, Transaction } from 'kysely';
 import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
 import { type DB } from './sniperok-schema.d';
-import { type GameDetail, Status } from '$lib/model/model.d';
+import { type GameDetail, Status, type RoundScore } from '$lib/model/model.d';
 import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
 
 /**
@@ -305,7 +305,7 @@ export async function playTurn(
     const playerSeq = await getPlayerSequence(gameId, userId);
 
     if (!playerSeq) {
-        logger.warn(`Cannot find game(${gameid}) or player(${userId})`);
+        logger.warn(`Cannot find game(${gameId}) or player(${userId})`);
         return false;
     }
 

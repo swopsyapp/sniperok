@@ -39,7 +39,7 @@
         <div class="col-span-full">
             <Form.Field {form} name="profileMode">
                 <Form.Control>
-                    {#snippet children({ props })}
+                    {#snippet children()}
                         <Input type="hidden" bind:value={$formData.profileMode} />
                     {/snippet}
                 </Form.Control>

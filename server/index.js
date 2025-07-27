@@ -20,10 +20,11 @@ function parse$1(input, loose) {
         keys = [],
         pattern = '',
         arr = input.split('/');
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    arr[0] || arr.shift();
 
-    // eslint-disable-next-line no-cond-assign
+    if (!arr[0]) {
+        arr.shift();
+    }
+
     while ((tmp = arr.shift())) {
         c = tmp[0];
         if (c === '*') {
@@ -111,20 +112,26 @@ class Trouter {
                     if (matches === null) continue;
                     if (matches.groups !== void 0)
                         for (k in matches.groups) params[k] = matches.groups[k];
-                    tmp.handlers.length > 1
-                        ? (handlers = handlers.concat(tmp.handlers))
-                        : handlers.push(tmp.handlers[0]);
+                    if (tmp.handlers.length > 1) {
+                        handlers = handlers.concat(tmp.handlers);
+                    } else {
+                        handlers.push(tmp.handlers[0]);
+                    }
                 } else if (tmp.keys.length > 0) {
                     matches = tmp.pattern.exec(url);
                     if (matches === null) continue;
                     for (j = 0; j < tmp.keys.length; ) params[tmp.keys[j]] = matches[++j];
-                    tmp.handlers.length > 1
-                        ? (handlers = handlers.concat(tmp.handlers))
-                        : handlers.push(tmp.handlers[0]);
+                    if (tmp.handlers.length > 1) {
+                        handlers = handlers.concat(tmp.handlers);
+                    } else {
+                        handlers.push(tmp.handlers[0]);
+                    }
                 } else if (tmp.pattern.test(url)) {
-                    tmp.handlers.length > 1
-                        ? (handlers = handlers.concat(tmp.handlers))
-                        : handlers.push(tmp.handlers[0]);
+                    if (tmp.handlers.length > 1) {
+                        handlers = handlers.concat(tmp.handlers);
+                    } else {
+                        handlers.push(tmp.handlers[0]);
+                    }
                 }
             } // else not a match
         }
@@ -205,7 +212,9 @@ class Polka extends Trouter {
                 (req, _, next) => {
                     if (typeof base === 'string') {
                         let len = base.length;
-                        base.startsWith('/') || len++;
+                        if (!base.startsWith('/')) {
+                            len++;
+                        }
                         req.url = req.url.substring(len) || '/';
                         req.path = req.path.substring(len) || '/';
                     } else {
@@ -249,7 +258,7 @@ class Polka extends Trouter {
             for (let k in req.params) {
                 try {
                     req.params[k] = decodeURIComponent(req.params[k]);
-                } catch (e) {
+                } catch (_e) {
                     /* malform uri segment */
                 }
             }

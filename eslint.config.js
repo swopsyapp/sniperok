@@ -72,11 +72,24 @@ export default [
             }
         },
         plugins: {
-            svelte: sveltePlugin
+            svelte: sveltePlugin,
+            '@typescript-eslint': tsEslint
         },
         processor: sveltePlugin.processors.svelte,
         rules: {
-            ...sveltePlugin.configs.recommended.rules
+            ...sveltePlugin.configs.recommended.rules,
+            // Disable default no-unused-vars for Svelte files as it conflicts with runes
+            'no-unused-vars': 'off',
+            // Use @typescript-eslint's no-unused-vars with a more Svelte-aware configuration
+            '@typescript-eslint/no-unused-vars': [
+                'warn', // Or 'error' if you prefer
+                {
+                    argsIgnorePattern: '^_', // Ignore unused arguments starting with _
+                    varsIgnorePattern:
+                        '^(?:\\$\\$Props|\\$\\$Events|\\$\\$Slots|\\$(?:state|props|derived))', // Allow Svelte runes and special variables
+                    caughtErrorsIgnorePattern: '^_'
+                }
+            ]
         }
     },
 

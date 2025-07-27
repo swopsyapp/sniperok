@@ -15,4 +15,5 @@ export const db = new Kysely<DB>({
     dialect
 });
 
+// eslint-disable-next-line no-redeclare
 export type DB = typeof db;
