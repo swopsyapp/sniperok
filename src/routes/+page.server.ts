@@ -4,7 +4,7 @@ export const load = async ({ locals }) => {
     const { user } = await locals.safeGetSession();
 
     let boostsCount = 0;
-    
+
     if (user && !user.is_anonymous) {
         const boostsDbCount = undefined;
         // const boostsDbCount = await db
@@ -14,7 +14,7 @@ export const load = async ({ locals }) => {
         //     .where('lm.status_code', '=', 'pending')
         //     .select(({ fn }) => [fn.count<number>('lm.id').as('tally')])
         //     .executeTakeFirst();
-        
+
         if (boostsDbCount) {
             boostsCount = 0;
             // boostsCount = boostsDbCount.tally;

@@ -72,14 +72,16 @@ const authGuard: Handle = async ({ event, resolve }) => {
     event.locals.user = user;
 
     if (
-        (!user) &&
+        !user &&
         !(
             // These are the only routes accessible when not logged in
-            event.route.id == '/' ||
-            event.route.id == '/auth/login' ||
-            event.route.id == '/auth/login/guest' ||
-            event.route.id == '/auth/register' ||
-            event.route.id == '/games'
+            (
+                event.route.id == '/' ||
+                event.route.id == '/auth/login' ||
+                event.route.id == '/auth/login/guest' ||
+                event.route.id == '/auth/register' ||
+                event.route.id == '/games'
+            )
         )
     ) {
         logger.error(`User not logged in, route=${event.route.id}`);
@@ -87,17 +89,19 @@ const authGuard: Handle = async ({ event, resolve }) => {
     }
 
     if (
-        (user && user.is_anonymous) &&
+        user &&
+        user.is_anonymous &&
         !(
             // These are the only routes accessible when logged in anonymously
-            event.route.id == '/' ||
-            event.route.id == '/auth/logout' ||
-            event.route.id == '/games' ||
-            event.route.id == '/games/[game_id]' ||
-            event.route.id == '/games/[game_id]/join' ||
-            event.route.id == '/games/[game_id]/status' ||
-            event.route.id == '/games/[game_id]/round/status'
-
+            (
+                event.route.id == '/' ||
+                event.route.id == '/auth/logout' ||
+                event.route.id == '/games' ||
+                event.route.id == '/games/[game_id]' ||
+                event.route.id == '/games/[game_id]/join' ||
+                event.route.id == '/games/[game_id]/status' ||
+                event.route.id == '/games/[game_id]/round/status'
+            )
         )
     ) {
         logger.error(`User not registered, route=${event.route.id}`);
@@ -105,6 +109,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
     }
 
     return resolve(event);
-}
+};
 
 export const handle: Handle = sequence(supabase, authGuard);

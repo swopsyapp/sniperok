@@ -3,25 +3,31 @@ import { Transaction } from 'kysely';
 
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
-import { db } from '$lib/server/db/db.d'
+import { db } from '$lib/server/db/db.d';
 import { type DB } from '$lib/server/db/sniperok-schema.d';
 import { Status } from '$lib/model/model.d';
 import type { RequestHandler } from './$types';
-
 
 export const DELETE: RequestHandler = async ({ request, locals }) => {
     const jsonBody = await request.json();
     logger.trace('Delete buddy : ', jsonBody);
 
-    const playerName : string = jsonBody.playerName;
-    const buddyName : string = jsonBody.buddyName;
+    const playerName: string = jsonBody.playerName;
+    const buddyName: string = jsonBody.buddyName;
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await locals.safeGetSession();
     const username = user ? user.user_metadata.username : '';
 
     if (username != playerName && username != buddyName) {
-        logger.warn('Unauthorized buddy deletion ', buddyName, ' for ', playerName, ' as ', username);
+        logger.warn(
+            'Unauthorized buddy deletion ',
+            buddyName,
+            ' for ',
+            playerName,
+            ' as ',
+            username
+        );
         error(HttpStatus.FORBIDDEN, 'Unauthorized');
     }
 
@@ -42,15 +48,20 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
 
     logger.debug(`Deleting buddy: ${buddyName} for ${playerName}`);
 
-    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
-        await trx.deleteFrom('buddy as b')
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            await trx
+                .deleteFrom('buddy as b')
                 .where('b.player_uuid', '=', buddyRecord.player_uuid)
                 .where('b.buddy_uuid', '=', buddyRecord.buddy_uuid)
                 .execute();
-    }).catch(function(err){
-        logger.error(`Error deleting buddy : ${playerName} + ${buddyName} `, err);
-        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-    });
+        })
+        .catch(function (err) {
+            logger.error(`Error deleting buddy : ${playerName} + ${buddyName} `, err);
+            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+        });
 
     return json({ success: true });
 };
@@ -59,15 +70,22 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
     const jsonBody = await request.json();
     logger.trace('Confirm buddy : ', jsonBody);
 
-    const playerName : string = jsonBody.playerName;
-    const buddyName : string = jsonBody.buddyName;
+    const playerName: string = jsonBody.playerName;
+    const buddyName: string = jsonBody.buddyName;
 
     // NOTE: user should never be null here due to authguard hook : src/hooks.server.ts
     const { user } = await locals.safeGetSession();
     const username = user ? user.user_metadata.username : '';
 
     if (username != playerName && username != buddyName) {
-        logger.warn('Unauthorized buddy deletion ', buddyName, ' for ', playerName, ' as ', username);
+        logger.warn(
+            'Unauthorized buddy deletion ',
+            buddyName,
+            ' for ',
+            playerName,
+            ' as ',
+            username
+        );
         error(HttpStatus.FORBIDDEN, 'Unauthorized');
     }
 
@@ -88,16 +106,21 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 
     logger.debug(`Deleting buddy: ${buddyName} for ${playerName}`);
 
-    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
-        await trx.updateTable('buddy as b')
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            await trx
+                .updateTable('buddy as b')
                 .set({ status_id: Status.ACTIVE.valueOf() })
                 .where('b.player_uuid', '=', buddyRecord.player_uuid)
                 .where('b.buddy_uuid', '=', buddyRecord.buddy_uuid)
                 .execute();
-    }).catch(function(err){
-        logger.error(`Error updating buddy : ${playerName} + ${buddyName} `, err);
-        error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
-    });
+        })
+        .catch(function (err) {
+            logger.error(`Error updating buddy : ${playerName} + ${buddyName} `, err);
+            error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
+        });
 
     return json({ success: true });
 };

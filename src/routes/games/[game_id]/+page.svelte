@@ -37,7 +37,7 @@
     const roundStatusPlayed = 'Played ...';
     const roundStatusScoring = 'Scoring ...';
     // svelte-ignore state_referenced_locally
-    const roundStatusDone = (game.currentRound < game.maxRounds ) ? 'Next' :  'Done';
+    const roundStatusDone = game.currentRound < game.maxRounds ? 'Next' : 'Done';
 
     // svelte-ignore state_referenced_locally
     let timeDifference = $state(calculateTimeDifference(game.startTime));
@@ -45,7 +45,13 @@
     let gameRefreshErrorCount = 0;
 
     // svelte-ignore state_referenced_locally
-    let roundStatus = $state(isGamePending ? roundStatusWaiting : Status.INACTIVE.equals(game.currentRoundStatus) ? roundStatusDone : roundStatusReady);
+    let roundStatus = $state(
+        isGamePending
+            ? roundStatusWaiting
+            : Status.INACTIVE.equals(game.currentRoundStatus)
+              ? roundStatusDone
+              : roundStatusReady
+    );
     let isPlayable = $derived(roundStatus == roundStatusPlaying);
     let isRoundStarted = $derived(setRoundStarted(roundStatus));
     let countdownColor = $derived(setCountDownColor(roundStatus));
@@ -57,7 +63,7 @@
     let count = $state(3);
     let progress = $state(0);
     let roundPlayMillis: number | undefined = $state(undefined);
-    let roundScore : RoundScore | undefined = $state(undefined);
+    let roundScore: RoundScore | undefined = $state(undefined);
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -128,7 +134,11 @@
     }
 
     function setCountDownColor(roundStatus: string) {
-        if (roundStatus == roundStatusWaiting || roundStatus == roundStatusReady || roundStatus == roundStatusStarting) {
+        if (
+            roundStatus == roundStatusWaiting ||
+            roundStatus == roundStatusReady ||
+            roundStatus == roundStatusStarting
+        ) {
             return countdownAmber;
         } else if (roundStatus == roundStatusPlaying) {
             return countdownGreen;
@@ -154,14 +164,22 @@
                     gameRefreshErrorCount = 0;
                     await invalidateAll();
                     const refreshedGameStatus = json.newStatus;
-                    if (roundStatus == roundStatusWaiting && Status.ACTIVE.equals(refreshedGameStatus)) {
+                    if (
+                        roundStatus == roundStatusWaiting &&
+                        Status.ACTIVE.equals(refreshedGameStatus)
+                    ) {
                         roundStatus = roundStatusReady;
                     }
                 } else {
                     gameRefreshErrorCount = gameRefreshErrorCount + 1;
-                    logger.error(`error status[${gameRefreshErrorCount}] : ${response.status} ${response.url}`);
+                    logger.error(
+                        `error status[${gameRefreshErrorCount}] : ${response.status} ${response.url}`
+                    );
                     if (gameRefreshErrorCount >= 3) {
-                        $flash = { type: 'error', message: 'An error occurred while refreshing the game' };
+                        $flash = {
+                            type: 'error',
+                            message: 'An error occurred while refreshing the game'
+                        };
                         goto('/');
                     }
                 }
@@ -169,7 +187,7 @@
         }
     }
 
-    async function updateRoundStatus(status: string) : Promise<boolean> {
+    async function updateRoundStatus(status: string): Promise<boolean> {
         if (!isUserGameCurator) {
             return false;
         }
@@ -203,7 +221,7 @@
         // GET round score
         const updateRoundStatusUrl = $page.url.href.concat(`/round/[${game.currentRound}]`);
         const response = await fetch(updateRoundStatusUrl, {
-            method: 'GET',
+            method: 'GET'
         });
 
         if (response.status != HttpStatus.OK || response.url != updateRoundStatusUrl) {
@@ -214,7 +232,6 @@
 
         roundScore = await response.json();
         logger.debug('roundScore ', roundScore);
-
     }
 
     function startCountdown() {
@@ -271,7 +288,7 @@
         }
         if (roundStatus == roundStatusDone) {
             logger.debug('Clicked ', roundStatus);
-            
+
             if (game.currentRound < game.maxRounds) {
                 // POST next round
                 const response = await fetch($page.url.href.concat('/round'), {
@@ -300,7 +317,7 @@
 
                 logger.debug(`response.status=${response.status}, url=${statusRefreshUrl}`);
 
-                goto('/games', {replaceState: true, invalidateAll: true});
+                goto('/games', { replaceState: true, invalidateAll: true });
             }
         }
     }
@@ -387,7 +404,7 @@
                     </td>
                     <td>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        {#if Status.INACTIVE.equals(game.status) }
+                        {#if Status.INACTIVE.equals(game.status)}
                             <div class="font-bold"><center>-</center></div>
                         {:else}
                             <div class="font-bold {timeColor}">{timeDifference.formatted}</div>
@@ -434,7 +451,8 @@
         <br />
         <Button
             id="roundStart"
-            disabled={ !isUserGameCurator || (roundStatus != roundStatusReady &&  roundStatus != roundStatusDone)}
+            disabled={!isUserGameCurator ||
+                (roundStatus != roundStatusReady && roundStatus != roundStatusDone)}
             class="w-full"
             onclick={handleStartClick}
         >
@@ -459,18 +477,24 @@
                     </Table.Header>
                     <Table.Body>
                         {#each roundScore.scores as playerScore}
-                        <Table.Row>
-                            <Table.Cell class="px-1 font-medium">{playerScore.username}</Table.Cell>
-                            <Table.Cell class="px-1 font-medium">{playerScore.weapon}</Table.Cell>
-                            <Table.Cell class="px-1 font-medium">{playerScore.wins}</Table.Cell>
-                            <Table.Cell class="px-1 font-medium">{playerScore.losses}</Table.Cell>
-                            <Table.Cell class="px-1 font-medium">{playerScore.ties}</Table.Cell>
-                            <Table.Cell class="px-1 font-medium">{playerScore.score}</Table.Cell>
-                        </Table.Row>
+                            <Table.Row>
+                                <Table.Cell class="px-1 font-medium"
+                                    >{playerScore.username}</Table.Cell
+                                >
+                                <Table.Cell class="px-1 font-medium"
+                                    >{playerScore.weapon}</Table.Cell
+                                >
+                                <Table.Cell class="px-1 font-medium">{playerScore.wins}</Table.Cell>
+                                <Table.Cell class="px-1 font-medium"
+                                    >{playerScore.losses}</Table.Cell
+                                >
+                                <Table.Cell class="px-1 font-medium">{playerScore.ties}</Table.Cell>
+                                <Table.Cell class="px-1 font-medium">{playerScore.score}</Table.Cell
+                                >
+                            </Table.Row>
                         {/each}
                     </Table.Body>
                 </Table.Root>
-
             {:else}
                 <svg id="game-svg" width="350" height="350" viewBox="0 0 350 350">
                     <!-- Outer ring segments -->
@@ -489,8 +513,15 @@
                     <!-- Dynamite icon -->
                     <foreignObject x="264" y="95" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Dynamite" onclick={() => play('dynamite')} href="javascript:void(0)" >
-                            <Icon icon="fluent-emoji-high-contrast:thumbs-up" class="h-8 w-8 text-gray-200" />
+                        <a
+                            title="Dynamite"
+                            onclick={() => play('dynamite')}
+                            href="javascript:void(0)"
+                        >
+                            <Icon
+                                icon="fluent-emoji-high-contrast:thumbs-up"
+                                class="h-8 w-8 text-gray-200"
+                            />
                         </a>
                     </foreignObject>
 
@@ -499,7 +530,7 @@
                     <path
                         d={describeArc(175, 175, 125, 120, 240)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
-                        fill="none" 
+                        fill="none"
                         stroke="rgb(0, 150, 0)"
                         stroke-width="40"
                         onclick={() => play('bazooka')}
@@ -509,8 +540,15 @@
                     <!-- Bazooka icon -->
                     <foreignObject x="160" y="285" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Bazooka" onclick={() => play('bazooka')} href="javascript:void(0)" >
-                            <Icon icon="fluent-emoji-high-contrast:pinched-fingers" class="h-8 w-8 text-gray-200" />
+                        <a
+                            title="Bazooka"
+                            onclick={() => play('bazooka')}
+                            href="javascript:void(0)"
+                        >
+                            <Icon
+                                icon="fluent-emoji-high-contrast:pinched-fingers"
+                                class="h-8 w-8 text-gray-200"
+                            />
                         </a>
                     </foreignObject>
 
@@ -520,7 +558,7 @@
                         d={describeArc(175, 175, 125, 240, 360)}
                         class="cursor-pointer {isPlayable ? 'hover:opacity-80' : 'opacity-50'}"
                         fill="none"
-                        stroke="purple" 
+                        stroke="purple"
                         stroke-width="40"
                         onclick={() => play('shotgun')}
                     >
@@ -529,8 +567,15 @@
                     <!-- Shotgun icon -->
                     <foreignObject x="53" y="95" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Shotgun" onclick={() => play('shotgun')} href="javascript:void(0)" >
-                            <Icon icon="fluent-emoji-high-contrast:sign-of-the-horns" class="h-8 w-8 text-gray-200" />
+                        <a
+                            title="Shotgun"
+                            onclick={() => play('shotgun')}
+                            href="javascript:void(0)"
+                        >
+                            <Icon
+                                icon="fluent-emoji-high-contrast:sign-of-the-horns"
+                                class="h-8 w-8 text-gray-200"
+                            />
                         </a>
                     </foreignObject>
 
@@ -550,7 +595,7 @@
                     <!-- Rock icon -->
                     <foreignObject x="155" y="80" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Rock" onclick={() => play('rock')} href="javascript:void(0)" >
+                        <a title="Rock" onclick={() => play('rock')} href="javascript:void(0)">
                             <Icon icon="fa:hand-rock-o" class="h-8 w-8 text-gray-200" />
                         </a>
                     </foreignObject>
@@ -570,7 +615,7 @@
                     <!-- Paper icon -->
                     <foreignObject x="228" y="195" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Paper" onclick={() => play('paper')} href="javascript:void(0)" >
+                        <a title="Paper" onclick={() => play('paper')} href="javascript:void(0)">
                             <Icon icon="fa:hand-paper-o" class="h-8 w-8 text-gray-200" />
                         </a>
                     </foreignObject>
@@ -590,13 +635,24 @@
                     <!-- Scissors icon -->
                     <foreignObject x="86" y="195" width="35" height="35">
                         <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a title="Scissors" onclick={() => play('scissors')} href="javascript:void(0)" >
+                        <a
+                            title="Scissors"
+                            onclick={() => play('scissors')}
+                            href="javascript:void(0)"
+                        >
                             <Icon icon="fa:hand-scissors-o" class="h-8 w-8 text-gray-200" />
                         </a>
                     </foreignObject>
 
                     <!-- Inner countdown circle (existing code) -->
-                    <circle cx="175" cy="175" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                    <circle
+                        cx="175"
+                        cy="175"
+                        r="45"
+                        fill="none"
+                        stroke="#e2e8f0"
+                        stroke-width="8"
+                    />
                     <circle
                         cx="175"
                         cy="175"
@@ -618,7 +674,7 @@
                     >
                         {count == -1 ? 'Go!' : count}
                     </text>
-                </svg>    
+                </svg>
             {/if}
         </div>
     </Card.Content>

@@ -54,12 +54,13 @@ The following scripts are available in `package.json`:
 ## Workflow Preferences
 
 - **Work in small increments**: don;t make sweeping changes in one go, try to break it into manageble pieces.
-Formulate a plan, and show the user get agreement to move ahead. Commit work before moving onto the next change.
+  Formulate a plan, and show the user get agreement to move ahead. Commit work before moving onto the next change.
 - **Prioritize Linting and Formatting**: Always address and fix linting and formatting issues before implementing new features or making significant functional changes. This ensures a clean and consistent codebase throughout the development process.
 
 ## Commit Workflow
 
 To ensure consistent and reliable commits, use the following method:
+
 1. Stage your changes using `git add <file(s)>`.
 2. Create a commit message file (e.g., `temp/commit_message.txt`) with the desired message.
 3. Commit using `git commit -F temp/commit_message.txt`.

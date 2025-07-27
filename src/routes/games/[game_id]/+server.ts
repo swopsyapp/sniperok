@@ -52,11 +52,13 @@ export const PUT: RequestHandler = async (requestEvent) => {
 
     logger.debug(`playTurn PUT jsonBody: ${JSON.stringify(jsonBody)}`);
 
-    const roundSeq : number = jsonBody.roundSeq;
-    const weaponPlayed : string = jsonBody.weaponPlayed;
-    const responseTimeMillis : number = jsonBody.responseTimeMillis;
+    const roundSeq: number = jsonBody.roundSeq;
+    const weaponPlayed: string = jsonBody.weaponPlayed;
+    const responseTimeMillis: number = jsonBody.responseTimeMillis;
 
-    logger.debug(`playTurn PUT gameId: ${gameId}, userId: ${userId}, roundSeq: ${roundSeq}, weaponPlayed: ${weaponPlayed}, responseTimeMillis: ${responseTimeMillis}`);
+    logger.debug(
+        `playTurn PUT gameId: ${gameId}, userId: ${userId}, roundSeq: ${roundSeq}, weaponPlayed: ${weaponPlayed}, responseTimeMillis: ${responseTimeMillis}`
+    );
 
     const result = await playTurn(gameId, userId, roundSeq, weaponPlayed, responseTimeMillis);
 

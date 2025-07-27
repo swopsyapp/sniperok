@@ -43,12 +43,11 @@ export class ClientMessageHandler {
     private static instance: ClientMessageHandler | undefined;
 
     private socket: Socket | undefined;
-    private username : string | undefined;
+    private username: string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     private messageTypeCallbackMap = new Map<MessageType, Function>();
 
-    private constructor() {
-    }
+    private constructor() {}
 
     static getInstance() {
         if (ClientMessageHandler.instance) {
@@ -58,11 +57,11 @@ export class ClientMessageHandler {
         return ClientMessageHandler.instance;
     }
 
-    public connect() : Socket {
+    public connect(): Socket {
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
-        const pageUsername = ( user && !user.is_anonymous ) ? user.user_metadata.username : undefined;
-        
+        const user: User = currentPage.data?.user;
+        const pageUsername = user && !user.is_anonymous ? user.user_metadata.username : undefined;
+
         if (this.socket?.connected) {
             if (this.username == pageUsername) {
                 return this.socket;
@@ -90,7 +89,7 @@ export class ClientMessageHandler {
             .on(MessageType.GameChat, (message) => {
                 this.addGameMessage(message);
             });
-        
+
         logger.debug('socket connected as ', this.username);
         return this.socket;
     }
@@ -164,16 +163,15 @@ export class ClientMessageHandler {
 
     public sendWorldMessage(messageSender: string, messageText: string) {
         if (messageText) {
-
             const currentPage = get(page);
-            const user : User = currentPage.data?.user;
+            const user: User = currentPage.data?.user;
             if (!user || user.is_anonymous) {
                 logger.warn('Unregistered users cannot send worldChat');
                 return;
             }
             const username = user.user_metadata.username;
             logger.trace('sender = ', username);
-    
+
             const msg = {} as Message;
             msg.type = MessageType.WorldChat;
             msg.sender = messageSender;
@@ -191,21 +189,20 @@ export class ClientMessageHandler {
 
     public sendUserMessage(messageSender: string, messageText: string) {
         if (messageText) {
-
             const currentPage = get(page);
-            const user : User = currentPage.data?.user;
+            const user: User = currentPage.data?.user;
             if (!user || user.is_anonymous) {
                 logger.warn('Unregistered users cannot send userChat');
                 return;
             }
             const username = user.user_metadata.username;
             logger.trace('sender = ', username);
-    
+
             // TODO validate the receiver is a buddy
             // messagetext = '@user1 hello' ... receiver = 'user1'
-            const receiver = messageText.split(" ")[0].slice(1);
+            const receiver = messageText.split(' ')[0].slice(1);
             const strippedMessageText = messageText.slice(messageText.indexOf(' '));
-            
+
             const msg = {} as Message;
             msg.type = MessageType.UserChat;
             msg.sender = messageSender;
@@ -225,7 +222,7 @@ export class ClientMessageHandler {
 
     public joinGameChannel(gameId: number, playerSeq: number) {
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
+        const user: User = currentPage.data?.user;
         if (!user) {
             logger.warn('Unregistered users cannot join games');
             return;
@@ -247,9 +244,8 @@ export class ClientMessageHandler {
 
     public sendGameMessage(gameId: number, messageSender: string, messageText: string) {
         if (messageText) {
-
             const currentPage = get(page);
-            const user : User = currentPage.data?.user;
+            const user: User = currentPage.data?.user;
             if (!user) {
                 logger.warn('You must be logged in to send gameChat');
                 return;
@@ -273,7 +269,7 @@ export class ClientMessageHandler {
 
     public sendStartRound(gameId: number, messageSender: string, roundSeq: number) {
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
+        const user: User = currentPage.data?.user;
         if (!user) {
             logger.warn('You must be logged in to send startRound');
             return;
@@ -294,7 +290,7 @@ export class ClientMessageHandler {
 
     public sendRoundPlayed(gameId: number, roundSeq: number) {
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
+        const user: User = currentPage.data?.user;
         if (!user) {
             logger.warn('You must be logged in to send startRound');
             return;
@@ -315,7 +311,7 @@ export class ClientMessageHandler {
 
     public sendNextRound(gameId: number, roundSeq: number) {
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
+        const user: User = currentPage.data?.user;
         if (!user) {
             logger.warn('You must be logged in as curator to send nextRound');
             return;
@@ -341,9 +337,9 @@ export class ClientMessageHandler {
             this.socket.disconnect();
             this.socket.removeAllListeners();
         }
-        
+
         const currentPage = get(page);
-        const user : User = currentPage.data?.user;
+        const user: User = currentPage.data?.user;
         if (user) {
             logger.info('Logging out user ', user.user_metadata.username ?? user.id);
             currentPage.data.user = undefined;
@@ -363,10 +359,10 @@ export class ClientMessageHandler {
     }
 
     // TODO : Is this really necessary?
-    public static messageTypeTextToEnum(messageType: string) : MessageType | undefined {
+    public static messageTypeTextToEnum(messageType: string): MessageType | undefined {
         switch (messageType) {
             case MessageType.GameChat:
-                return MessageType.GameChat
+                return MessageType.GameChat;
             case MessageType.JoinGame:
                 return MessageType.JoinGame;
             case MessageType.NextRound:
@@ -388,13 +384,12 @@ export class ClientMessageHandler {
 
     private notifySubscribers(message: Message) {
         const msgType = ClientMessageHandler.messageTypeTextToEnum(message.type);
-        if ( msgType && this.messageTypeCallbackMap.has(msgType) ) {
+        if (msgType && this.messageTypeCallbackMap.has(msgType)) {
             const subscriber = this.messageTypeCallbackMap.get(msgType);
             if (subscriber) {
                 subscriber(message);
             }
         }
-
     }
 }
 

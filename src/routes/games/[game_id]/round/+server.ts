@@ -38,17 +38,17 @@ export const POST: RequestHandler = async (requestEvent) => {
         error(HttpStatus.FORBIDDEN, 'Not the game curator');
     }
 
-    if ( !Status.INACTIVE.equals(gameDetail.currentRoundStatus) ) {
+    if (!Status.INACTIVE.equals(gameDetail.currentRoundStatus)) {
         logger.warn(`Round is not yet inactive ${gameDetail.currentRoundStatus}`);
         error(HttpStatus.TOO_EARLY, 'Current Round is not yet inactive');
     }
 
-    if ( gameDetail.currentRound >= gameDetail.maxRounds ) {
+    if (gameDetail.currentRound >= gameDetail.maxRounds) {
         logger.warn(`Game already completed ${gameDetail.currentRound} >= ${gameDetail.maxRounds}`);
         error(HttpStatus.CONFLICT, 'Game already completed');
     }
 
     const result = await nextRound(gameId);
 
-    return json( result );
+    return json(result);
 };

@@ -41,8 +41,8 @@ export const PUT: RequestHandler = async (requestEvent) => {
         logger.debug(`Updated current round status to ${status} for game ${gameId}`);
     } else {
         logger.error(`Failed to update current round status to ${status} for game ${gameId}`);
-        return json( { success: false } );
+        return json({ success: false });
     }
 
-    return json( { success: true } );
+    return json({ success: true });
 };

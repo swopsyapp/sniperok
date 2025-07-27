@@ -16,7 +16,7 @@
 
     logger.trace('route = ', $page.route.id);
     logger.trace($page.data);
-    
+
     let activeTab: string = $state($page.route.id == '/games/[game_id]' ? 'gameChat' : 'worldChat');
     let msgText: string = $state('');
     let messageList = $derived(clientMessageHandler.getMessages(activeTab));
@@ -39,12 +39,12 @@
     let gameMsgUnseen = $state(false);
 
     let unseenMap = $derived.by(() => {
-        let map : { [key: string]: boolean} = {
+        let map: { [key: string]: boolean } = {
             worldChat: worldMsgUnseen,
             userChat: userMsgUnseen,
             gameChat: gameMsgUnseen
         };
-        
+
         return map;
     });
 
@@ -52,24 +52,24 @@
         if (activeTab == 'worldChat') {
             worldMsgCountPrev = worldMsgCount;
         }
-        worldMsgUnseen = (worldMsgCountPrev != worldMsgCount);
+        worldMsgUnseen = worldMsgCountPrev != worldMsgCount;
 
         if (activeTab == 'userChat') {
             userMsgCountPrev = userMsgCount;
         }
-        userMsgUnseen = (userMsgCountPrev != userMsgCount);
+        userMsgUnseen = userMsgCountPrev != userMsgCount;
 
         if (activeTab == 'gameChat') {
             gameMsgCountPrev = gameMsgCount;
         }
-        gameMsgUnseen = (gameMsgCountPrev != gameMsgCount);
+        gameMsgUnseen = gameMsgCountPrev != gameMsgCount;
     });
 
     onMount(() => {
         clientMessageHandler.connect();
-    })
+    });
 
-    function getSendBlocked() : boolean {
+    function getSendBlocked(): boolean {
         let isBlocked = true;
         if (user) {
             if (username == GUEST) {
@@ -77,7 +77,11 @@
                     logger.trace('send enabled, Guest in game on gameChat tab ', activeTab);
                     isBlocked = false;
                 } else {
-                    logger.trace('send disabled, Guest not in game or not on gameChat tab ', activeTab, $page.route.id);
+                    logger.trace(
+                        'send disabled, Guest not in game or not on gameChat tab ',
+                        activeTab,
+                        $page.route.id
+                    );
                 }
             } else {
                 logger.trace('send enabled, user not Guest', username);
@@ -95,7 +99,7 @@
 
     function getTabClass(tabName: string) {
         let tabClass = '';
-        
+
         if (tabName != activeTab) {
             tabClass = 'text-gray-500';
             if (unseenMap[tabName] == true) {
@@ -119,7 +123,7 @@
         } else if (activeTab == 'gameChat') {
             clientMessageHandler.sendGameMessage('6', username, msgText);
         }
-        
+
         msgText = '';
     }
 </script>
@@ -137,8 +141,9 @@
 {/snippet}
 
 {#snippet messageItem(message: ActionableMessage)}
-    <li>@{message.sender}
-        {#if (username != GUEST && message.actions && message.actions.length > 0)}
+    <li>
+        @{message.sender}
+        {#if username != GUEST && message.actions && message.actions.length > 0}
             [
             {#each message.actions as action}
                 <a href={action.url} class={action.promptClass}>{action.prompt}</a>
@@ -152,7 +157,7 @@
     <Card.Header>
         <Card.Title class="text-center text-4xl font-thin">Messages</Card.Title>
     </Card.Header>
-    <Card.Content class="h-5/6 flex grow flex-col">
+    <Card.Content class="flex h-5/6 grow flex-col">
         <div class="grid grid-cols-3 gap-1">
             {@render messageTab('worldChat', 'lucide:globe')}
             {@render messageTab('userChat', 'lucide:user-round')}
@@ -167,10 +172,13 @@
         </div>
         <div>
             <span class="flex gap-1">
-                <Input disabled={isSendBlocked} bind:value={msgText} onchange={sendChatMessage} autocomplete="off" />
-                <Button disabled={isSendBlocked}
-                    onclick={sendChatMessage}>Send</Button
-                >
+                <Input
+                    disabled={isSendBlocked}
+                    bind:value={msgText}
+                    onchange={sendChatMessage}
+                    autocomplete="off"
+                />
+                <Button disabled={isSendBlocked} onclick={sendChatMessage}>Send</Button>
             </span>
         </div>
     </Card.Content>

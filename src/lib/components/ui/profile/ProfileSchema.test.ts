@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import { logger } from '../../../logger';
 import { profileSchema } from './ProfileSchema';
 
-test('Registered', () => {    
+test('Registered', () => {
     const registered = {
         profileMode: 'update',
         email: 'test1@test.com',
@@ -19,7 +19,7 @@ test('Registered', () => {
     expect(result.success).toBe(true);
 });
 
-test('Registered no password', () => {    
+test('Registered no password', () => {
     const registered = {
         profileMode: 'update',
         email: 'test1@test.com',
@@ -32,7 +32,7 @@ test('Registered no password', () => {
     expect(result.success).toBe(true);
 });
 
-test('Unregistered', () => {    
+test('Unregistered', () => {
     const unregistered = {
         profileMode: 'create',
         email: 'test1@test.com',
@@ -49,7 +49,7 @@ test('Unregistered', () => {
     expect(result.success).toBe(true);
 });
 
-test('Unregistered no password', () => {    
+test('Unregistered no password', () => {
     const unregistered = {
         profileMode: 'create',
         email: 'test1@test.com',
@@ -62,7 +62,7 @@ test('Unregistered no password', () => {
     expect(result.success).toBe(false);
 });
 
-test('Unregistered short password', () => {    
+test('Unregistered short password', () => {
     const unregistered = {
         profileMode: 'create',
         email: 'test1@test.com',

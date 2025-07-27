@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { getFlash } from 'sveltekit-flash-message';
-    
+
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
 
     import * as Card from '$lib/components/ui/card/index';
-    import * as Form from "$lib/components/ui/form/index.js";
+    import * as Form from '$lib/components/ui/form/index.js';
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
@@ -18,15 +18,15 @@
 
     const flash = getFlash(page);
 
-    let isPublic : boolean = $state(true);
-    let minPlayers : number = $state(2);
-    let startSeconds : number = $state(60);
+    let isPublic: boolean = $state(true);
+    let minPlayers: number = $state(2);
+    let startSeconds: number = $state(60);
 
     onMount(() => {
-        document.getElementById("isPublic")?.focus();
+        document.getElementById('isPublic')?.focus();
     });
 
-    async function newGame(event : SubmitEvent) {
+    async function newGame(event: SubmitEvent) {
         event.preventDefault();
         const response = await fetch($page.url.href, {
             method: 'POST',
@@ -49,13 +49,12 @@
             goto(newGameUrl, {
                 replaceState: true,
                 invalidateAll: true
-            } );
+            });
         } else {
             $flash = { type: 'error', message: 'Nope!' };
             return;
         }
     }
-
 </script>
 
 <div>
@@ -65,42 +64,51 @@
             <!-- <Card.Description>Welcome</Card.Description> -->
         </Card.Header>
         <Card.Content>
-            <form method="POST" onsubmit={(e) => { newGame(e) }}>
+            <form
+                method="POST"
+                onsubmit={(e) => {
+                    newGame(e);
+                }}
+            >
                 <span class="flex w-full">
                     <Label
                         id="isPublic-label"
                         for="isPublic"
-                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 w-3/5"
+                        class="w-3/5 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                         is public
                     </Label>
-                    <Checkbox id="isPublic" bind:checked={isPublic} aria-labelledby="isPublic-label" />
+                    <Checkbox
+                        id="isPublic"
+                        bind:checked={isPublic}
+                        aria-labelledby="isPublic-label"
+                    />
                 </span>
-                <br/>
+                <br />
                 <span class="flex w-full">
-                    <Label
-                        id="minPlayers-label"
-                        for="minPlayers"
-                        class="w-3/5 pt-3">
+                    <Label id="minPlayers-label" for="minPlayers" class="w-3/5 pt-3">
                         Min players
                     </Label>
-                    <Input id="minPlayers" bind:value={minPlayers} type="number" min="2" max="12"/>
+                    <Input id="minPlayers" bind:value={minPlayers} type="number" min="2" max="12" />
                 </span>
-                <br/>
+                <br />
                 <span class="flex w-full">
-                    <Label
-                        id="startSeconds-label"
-                        for="startSeconds"
-                        class="w-3/5 pt-3">
+                    <Label id="startSeconds-label" for="startSeconds" class="w-3/5 pt-3">
                         Seconds before start
                     </Label>
-                    <Input id="startSeconds" bind:value={startSeconds} type="number" min="10" max="600"/>
+                    <Input
+                        id="startSeconds"
+                        bind:value={startSeconds}
+                        type="number"
+                        min="10"
+                        max="600"
+                    />
                 </span>
-                <br/>
-                <span class="flex w-full  justify-center items-center">
+                <br />
+                <span class="flex w-full items-center justify-center">
                     <Form.Button>Create</Form.Button>
                 </span>
-            </form>    
+            </form>
         </Card.Content>
     </Card.Root>
 </div>

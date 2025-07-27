@@ -155,7 +155,11 @@
                                         <Tooltip.Provider>
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger
-                                                    onclick={() => confirmBuddy(buddyRecord.player, buddyRecord.buddy)}
+                                                    onclick={() =>
+                                                        confirmBuddy(
+                                                            buddyRecord.player,
+                                                            buddyRecord.buddy
+                                                        )}
                                                     class={iconGhost}
                                                 >
                                                     <Icon
@@ -171,7 +175,11 @@
                                     <Tooltip.Provider>
                                         <Tooltip.Root>
                                             <Tooltip.Trigger
-                                                onclick={() => deleteBuddy(buddyRecord.player, buddyRecord.buddy)}
+                                                onclick={() =>
+                                                    deleteBuddy(
+                                                        buddyRecord.player,
+                                                        buddyRecord.buddy
+                                                    )}
                                                 class={iconGhost}
                                             >
                                                 <Icon

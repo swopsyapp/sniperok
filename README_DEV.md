@@ -1,8 +1,9 @@
 # sniperok
 
 ## See
+
 - https://medium.com/version-1/websockets-in-sveltekit-28e91eec9245
-  - https://joyofcode.xyz/using-websockets-with-sveltekit
+    - https://joyofcode.xyz/using-websockets-with-sveltekit
 - https://github.com/razshare/sveltekit-sse
 - https://github.com/andywer/pg-listen
 
@@ -19,7 +20,7 @@ pnpm dev
 
 See https://supabase.com/docs/guides/local-development/declarative-database-schemas
 
-See https://supabase.com/docs/guides/local-development/overview#diffing-changes  
+See https://supabase.com/docs/guides/local-development/overview#diffing-changes
 
 `supabase db diff --schema public`
 
@@ -32,5 +33,6 @@ copy output from diff into newly created empty migration file.
 See https://supabase.com/docs/guides/deployment/database-migrations
 
 ## Troubleshooting
+
 - Supabase wont start because of port conflict after reboot  
   `netsh int ipv4 show excludedportrange protocol=tcp`

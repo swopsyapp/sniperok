@@ -20,7 +20,7 @@ export class Status {
         return this.description;
     }
 
-    public equals(obj: Status | string | number) : boolean { 
+    public equals(obj: Status | string | number): boolean {
         let result = false;
         if (obj instanceof Status) {
             result = this.value === obj.value;
@@ -34,21 +34,31 @@ export class Status {
 
     public static statusForValue(value: number): Status {
         switch (value) {
-            case 0: return Status.UNKNOWN;
-            case 1: return Status.PENDING;
-            case 2: return Status.ACTIVE;
-            case 3: return Status.INACTIVE;
-            default: return Status.UNKNOWN;
+            case 0:
+                return Status.UNKNOWN;
+            case 1:
+                return Status.PENDING;
+            case 2:
+                return Status.ACTIVE;
+            case 3:
+                return Status.INACTIVE;
+            default:
+                return Status.UNKNOWN;
         }
     }
 
     public static statusForDescription(description: string): Status {
         switch (description) {
-            case 'unknown': return Status.UNKNOWN;
-            case 'pending': return Status.PENDING;
-            case 'active': return Status.ACTIVE;
-            case 'inactive': return Status.INACTIVE;
-            default: return Status.UNKNOWN;
+            case 'unknown':
+                return Status.UNKNOWN;
+            case 'pending':
+                return Status.PENDING;
+            case 'active':
+                return Status.ACTIVE;
+            case 'inactive':
+                return Status.INACTIVE;
+            default:
+                return Status.UNKNOWN;
         }
     }
 }

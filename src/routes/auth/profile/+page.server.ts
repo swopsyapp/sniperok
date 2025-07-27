@@ -2,14 +2,13 @@ import { fail } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { redirect } from 'sveltekit-flash-message/server'
+import { redirect } from 'sveltekit-flash-message/server';
 
 import { logger } from '$lib/logger';
 import { profileSchema } from '$lib/components/ui/profile/ProfileSchema';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async (requestEvent) => {
-
     const { session, user } = await requestEvent.locals.safeGetSession();
 
     const form = await superValidate(zod(profileSchema));
@@ -58,6 +57,6 @@ export const actions = {
             return setError(form, 'email', errorMessage);
         }
 
-        redirect('/', { type: 'success', message: "Profile update was successful" }, cookies);
+        redirect('/', { type: 'success', message: 'Profile update was successful' }, cookies);
     }
 };

@@ -12,7 +12,7 @@
 
     const isTraceOn = logger.settings.minLevel == LOG_LEVEL_TRACE;
 
-    const isProfilePage = ($page.route.id == '/auth/profile');
+    const isProfilePage = $page.route.id == '/auth/profile';
 
     export let data: SuperValidated<Infer<ProfileSchema>>;
 
@@ -23,16 +23,15 @@
 
     const { form: formData, enhance } = form;
 
-    const roClass = (isProfilePage ? 'text-muted-foreground aria-readonly' : '');
-    const usernameSpanClass = (isProfilePage ? 'col-span-full' : '');
-    const btnIcon = ( isProfilePage ? 'mdi:account-edit-outline' : 'mdi:email-plus-outline')
-    const btnText = ( isProfilePage ? 'Update' : 'Register')
-
+    const roClass = isProfilePage ? 'text-muted-foreground aria-readonly' : '';
+    const usernameSpanClass = isProfilePage ? 'col-span-full' : '';
+    const btnIcon = isProfilePage ? 'mdi:account-edit-outline' : 'mdi:email-plus-outline';
+    const btnText = isProfilePage ? 'Update' : 'Register';
 </script>
 
-{#if (isTraceOn)}
+{#if isTraceOn}
     <SuperDebug data={form} />
-    <br/>
+    <br />
 {/if}
 
 <form method="POST" use:enhance>
@@ -48,27 +47,33 @@
             <Form.Field {form} name="email">
                 <Form.Control>
                     {#snippet children({ props })}
-                        <Input {...props} placeholder="Email*" bind:value={$formData.email} readonly={isProfilePage} class={roClass}/>
-                        <Form.FieldErrors />
-                    {/snippet}
-                </Form.Control>
-            </Form.Field>
-        </div>
-        {#if (!isProfilePage)}
-        <div>
-            <Form.Field {form} name="password">
-                <Form.Control>
-                    {#snippet children({ props })}
-                        <Password
+                        <Input
                             {...props}
-                            placeholder="Password*"
-                            bind:value={$formData.password}
+                            placeholder="Email*"
+                            bind:value={$formData.email}
+                            readonly={isProfilePage}
+                            class={roClass}
                         />
                         <Form.FieldErrors />
                     {/snippet}
                 </Form.Control>
             </Form.Field>
         </div>
+        {#if !isProfilePage}
+            <div>
+                <Form.Field {form} name="password">
+                    <Form.Control>
+                        {#snippet children({ props })}
+                            <Password
+                                {...props}
+                                placeholder="Password*"
+                                bind:value={$formData.password}
+                            />
+                            <Form.FieldErrors />
+                        {/snippet}
+                    </Form.Control>
+                </Form.Field>
+            </div>
         {/if}
         <div class={usernameSpanClass}>
             <Form.Field {form} name="username">
@@ -118,9 +123,7 @@
         </div>
         <div class="flex flex-col items-center justify-center pb-2">
             <Form.Button class="w-full items-center justify-start">
-                <Icon icon={btnIcon}
-                    height="none"
-                    style="width: 22px; height: 22px" />
+                <Icon icon={btnIcon} height="none" style="width: 22px; height: 22px" />
                 <span class="pl-1">{btnText}</span>
             </Form.Button>
         </div>

@@ -10,9 +10,14 @@
     import ThemeToggle from '$lib/components/ui/ThemeToggle.svelte';
 
     let menuOpen = $state(false);
-    let user : User = $page.data.user;
+    let user: User = $page.data.user;
     const username = !user ? 'Visitor' : user.is_anonymous ? 'Ghost' : user.user_metadata.username;
-    const userIcon = username == 'Visitor' ? 'mdi:anonymous' : username == 'Ghost' ? 'mdi:ghost-outline' : 'lucide:user-round';
+    const userIcon =
+        username == 'Visitor'
+            ? 'mdi:anonymous'
+            : username == 'Ghost'
+              ? 'mdi:ghost-outline'
+              : 'lucide:user-round';
 
     logger.trace(`User.svelte $page : `, JSON.stringify(Object.keys($page)));
     logger.trace(`User.svelte $page.data : `, JSON.stringify(Object.keys($page.data)));
@@ -35,7 +40,10 @@
 <section class="dropdown">
     <Tooltip.Provider>
         <Tooltip.Root>
-            <Tooltip.Trigger onclick={() => (menuOpen = !menuOpen)} class={buttonVariants({variant: 'outline', size: 'icon'})} >
+            <Tooltip.Trigger
+                onclick={() => (menuOpen = !menuOpen)}
+                class={buttonVariants({ variant: 'outline', size: 'icon' })}
+            >
                 <Icon icon={userIcon} class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
                 <span class="sr-only">User</span>
             </Tooltip.Trigger>

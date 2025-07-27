@@ -29,5 +29,5 @@ export const GET: RequestHandler = async (requestEvent) => {
     const roundSeq = parseInt(StringUtils.trimEndMarkers(requestEvent.params.round_seq));
     const roundScore = await getRoundScore(gameId, roundSeq);
 
-    return json( roundScore );
+    return json(roundScore);
 };

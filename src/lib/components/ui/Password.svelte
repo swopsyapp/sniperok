@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { HTMLInputAttributes } from "svelte/elements";
-    import type { WithElementRef } from "bits-ui";
+    import type { HTMLInputAttributes } from 'svelte/elements';
+    import type { WithElementRef } from 'bits-ui';
     import Icon from '@iconify/svelte';
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button/index.js';
@@ -12,17 +12,11 @@
     }: WithElementRef<HTMLInputAttributes> = $props();
 
     let show = $state(false);
-
 </script>
 
 <span class="flex">
     <span class="pr-1">
-        <Input
-            type={show ? 'text' : 'password'}
-            {placeholder}
-            bind:value={value}
-            {...restProps}
-        />
+        <Input type={show ? 'text' : 'password'} {placeholder} bind:value {...restProps} />
     </span>
     <Button onclick={() => (show = !show)} variant="outline" size="icon">
         {#if show}

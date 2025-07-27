@@ -1,4 +1,4 @@
-import { Server } from 'socket.io'
+import { Server } from 'socket.io';
 
 /**
  * @param {number | import("http").Server | import("http2").Http2Server | undefined} server
@@ -8,7 +8,7 @@ function webSocket(server, welcomeMessage) {
     const io = new Server(server, {
         serveClient: false
     });
-    
+
     io.on('connection', (socket) => {
         socket.on('worldChat', (worldChatMsg) => {
             // TODO check sender inside of worldChatMsg verify that they can send to world
@@ -56,11 +56,11 @@ function webSocket(server, welcomeMessage) {
 
             io.to(gameRoom).emit('gameChat', joinGameMsg);
         });
-        
+
         const username = socket.handshake.query?.username;
         console.log('Connected as ', username);
         if (username) {
-            const incomingRoomName = `userRoom:${username}`
+            const incomingRoomName = `userRoom:${username}`;
             socket.join(incomingRoomName);
 
             socket.on('userChat', (userChatMsg) => {

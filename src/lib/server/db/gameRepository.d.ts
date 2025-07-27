@@ -10,43 +10,54 @@ import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
  * Creates a game, adds the first game_round and also adds the game curator as a game_player
  * @returns gameId as string or undefined
  */
-export async function createGame(isPublic: boolean, minPlayers: number, startTime: Date, userId: string): number {
+export async function createGame(
+    isPublic: boolean,
+    minPlayers: number,
+    startTime: Date,
+    userId: string
+): number {
     let gameId: number | undefined;
 
-    await db.withSchema('sniperok').transaction().execute(async (trx : Transaction<DB>) => {
-        const game = await trx.insertInto('game')
-            .values({
-                status_id: Status.PENDING.valueOf(),
-                is_public: isPublic,
-                min_players: minPlayers,
-                start_time: startTime
-            })
-            .returning('id')
-            .executeTakeFirstOrThrow();
-        
-        gameId = parseInt(game.id);
+    await db
+        .withSchema('sniperok')
+        .transaction()
+        .execute(async (trx: Transaction<DB>) => {
+            const game = await trx
+                .insertInto('game')
+                .values({
+                    status_id: Status.PENDING.valueOf(),
+                    is_public: isPublic,
+                    min_players: minPlayers,
+                    start_time: startTime
+                })
+                .returning('id')
+                .executeTakeFirstOrThrow();
 
-        await trx.insertInto('game_round')
-        .values({
-            game_id: gameId,
-            round_seq: 1,
-            status_id: Status.PENDING.valueOf()
+            gameId = parseInt(game.id);
+
+            await trx
+                .insertInto('game_round')
+                .values({
+                    game_id: gameId,
+                    round_seq: 1,
+                    status_id: Status.PENDING.valueOf()
+                })
+                .executeTakeFirst();
+
+            await trx
+                .insertInto('game_player')
+                .values({
+                    game_id: gameId,
+                    player_uuid: userId,
+                    player_seq: 1,
+                    status_id: Status.ACTIVE.valueOf()
+                })
+                .executeTakeFirst();
         })
-        .executeTakeFirst();
-
-        await trx.insertInto('game_player')
-        .values({
-            game_id: gameId,
-            player_uuid: userId,
-            player_seq: 1,
-            status_id: Status.ACTIVE.valueOf()
-        })
-        .executeTakeFirst();
-
-    }).catch(function(err){
-        gameId = undefined;
-        logger.error('Error creating game', err);
-    });
+        .catch(function (err) {
+            gameId = undefined;
+            logger.error('Error creating game', err);
+        });
 
     return gameId;
 }
@@ -85,9 +96,13 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
                 .selectFrom('current_game as cg')
                 .innerJoin('game_round as gr', 'gr.game_id', 'cg.id')
                 .innerJoin('status as s', 's.id', 'gr.status_id')
-                .select(['gr.game_id', 'gr.round_seq as current_round_seq', 's.code as current_round_status'])
+                .select([
+                    'gr.game_id',
+                    'gr.round_seq as current_round_seq',
+                    's.code as current_round_status'
+                ])
                 .groupBy(['gr.game_id', 'gr.round_seq', 's.code'])
-                .having(({eb, fn}) => eb('gr.round_seq', '=', fn.max('gr.round_seq')))
+                .having(({ eb, fn }) => eb('gr.round_seq', '=', fn.max('gr.round_seq')))
         )
         .selectFrom('current_game as cg')
         .innerJoin('current_round as cr', 'cr.game_id', 'cr.game_id')
@@ -141,11 +156,16 @@ export async function getPlayerSequence(gameId: number, userId: string) {
         .where('gp.game_id', '=', gameId)
         .where('gp.player_uuid', '=', userId)
         .executeTakeFirst();
-    
+
     if (playerSeq) {
         logger.debug('getPlayerSequence:', playerSeq);
     } else {
-        logger.error('getPlayerSequence: playerSeq is undefined for gameId:', gameId, 'userId:', userId);
+        logger.error(
+            'getPlayerSequence: playerSeq is undefined for gameId:',
+            gameId,
+            'userId:',
+            userId
+        );
     }
 
     return playerSeq
@@ -184,18 +204,18 @@ export async function joinGame(gameId: number, userId: string): boolean {
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
             const playerSeq = await trx
-                                .selectFrom('game_player as tot')
-                                .leftJoin('game_player as gp', (join) => join
-                                                                        .onRef('gp.game_id', '=', 'tot.game_id')
-                                                                        .on('gp.player_uuid', '=', userId))
-                                .select(({ fn, ref }) => [
-                                    fn.coalesce(ref('gp.player_seq'), sql<number>('count(*) + 1')).as('player_seq'),
-                                    fn.countAll<number>().as('tally')
-                                ])
-                                .where('tot.game_id', '=', gameId)
-                                .groupBy('gp.player_seq')
-                                .executeTakeFirstOrThrow();
-            
+                .selectFrom('game_player as tot')
+                .leftJoin('game_player as gp', (join) =>
+                    join.onRef('gp.game_id', '=', 'tot.game_id').on('gp.player_uuid', '=', userId)
+                )
+                .select(({ fn, ref }) => [
+                    fn.coalesce(ref('gp.player_seq'), sql<number>('count(*) + 1')).as('player_seq'),
+                    fn.countAll<number>().as('tally')
+                ])
+                .where('tot.game_id', '=', gameId)
+                .groupBy('gp.player_seq')
+                .executeTakeFirstOrThrow();
+
             logger.debug('joinGame() playerSeq:', playerSeq);
 
             await trx
@@ -212,7 +232,7 @@ export async function joinGame(gameId: number, userId: string): boolean {
                         .column('player_uuid')
                         .doUpdateSet({ status_id: Status.ACTIVE.valueOf() })
                 )
-                .executeTakeFirst();            
+                .executeTakeFirst();
         })
         .catch(function (err) {
             logger.error(`Error joining game : ${gameId} - `, err);
@@ -225,7 +245,7 @@ export async function joinGame(gameId: number, userId: string): boolean {
 }
 
 export async function refreshGameStatus(gameDetail: GameDetail): Status {
-    const oldStatus : Status = Status.statusForDescription(gameDetail.status);
+    const oldStatus: Status = Status.statusForDescription(gameDetail.status);
 
     if (Status.PENDING.equals(gameDetail.status)) {
         if (gameDetail.players >= gameDetail.minPlayers) {
@@ -235,21 +255,25 @@ export async function refreshGameStatus(gameDetail: GameDetail): Status {
             }
         }
     } else if (Status.ACTIVE.equals(gameDetail.status)) {
-        if (gameDetail.currentRound === gameDetail.maxRounds && gameDetail.currentRoundStatus === Status.INACTIVE.toString()) {
+        if (
+            gameDetail.currentRound === gameDetail.maxRounds &&
+            gameDetail.currentRoundStatus === Status.INACTIVE.toString()
+        ) {
             gameDetail.status = Status.INACTIVE.toString();
         }
     }
 
-    if ( !oldStatus.equals(gameDetail.status)) {
+    if (!oldStatus.equals(gameDetail.status)) {
         await db
             .withSchema('sniperok')
             .transaction()
             .execute(async (trx: Transaction<DB>) => {
-                await trx.updateTable('game as g')
-                            .set({ status_id: Status.statusForDescription(gameDetail.status).valueOf() })
-                            .where('g.id', '=', gameDetail.gameId)
-                            .where('g.status_id', '=', oldStatus.valueOf())
-                            .executeTakeFirst();
+                await trx
+                    .updateTable('game as g')
+                    .set({ status_id: Status.statusForDescription(gameDetail.status).valueOf() })
+                    .where('g.id', '=', gameDetail.gameId)
+                    .where('g.status_id', '=', oldStatus.valueOf())
+                    .executeTakeFirst();
             })
             .catch(function (err) {
                 logger.error(`Error refreshing game status : ${gameDetail.gameId} - `, err);
@@ -263,15 +287,20 @@ export async function refreshGameStatus(gameDetail: GameDetail): Status {
 /**
  * Confirm player has joined game, then insert player_turn.
  * On conflict ignore, cannot change weapon once it has been played.
- * @param gameId 
- * @param userId 
- * @param roundSeq 
- * @param weaponPlayed 
- * @param responseTimeMIllis 
+ * @param gameId
+ * @param userId
+ * @param roundSeq
+ * @param weaponPlayed
+ * @param responseTimeMIllis
  * @returns booean : true if successful
  */
-export async function playTurn(gameId: string, userId: string, roundSeq: number, weaponPlayed: string, responseTimeMillis: number): boolean {
-
+export async function playTurn(
+    gameId: string,
+    userId: string,
+    roundSeq: number,
+    weaponPlayed: string,
+    responseTimeMillis: number
+): boolean {
     // This confirms that the game_player exists
     const playerSeq = await getPlayerSequence(gameId, userId);
 
@@ -306,16 +335,15 @@ export async function playTurn(gameId: string, userId: string, roundSeq: number,
                     response_time_millis: responseTimeMillis
                 })
                 .onConflict((oc) =>
-                    oc
-                        .column('game_id')
-                        .column('player_uuid')
-                        .column('round_seq')
-                        .doNothing()
+                    oc.column('game_id').column('player_uuid').column('round_seq').doNothing()
                 )
-                .executeTakeFirst();            
+                .executeTakeFirst();
         })
         .catch(function (err) {
-            logger.error(`Error playing turn : game(${gameId}) user(${userId}) roundSeq(${roundSeq}) - `, err);
+            logger.error(
+                `Error playing turn : game(${gameId}) user(${userId}) roundSeq(${roundSeq}) - `,
+                err
+            );
             return false;
         });
 
@@ -327,16 +355,18 @@ export async function updateCurrentRoundStatus(gameId: number, status: string): 
         .withSchema('sniperok')
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
-            const currentRound = await trx.selectFrom('game_round as gr')
-                                    .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
-                                    .where('gr.game_id', '=', gameId)
-                                    .executeTakeFirstOrThrow();
+            const currentRound = await trx
+                .selectFrom('game_round as gr')
+                .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
+                .where('gr.game_id', '=', gameId)
+                .executeTakeFirstOrThrow();
 
-            const statusRow = await trx.selectFrom('status as s')
-                                .selectAll()
-                                .where('s.code', '=', status)
-                                .executeTakeFirstOrThrow();
-            
+            const statusRow = await trx
+                .selectFrom('status as s')
+                .selectAll()
+                .where('s.code', '=', status)
+                .executeTakeFirstOrThrow();
+
             await trx
                 .updateTable('game_round as gr')
                 .set({ status_id: statusRow.id })
@@ -345,19 +375,24 @@ export async function updateCurrentRoundStatus(gameId: number, status: string): 
                 .executeTakeFirst();
         })
         .catch(function (err) {
-            logger.error(`Error updating current round status : game(${gameId}) status(${status}) - `, err);
+            logger.error(
+                `Error updating current round status : game(${gameId}) status(${status}) - `,
+                err
+            );
             return false;
         });
 
     return true;
 }
 
-export async function getRoundScore(gameId: number, roundSeq: number) : RoundScore {
+export async function getRoundScore(gameId: number, roundSeq: number): RoundScore {
     const roundScoreResult = await db
         .withSchema('sniperok')
         .selectFrom('game_round as gr')
         .innerJoin('status as s', 's.id', 'gr.status_id')
-        .innerJoin('round_score as rs', (join) => join.onRef('rs.game_id', '=', 'gr.game_id').onRef('rs.round_seq', '=', 'gr.round_seq'))
+        .innerJoin('round_score as rs', (join) =>
+            join.onRef('rs.game_id', '=', 'gr.game_id').onRef('rs.round_seq', '=', 'gr.round_seq')
+        )
         .select([
             'rs.game_id',
             'rs.round_seq',
@@ -374,7 +409,7 @@ export async function getRoundScore(gameId: number, roundSeq: number) : RoundSco
         .where('gr.game_id', '=', gameId)
         .where('gr.round_seq', '=', roundSeq)
         .execute();
-    
+
     const roundScore: RoundScore = {
         gameId: gameId,
         status: Status.UNKNOWN.toString(),
@@ -403,7 +438,7 @@ export async function getRoundScore(gameId: number, roundSeq: number) : RoundSco
     return roundScore;
 }
 
-export async function nextRound(gameId: number) : GameDetail | undefined {
+export async function nextRound(gameId: number): GameDetail | undefined {
     const gameDetail = await getGameDetail(gameId);
 
     if (!gameDetail) {
@@ -433,7 +468,7 @@ export async function nextRound(gameId: number) : GameDetail | undefined {
                     status_id: Status.PENDING.valueOf()
                 })
                 .executeTakeFirst();
-            
+
             gameDetail.currentRound = gameDetail.currentRound + 1;
             gameDetail.currentRoundStatus = Status.PENDING.toString();
         })
@@ -441,6 +476,5 @@ export async function nextRound(gameId: number) : GameDetail | undefined {
             logger.error(`Error creating next round : game(${gameId}) - `, err);
         });
 
-    
     return gameDetail;
 }

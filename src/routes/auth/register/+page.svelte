@@ -4,7 +4,6 @@
     import type { PageData } from './$types.js';
 
     let { data }: { data: PageData } = $props();
-    
 </script>
 
 <Card.Root class="mx-auto max-w-md">

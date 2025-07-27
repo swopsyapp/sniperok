@@ -18,13 +18,13 @@
 
     let { data }: { data: PageData } = $props();
 
-    let answer : string = $state('');
+    let answer: string = $state('');
 
-	onMount(() => {
-        document.getElementById("answer")?.focus();
-	});
+    onMount(() => {
+        document.getElementById('answer')?.focus();
+    });
 
-    async function challenge(event : SubmitEvent) {
+    async function challenge(event: SubmitEvent) {
         event.preventDefault();
         const response = await fetch($page.url.href.concat('?answer=', answer), {
             method: 'POST',
@@ -42,13 +42,12 @@
             goto('/', {
                 replaceState: true,
                 invalidateAll: true
-            } );
+            });
         } else {
             $flash = { type: 'error', message: 'Nope!' };
             return;
         }
     }
-
 </script>
 
 <Card.Root class="mx-auto max-w-md">
@@ -57,17 +56,21 @@
         <Card.Description>Type the answer and press enter</Card.Description>
     </Card.Header>
     <Card.Content>
-        <form method="POST" onsubmit={(e) => { challenge(e) }}>
-            <span class="flex w-full justify-center items-center">
-                <Label class="pr-4">
-                    two plus three equals :
-                </Label>
+        <form
+            method="POST"
+            onsubmit={(e) => {
+                challenge(e);
+            }}
+        >
+            <span class="flex w-full items-center justify-center">
+                <Label class="pr-4">two plus three equals :</Label>
                 <Input
                     id="answer"
                     name="answer"
                     bind:value={answer}
                     autocomplete="off"
-                    class="w-1/3" />
+                    class="w-1/3"
+                />
             </span>
         </form>
     </Card.Content>

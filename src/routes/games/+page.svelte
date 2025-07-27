@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
+    import { onMount, onDestroy } from 'svelte';
     import { getFlash } from 'sveltekit-flash-message';
     import Icon from '@iconify/svelte';
 
@@ -9,7 +9,7 @@
     import { logger } from '$lib/logger';
     import { calculateTimeDifference, HttpStatus, type TimeDiff } from '$lib/utils';
     import { Status } from '$lib/model/model.d';
-    import { clientMessageHandler, type Message } from "$lib/components/messages.svelte";
+    import { clientMessageHandler, type Message } from '$lib/components/messages.svelte';
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card/index';
     import * as Table from '$lib/components/ui/table/index';
@@ -27,7 +27,7 @@
     const isRegistered = $derived(data.user && !data.user.is_anonymous);
 
     let countdown = $state(10);
-    let timer: NodeJS.Timeout | null  = null;
+    let timer: NodeJS.Timeout | null = null;
 
     onMount(() => {
         timer = setInterval(() => {
@@ -41,22 +41,22 @@
         }
     });
 
-    function getTimeDiff(startTime : Date, countdown : number) : TimeDiff {
+    function getTimeDiff(startTime: Date, countdown: number): TimeDiff {
         return calculateTimeDifference(startTime);
     }
 
-    function timeColor(diff: number) : string {
-        return (diff < 0) ? ' text-red-500' : '';
+    function timeColor(diff: number): string {
+        return diff < 0 ? ' text-red-500' : '';
     }
 
-    async function joinGame(gameId : number) {
-        if ( !data.user ) {
+    async function joinGame(gameId: number) {
+        if (!data.user) {
             $flash = { type: 'error', message: 'User not logged in' };
             return;
         }
         const joinGameUrl = $page.url.href.concat(`/[${gameId}]/join`);
         const response = await fetch(joinGameUrl, {
-            method: 'POST',
+            method: 'POST'
         });
 
         if (response.status == HttpStatus.SEE_OTHER) {
@@ -97,10 +97,10 @@
         goto(`/games/[${gameId}]`, { invalidateAll: true });
     }
 
-    async function deleteGame(gameId : number) {
+    async function deleteGame(gameId: number) {
         const gameUrl = $page.url.href.concat(`/[${gameId}]`);
         const response = await fetch(gameUrl, {
-            method: 'DELETE',
+            method: 'DELETE'
         });
 
         const json = await response.json();
@@ -122,14 +122,15 @@
 
         invalidateAll();
     }
-
 </script>
 
 {#snippet startTime(gameStatus: string, timeDiff: TimeDiff)}
-    {#if Status.INACTIVE.equals(gameStatus) }
-        <Table.Cell class="px-1 w-20 font-medium"><center>-</center></Table.Cell>
+    {#if Status.INACTIVE.equals(gameStatus)}
+        <Table.Cell class="w-20 px-1 font-medium"><center>-</center></Table.Cell>
     {:else}
-        <Table.Cell class="px-1 w-20 font-medium {timeColor(timeDiff.diff)}">{timeDiff.formatted}</Table.Cell>
+        <Table.Cell class="w-20 px-1 font-medium {timeColor(timeDiff.diff)}"
+            >{timeDiff.formatted}</Table.Cell
+        >
     {/if}
 {/snippet}
 
@@ -141,10 +142,7 @@
                 {#if isRegistered}
                     <Button href="/games/new" class="w-2/12">
                         <div class="flex items-center gap-2">
-                            <Icon
-                                icon='mdi:add-bold'
-                                class='h-5 w-5 text-green-600'
-                            />
+                            <Icon icon="mdi:add-bold" class="h-5 w-5 text-green-600" />
                         </div>
                     </Button>
                 {/if}
@@ -164,8 +162,13 @@
                     <Table.Body>
                         {#each games as game}
                             <Table.Row>
-                                {@render startTime(game.status, getTimeDiff(game.startTime, countdown))}
-                                <Table.Cell class="px-1 font-medium">{game.players} / {game.minPlayers}</Table.Cell>
+                                {@render startTime(
+                                    game.status,
+                                    getTimeDiff(game.startTime, countdown)
+                                )}
+                                <Table.Cell class="px-1 font-medium"
+                                    >{game.players} / {game.minPlayers}</Table.Cell
+                                >
                                 <Table.Cell class="px-1 font-medium">{game.maxRounds}</Table.Cell>
                                 <Table.Cell class="font-medium">
                                     <span class="flex">
@@ -175,28 +178,29 @@
                                                     onclick={() => joinGame(game.id)}
                                                     class={iconGhost}
                                                 >
-                                                    <Icon
-                                                        icon='gg:enter'
-                                                        class='text-green-600'
-                                                    />
-                                                <span class="sr-only">Join</span>
+                                                    <Icon icon="gg:enter" class="text-green-600" />
+                                                    <span class="sr-only">Join</span>
                                                 </Tooltip.Trigger>
-                                                <Tooltip.Content><p>Join<sup class="text-gray-400">{game.id}</sup></p></Tooltip.Content>
+                                                <Tooltip.Content
+                                                    ><p>
+                                                        Join<sup class="text-gray-400"
+                                                            >{game.id}</sup
+                                                        >
+                                                    </p></Tooltip.Content
+                                                >
                                             </Tooltip.Root>
                                         </Tooltip.Provider>
                                         {#if game.curator == username}
                                             <Tooltip.Provider>
                                                 <Tooltip.Root>
-                                                    <Tooltip.Trigger
-                                                        class={iconGhost}
-                                                    >
+                                                    <Tooltip.Trigger class={iconGhost}>
                                                         <a href="/games/[{game.id}]">
                                                             <Icon
-                                                                icon='line-md:edit'
-                                                                class='text-green-600'
+                                                                icon="line-md:edit"
+                                                                class="text-green-600"
                                                             />
                                                         </a>
-                                                    <span class="sr-only">Edit</span>
+                                                        <span class="sr-only">Edit</span>
                                                     </Tooltip.Trigger>
                                                     <Tooltip.Content><p>Edit</p></Tooltip.Content>
                                                 </Tooltip.Root>
@@ -208,10 +212,10 @@
                                                         class={iconGhost}
                                                     >
                                                         <Icon
-                                                            icon='flowbite:trash-bin-outline'
-                                                            class='text-red-600'
+                                                            icon="flowbite:trash-bin-outline"
+                                                            class="text-red-600"
                                                         />
-                                                    <span class="sr-only">Delete</span>
+                                                        <span class="sr-only">Delete</span>
                                                     </Tooltip.Trigger>
                                                     <Tooltip.Content><p>Delete</p></Tooltip.Content>
                                                 </Tooltip.Root>
@@ -224,8 +228,6 @@
                     </Table.Body>
                 </Table.Root>
             </div>
-
-
         </Card.Content>
     </Card.Root>
 </div>
