@@ -55,7 +55,7 @@ export default [
 
     // 4. Svelte-specific configuration
     {
-        files: ['**/*.svelte'],
+        files: ['**/*.svelte', '**/*.ts', '**/*.js'],
         languageOptions: {
             parser: svelteParser,
             parserOptions: {
