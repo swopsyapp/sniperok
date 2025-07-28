@@ -43,7 +43,7 @@ export const load = (async ({ locals }) => {
 
     const gameList = games.rows.map((gameRow) => {
         return {
-            id: parseInt(gameRow.id),
+            id: gameRow.id,
             status: Status.statusForValue(gameRow.status_id).toString(),
             curator: gameRow.curator,
             isPublic: gameRow.is_public,

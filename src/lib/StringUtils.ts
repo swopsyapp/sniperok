@@ -22,14 +22,7 @@ export class StringUtils {
      */
     static trimEndMarkers(text: string): string {
         if (text) {
-            if (
-                text.startsWith('(') ||
-                text.startsWith('[') ||
-                text.startsWith('{') ||
-                text.startsWith('<') ||
-                text.startsWith('"') ||
-                text.startsWith("'")
-            ) {
+            if (text.startsWith('[') && text.endsWith(']')) {
                 return text.substring(1, text.length - 1);
             } else {
                 return text;
@@ -37,10 +30,6 @@ export class StringUtils {
         } else {
             return '';
         }
-    }
-
-    static eventParamToNumber(eventParam: string): number {
-        return parseInt(StringUtils.trimEndMarkers(eventParam));
     }
 
     static extractSlugFromPath(path: string, slugSeq?: number): string | undefined {

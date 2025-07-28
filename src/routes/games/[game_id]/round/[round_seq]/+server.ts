@@ -25,7 +25,7 @@ export const GET: RequestHandler = async (requestEvent) => {
         error(HttpStatus.UNAUTHORIZED, 'User not logged in');
     }
 
-    const gameId = parseInt(StringUtils.trimEndMarkers(requestEvent.params.game_id));
+    const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
     const roundSeq = parseInt(StringUtils.trimEndMarkers(requestEvent.params.round_seq));
     const roundScore = await getRoundScore(gameId, roundSeq);
 

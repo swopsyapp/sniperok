@@ -44,7 +44,7 @@
 
         if (json.status == HttpStatus.SEE_OTHER) {
             const newGameUrl = json.location;
-            const gameId = parseInt(StringUtils.extractSlugFromPath(newGameUrl) ?? '0');
+            const gameId = StringUtils.extractSlugFromPath(newGameUrl) ?? '';
             clientMessageHandler.joinGameChannel(gameId, 1);
             goto(newGameUrl, {
                 replaceState: true,

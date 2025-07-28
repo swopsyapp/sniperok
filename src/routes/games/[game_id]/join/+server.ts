@@ -25,7 +25,7 @@ export const POST: RequestHandler = async (requestEvent) => {
         error(HttpStatus.UNAUTHORIZED, 'User not logged in');
     }
 
-    const gameId = StringUtils.eventParamToNumber(requestEvent.params.game_id);
+    const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
     const gameDetail = await getGameDetail(gameId);
 
     if (gameDetail == undefined) {

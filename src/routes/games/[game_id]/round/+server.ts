@@ -5,6 +5,7 @@ import { getGameDetail, nextRound } from '$lib/server/db/gameRepository.d';
 import { logger } from '$lib/logger';
 import { HttpStatus } from '$lib/utils';
 import { StringUtils } from '$lib/StringUtils';
+
 import { Status } from '$lib/model/model.d';
 
 import type { RequestHandler } from './$types';
@@ -26,7 +27,7 @@ export const POST: RequestHandler = async (requestEvent) => {
         error(HttpStatus.UNAUTHORIZED, 'User not logged in');
     }
 
-    const gameId = StringUtils.eventParamToNumber(requestEvent.params.game_id);
+    const gameId = StringUtils.trimEndMarkers(requestEvent.params.game_id);
     const gameDetail = await getGameDetail(gameId);
 
     if (gameDetail == undefined) {

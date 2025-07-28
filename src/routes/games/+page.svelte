@@ -49,7 +49,7 @@
         return diff < 0 ? ' text-red-500' : '';
     }
 
-    async function joinGame(gameId: number) {
+    async function joinGame(gameId: string) {
         if (!data.user) {
             $flash = { type: 'error', message: 'User not logged in' };
             return;
@@ -97,7 +97,7 @@
         goto(`/games/[${gameId}]`, { invalidateAll: true });
     }
 
-    async function deleteGame(gameId: number) {
+    async function deleteGame(gameId: string) {
         const gameUrl = $page.url.href.concat(`/[${gameId}]`);
         const response = await fetch(gameUrl, {
             method: 'DELETE'

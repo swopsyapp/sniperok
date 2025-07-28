@@ -21,7 +21,7 @@ export interface Message {
     type: string;
     sender: string;
     receiver: string | undefined;
-    gameId: number | undefined;
+    gameId: string | undefined;
     text: string;
 }
 
@@ -220,7 +220,7 @@ export class ClientMessageHandler {
         }
     }
 
-    public joinGameChannel(gameId: number, playerSeq: number) {
+    public joinGameChannel(gameId: string, playerSeq: number) {
         const currentPage = get(page);
         const user: User = currentPage.data?.user;
         if (!user) {
@@ -242,7 +242,7 @@ export class ClientMessageHandler {
         logger.debug('joining gameRoom @', username, ' : ', gameId);
     }
 
-    public sendGameMessage(gameId: number, messageSender: string, messageText: string) {
+    public sendGameMessage(gameId: string, messageSender: string, messageText: string) {
         if (messageText) {
             const currentPage = get(page);
             const user: User = currentPage.data?.user;
@@ -267,7 +267,7 @@ export class ClientMessageHandler {
         }
     }
 
-    public sendStartRound(gameId: number, messageSender: string, roundSeq: number) {
+    public sendStartRound(gameId: string, messageSender: string, roundSeq: number) {
         const currentPage = get(page);
         const user: User = currentPage.data?.user;
         if (!user) {
@@ -288,7 +288,7 @@ export class ClientMessageHandler {
         logger.debug('sent startRound @', messageSender, ' : ', msg.text);
     }
 
-    public sendRoundPlayed(gameId: number, roundSeq: number) {
+    public sendRoundPlayed(gameId: string, roundSeq: number) {
         const currentPage = get(page);
         const user: User = currentPage.data?.user;
         if (!user) {
@@ -309,7 +309,7 @@ export class ClientMessageHandler {
         logger.debug('sent roundPlayed @', msg.sender, ' : ', msg.text);
     }
 
-    public sendNextRound(gameId: number, roundSeq: number) {
+    public sendNextRound(gameId: string, roundSeq: number) {
         const currentPage = get(page);
         const user: User = currentPage.data?.user;
         if (!user) {

@@ -64,7 +64,7 @@ export class Status {
 }
 
 export interface GameDetail {
-    gameId: number;
+    gameId: string;
     status: string;
     curator: string;
     isPublic: boolean;
@@ -89,7 +89,7 @@ export interface PlayerScore {
 }
 
 export interface RoundScore {
-    gameId: number;
+    gameId: string;
     status: string;
     roundSeq: number;
     scores: PlayerScore[];

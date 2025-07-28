@@ -35,7 +35,7 @@ export interface BuddyVw {
 }
 
 export interface Game {
-    id: Generated<Int8>;
+    id: Generated<string>;
     is_public: Generated<boolean>;
     max_rounds: Generated<number>;
     min_players: Generated<number>;
@@ -44,20 +44,20 @@ export interface Game {
 }
 
 export interface GamePlayer {
-    game_id: Int8;
+    game_id: string;
     player_seq: Generated<number>;
     player_uuid: string;
     status_id: Generated<number>;
 }
 
 export interface GameRound {
-    game_id: Int8;
+    game_id: string;
     round_seq: number;
     status_id: Generated<number>;
 }
 
 export interface PlayerTurn {
-    game_id: Int8;
+    game_id: string;
     player_uuid: string;
     response_time_millis: number;
     round_seq: number;
@@ -65,7 +65,7 @@ export interface PlayerTurn {
 }
 
 export interface RoundScore {
-    game_id: Int8 | null;
+    game_id: string | null;
     losses: Int8 | null;
     player_seq: number | null;
     response_time_millis: number | null;

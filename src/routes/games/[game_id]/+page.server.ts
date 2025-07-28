@@ -9,7 +9,7 @@ import { getGameDetail } from '$lib/server/db/gameRepository.d';
 import type { PageServerLoad } from './$types';
 
 export const load = (async (eventFromServer) => {
-    const gameId = StringUtils.eventParamToNumber(eventFromServer.params.game_id);
+    const gameId = StringUtils.trimEndMarkers(eventFromServer.params.game_id);
 
     const gameDetail = await getGameDetail(gameId);
 

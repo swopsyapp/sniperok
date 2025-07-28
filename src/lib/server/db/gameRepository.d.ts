@@ -2,7 +2,7 @@ import { sql, Transaction } from 'kysely';
 
 import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
-import { type DB } from './sniperok-schema.d';
+import { type DB, type Game } from './sniperok-schema.d';
 import { type GameDetail, Status, type RoundScore } from '$lib/model/model.d';
 import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
 
@@ -15,14 +15,14 @@ export async function createGame(
     minPlayers: number,
     startTime: Date,
     userId: string
-): number {
-    let gameId: number | undefined;
+): Promise<string | undefined> {
+    let game: Game | undefined;
 
     await db
         .withSchema('sniperok')
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
-            const game = await trx
+            game = await trx
                 .insertInto('game')
                 .values({
                     status_id: Status.PENDING.valueOf(),
@@ -33,12 +33,10 @@ export async function createGame(
                 .returning('id')
                 .executeTakeFirstOrThrow();
 
-            gameId = parseInt(game.id);
-
             await trx
                 .insertInto('game_round')
                 .values({
-                    game_id: gameId,
+                    game_id: game.id,
                     round_seq: 1,
                     status_id: Status.PENDING.valueOf()
                 })
@@ -47,7 +45,7 @@ export async function createGame(
             await trx
                 .insertInto('game_player')
                 .values({
-                    game_id: gameId,
+                    game_id: game.id,
                     player_uuid: userId,
                     player_seq: 1,
                     status_id: Status.ACTIVE.valueOf()
@@ -55,14 +53,14 @@ export async function createGame(
                 .executeTakeFirst();
         })
         .catch(function (err) {
-            gameId = undefined;
+            game = undefined;
             logger.error('Error creating game', err);
         });
 
-    return gameId;
+    return game?.id;
 }
 
-export async function getGameDetail(gameId: number): GameDetail | undefined {
+export async function getGameDetail(gameId: string): Promise<GameDetail | undefined> {
     const gameRecord = await db
         .withSchema('sniperok')
         .with('player_count', (eb) =>
@@ -102,7 +100,7 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
                     's.code as current_round_status'
                 ])
                 .groupBy(['gr.game_id', 'gr.round_seq', 's.code'])
-                .having(({ eb, fn }) => eb('gr.round_seq', '=', fn.max('gr.round_seq')))
+                .having(({ eb, fn }) => eb('gr.round_seq', '=', fn.max(sql`gr.round_seq`)))
         )
         .selectFrom('current_game as cg')
         .innerJoin('current_round as cr', 'cr.game_id', 'cr.game_id')
@@ -121,8 +119,12 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
         .orderBy('cr.current_round_seq desc')
         .executeTakeFirst();
 
+    if (!gameRecord) {
+        return undefined;
+    }
+
     const gameDetail: GameDetail = {
-        gameId: parseInt(gameRecord.id),
+        gameId: gameRecord.id,
         status: Status.statusForValue(gameRecord?.status_id ?? 0).toString(),
         curator: gameRecord?.curator,
         isPublic: gameRecord?.is_public,
@@ -139,7 +141,7 @@ export async function getGameDetail(gameId: number): GameDetail | undefined {
     return gameDetail;
 }
 
-export async function getPlayerSequence(gameId: number, userId: string) {
+export async function getPlayerSequence(gameId: string, userId: string) {
     /*
         select gp.*, coalesce(u.username, 'Guest') as username, row_number() over(order by u.created_at) as player_seq
         from sniperok.game_player gp
@@ -173,7 +175,7 @@ export async function getPlayerSequence(gameId: number, userId: string) {
         : undefined;
 }
 
-export async function deleteGame(gameId: number): boolean {
+export async function deleteGame(gameId: string): Promise<boolean> {
     await db
         .withSchema('sniperok')
         .transaction()
@@ -197,7 +199,7 @@ export async function deleteGame(gameId: number): boolean {
     return true;
 }
 
-export async function joinGame(gameId: number, userId: string): boolean {
+export async function joinGame(gameId: string, userId: string): Promise<boolean> {
     logger.debug(`joinGame() gameId: ${gameId} userId: ${userId}`);
     await db
         .withSchema('sniperok')
@@ -244,7 +246,7 @@ export async function joinGame(gameId: number, userId: string): boolean {
     return true;
 }
 
-export async function refreshGameStatus(gameDetail: GameDetail): Status {
+export async function refreshGameStatus(gameDetail: GameDetail): Promise<Status> {
     const oldStatus: Status = Status.statusForDescription(gameDetail.status);
 
     if (Status.PENDING.equals(gameDetail.status)) {
@@ -300,7 +302,7 @@ export async function playTurn(
     roundSeq: number,
     weaponPlayed: string,
     responseTimeMillis: number
-): boolean {
+): Promise<boolean> {
     // This confirms that the game_player exists
     const playerSeq = await getPlayerSequence(gameId, userId);
 
@@ -350,14 +352,14 @@ export async function playTurn(
     return true;
 }
 
-export async function updateCurrentRoundStatus(gameId: number, status: string): boolean {
+export async function updateCurrentRoundStatus(gameId: string, status: string): Promise<boolean> {
     await db
         .withSchema('sniperok')
         .transaction()
         .execute(async (trx: Transaction<DB>) => {
             const currentRound = await trx
                 .selectFrom('game_round as gr')
-                .select(({ fn }) => [fn.max('gr.round_seq').as('current_round')])
+                .select(({ fn }) => [fn.max(sql`gr.round_seq`).as('current_round')])
                 .where('gr.game_id', '=', gameId)
                 .executeTakeFirstOrThrow();
 
@@ -385,7 +387,7 @@ export async function updateCurrentRoundStatus(gameId: number, status: string): 
     return true;
 }
 
-export async function getRoundScore(gameId: number, roundSeq: number): RoundScore {
+export async function getRoundScore(gameId: string, roundSeq: number): Promise<RoundScore> {
     const roundScoreResult = await db
         .withSchema('sniperok')
         .selectFrom('game_round as gr')
@@ -438,7 +440,7 @@ export async function getRoundScore(gameId: number, roundSeq: number): RoundScor
     return roundScore;
 }
 
-export async function nextRound(gameId: number): GameDetail | undefined {
+export async function nextRound(gameId: string): Promise<GameDetail | undefined> {
     const gameDetail = await getGameDetail(gameId);
 
     if (!gameDetail) {
