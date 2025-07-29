@@ -5,7 +5,9 @@ CREATE OR REPLACE FUNCTION award_snaps_boost_transaction(
     p_reference VARCHAR,
     p_transaction_uuid UUID
 )
-RETURNS VOID AS $$
+    returns void
+    set search_path = ''
+AS $$
 DECLARE
     v_current_period INTEGER;
     v_previous_period INTEGER;
