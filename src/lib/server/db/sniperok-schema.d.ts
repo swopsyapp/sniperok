@@ -101,6 +101,7 @@ export interface UserBoostJournal {
     journal_timestamp: Generated<Timestamp>;
     period: number;
     quantity: Generated<Numeric>;
+    reference: string;
     transaction_uuid: string;
     user_uuid: string;
 }
