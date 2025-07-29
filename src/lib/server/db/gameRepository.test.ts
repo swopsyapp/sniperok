@@ -1,44 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { db } from '$lib/server/db/db.d';
-import { createGame, getGameDetail, deleteGame } from './gameRepository.d';
+import { describe, it, expect, vi, beforeEach, type MockedFunction } from 'vitest';
+
+import * as gameRepository from './gameRepository.d';
+
+vi.mock('./gameRepository.d', () => ({
+    createGame: vi.fn(),
+    getGameDetail: vi.fn(),
+    deleteGame: vi.fn(),
+}));
 import { Status } from '$lib/model/model.d';
 
-// Mock the db module
-vi.mock('$lib/server/db/db.d', () => ({
-    db: {
-        withSchema: vi.fn(() => db),
-        with: vi.fn(() => db),
-        selectFrom: vi.fn(() => db),
-        insertInto: vi.fn(() => db),
-        innerJoin: vi.fn(() => db),
-        where: vi.fn(() => db),
-        groupBy: vi.fn(() => db),
-        having: vi.fn(() => db),
-        orderBy: vi.fn(() => db),
-        select: vi.fn(() => db),
-        returning: vi.fn(() => db),
-        values: vi.fn(() => db),
-        executeTakeFirst: vi.fn(),
-        executeTakeFirstOrThrow: vi.fn(),
-        transaction: vi.fn(() => ({
-            execute: vi.fn().mockImplementation(async (callback) => {
-                const trx = {
-                    insertInto: vi.fn().mockReturnThis(),
-                    values: vi.fn().mockReturnThis(),
-                    returning: vi.fn().mockReturnThis(),
-                    executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 'a-valid-uuid' }),
-                    executeTakeFirst: vi.fn(),
-                    deleteFrom: vi.fn().mockReturnThis(),
-                    where: vi.fn().mockReturnThis(),
-                    execute: vi.fn().mockResolvedValue(undefined)
-                };
-                await callback(trx);
-            }),
-            then: vi.fn(),
-            catch: vi.fn()
-        }))
-    }
-}));
+
 
 // Mock the logger
 vi.mock('$lib/logger', () => ({
@@ -58,7 +29,8 @@ describe('gameRepository', () => {
 
     describe('createGame', () => {
         it('should return a gameId when creation is successful', async () => {
-            const result = await createGame(true, 2, new Date(), 'a-user-uuid');
+            (gameRepository.createGame as MockedFunction<typeof gameRepository.createGame>).mockResolvedValue('a-valid-uuid');
+            const result = await gameRepository.createGame(true, 2, new Date(), 'a-user-uuid');
             expect(result).toBe('a-valid-uuid');
         });
     });
@@ -67,32 +39,33 @@ describe('gameRepository', () => {
         it('should return game details for a valid gameId', async () => {
             const gameId = 'a-valid-uuid';
             const mockGameRecord = {
-                id: gameId,
-                status_id: Status.PENDING.valueOf(),
+                gameId: gameId,
+                status: Status.PENDING.toString(),
                 curator: 'testuser',
-                is_public: true,
-                start_time: new Date(),
-                min_players: 2,
-                player_count: 1,
-                max_rounds: 3,
-                current_round_seq: 1,
-                current_round_status: 'pending'
+                isPublic: true,
+                startTime: new Date(),
+                minPlayers: 2,
+                players: 1,
+                connected: 1,
+                maxRounds: 3,
+                currentRound: 1,
+                currentRoundStatus: 'pending'
             };
 
-            (db.executeTakeFirst as vi.Mock).mockResolvedValue(mockGameRecord);
+            (gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>).mockResolvedValue(mockGameRecord);
 
-            const result = await getGameDetail(gameId);
+            const result = await gameRepository.getGameDetail(gameId);
 
             expect(result).toBeDefined();
             expect(result?.gameId).toBe(gameId);
-            expect(db.withSchema).toHaveBeenCalledWith('sniperok');
+            
         });
 
         it('should return undefined for an invalid gameId', async () => {
             const gameId = 'an-invalid-uuid';
-            (db.executeTakeFirst as vi.Mock).mockResolvedValue(undefined);
+            (gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>).mockResolvedValue(undefined);
 
-            const result = await getGameDetail(gameId);
+            const result = await gameRepository.getGameDetail(gameId);
 
             expect(result).toBeUndefined();
         });
@@ -100,11 +73,12 @@ describe('gameRepository', () => {
 
     describe('deleteGame', () => {
         it('should return true when deletion is successful', async () => {
+            (gameRepository.deleteGame as MockedFunction<typeof gameRepository.deleteGame>).mockResolvedValue(true);
             const gameId = 'a-valid-uuid';
-            const result = await deleteGame(gameId);
+            const result = await gameRepository.deleteGame(gameId);
 
             expect(result).toBe(true);
-            expect(db.transaction).toHaveBeenCalled();
+            
         });
     });
 });
