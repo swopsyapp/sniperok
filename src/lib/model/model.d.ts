@@ -94,3 +94,8 @@ export interface RoundScore {
     roundSeq: number;
     scores: PlayerScore[];
 }
+
+export interface GameSummary {
+    username: string;
+    total_wins: number;
+}

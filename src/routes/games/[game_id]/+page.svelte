@@ -455,8 +455,10 @@
         <br />
         <Button
             id="roundStart"
-            disabled={!isUserGameCurator ||
-                (roundStatus != roundStatusReady && roundStatus != roundStatusDone)}
+            disabled={(!isUserGameCurator && roundStatus != roundStatusDone) ||
+                (isUserGameCurator &&
+                    roundStatus != roundStatusReady &&
+                    roundStatus != roundStatusDone)}
             class="w-full"
             onclick={handleStartClick}
         >
@@ -466,39 +468,68 @@
             </div>
         </Button>
 
-        <div class="mt-4 flex justify-center">
+        <div class="mt-4 justify-center">
             {#if roundStatus == roundStatusDone && roundScore}
-                <Table.Root class="w-full">
-                    <Table.Header>
-                        <Table.Row>
-                            <Table.Head class="px-1">Player</Table.Head>
-                            <Table.Head class="px-1">Weapon</Table.Head>
-                            <Table.Head class="px-1">Wins</Table.Head>
-                            <Table.Head class="px-1">Losses</Table.Head>
-                            <Table.Head class="px-1">Ties</Table.Head>
-                            <Table.Head class="px-1">score</Table.Head>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {#each roundScore.scores as playerScore}
+                <div>
+                    <Table.Root class="w-full">
+                        <Table.Header>
                             <Table.Row>
-                                <Table.Cell class="px-1 font-medium"
-                                    >{playerScore.username}</Table.Cell
-                                >
-                                <Table.Cell class="px-1 font-medium"
-                                    >{playerScore.weapon}</Table.Cell
-                                >
-                                <Table.Cell class="px-1 font-medium">{playerScore.wins}</Table.Cell>
-                                <Table.Cell class="px-1 font-medium"
-                                    >{playerScore.losses}</Table.Cell
-                                >
-                                <Table.Cell class="px-1 font-medium">{playerScore.ties}</Table.Cell>
-                                <Table.Cell class="px-1 font-medium">{playerScore.score}</Table.Cell
-                                >
+                                <Table.Head class="px-1">Player</Table.Head>
+                                <Table.Head class="px-1">Weapon</Table.Head>
+                                <Table.Head class="px-1">Wins</Table.Head>
+                                <Table.Head class="px-1">Losses</Table.Head>
+                                <Table.Head class="px-1">Ties</Table.Head>
+                                <Table.Head class="px-1">score</Table.Head>
                             </Table.Row>
-                        {/each}
-                    </Table.Body>
-                </Table.Root>
+                        </Table.Header>
+                        <Table.Body>
+                            {#each roundScore.scores as playerScore}
+                                <Table.Row>
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.username}</Table.Cell
+                                    >
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.weapon}</Table.Cell
+                                    >
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.wins}</Table.Cell
+                                    >
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.losses}</Table.Cell
+                                    >
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.ties}</Table.Cell
+                                    >
+                                    <Table.Cell class="px-1 font-medium"
+                                        >{playerScore.score}</Table.Cell
+                                    >
+                                </Table.Row>
+                            {/each}
+                        </Table.Body>
+                    </Table.Root>
+                    {#if data.gameSummary}
+                        <Table.Root class="mt-4 w-full">
+                            <Table.Header>
+                                <Table.Row>
+                                    <Table.Head class="px-1">Game Summary</Table.Head>
+                                    <Table.Head class="px-1"></Table.Head>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                {#each data.gameSummary as playerSummary}
+                                    <Table.Row>
+                                        <Table.Cell class="px-1 font-medium"
+                                            >{playerSummary.username}</Table.Cell
+                                        >
+                                        <Table.Cell class="px-1 font-medium"
+                                            >{playerSummary.total_wins}</Table.Cell
+                                        >
+                                    </Table.Row>
+                                {/each}
+                            </Table.Body>
+                        </Table.Root>
+                    {/if}
+                </div>
             {:else}
                 <svg id="game-svg" width="350" height="350" viewBox="0 0 350 350">
                     <!-- Outer ring segments -->

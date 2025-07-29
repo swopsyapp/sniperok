@@ -91,19 +91,11 @@ const authGuard: Handle = async ({ event, resolve }) => {
     if (
         user &&
         user.is_anonymous &&
-        !(
-            // These are the only routes accessible when logged in anonymously
-            (
-                event.route.id == '/' ||
-                event.route.id == '/auth/logout' ||
-                event.route.id == '/games' ||
-                event.route.id == '/games/[game_id]' ||
-                event.route.id == '/games/[game_id]/join' ||
-                event.route.id == '/games/[game_id]/status' ||
-                event.route.id == '/games/[game_id]/round/status' ||
-                event.route.id == '/games/[game_id]/round/[round_seq]'
-            )
-        )
+        // These are the routes NOT accessible when logged in anonymously
+        (event.url.pathname.startsWith('/auth/profile') ||
+            event.url.pathname.startsWith('/boosts') ||
+            event.url.pathname.startsWith('/buddies') ||
+            event.url.pathname.startsWith('/games/new'))
     ) {
         logger.error(`User not registered, route=${event.route.id}`);
         redirect('/', { type: 'error', message: 'Not allowed for guest users' }, event);

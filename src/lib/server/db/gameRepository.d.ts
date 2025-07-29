@@ -3,7 +3,7 @@ import { sql, Transaction } from 'kysely';
 import { logger } from '$lib/logger';
 import { db } from '$lib/server/db/db.d';
 import { type DB, type Game } from './sniperok-schema.d';
-import { type GameDetail, Status, type RoundScore } from '$lib/model/model.d';
+import { type GameDetail, Status, type RoundScore, type GameSummary } from '$lib/model/model.d';
 import { calculateTimeDifference, type TimeDiff } from '$lib/utils';
 
 /**
@@ -442,6 +442,32 @@ export async function getRoundScore(gameId: string, roundSeq: number): Promise<R
     }
 
     return roundScore;
+}
+
+export async function getGameSummary(
+    gameId: string
+): Promise<{ playerScores: GameSummary[]; hasAnonymousPlayers: boolean }> {
+    const players = await db
+        .withSchema('sniperok')
+        .selectFrom('game_player as gp')
+        .innerJoin('user as u', 'u.id', 'gp.player_uuid')
+        .select(['gp.player_uuid', 'u.email']) // email is null for anonymous users
+        .where('gp.game_id', '=', gameId)
+        .execute();
+
+    const hasAnonymousPlayers = players.some((player) => player.email === null);
+
+    const playerScores = await db
+        .withSchema('sniperok')
+        .selectFrom('round_score as rs')
+        .innerJoin('game_player as gp', 'gp.player_seq', 'rs.player_seq') // Join to get player_uuid
+        .select(['gp.player_uuid', 'rs.username', sql<number>`sum(rs.wins)`.as('total_wins')])
+        .where('rs.game_id', '=', gameId)
+        .groupBy(['gp.player_uuid', 'rs.username'])
+        .orderBy('total_wins', 'desc')
+        .execute();
+
+    return { playerScores, hasAnonymousPlayers };
 }
 
 export async function nextRound(gameId: string): Promise<GameDetail | undefined> {
