@@ -100,7 +100,8 @@ const authGuard: Handle = async ({ event, resolve }) => {
                 event.route.id == '/games/[game_id]' ||
                 event.route.id == '/games/[game_id]/join' ||
                 event.route.id == '/games/[game_id]/status' ||
-                event.route.id == '/games/[game_id]/round/status'
+                event.route.id == '/games/[game_id]/round/status' ||
+                event.route.id == '/games/[game_id]/round/[round_seq]'
             )
         )
     ) {

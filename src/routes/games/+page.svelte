@@ -54,7 +54,7 @@
             $flash = { type: 'error', message: 'User not logged in' };
             return;
         }
-        const joinGameUrl = $page.url.href.concat(`/[${gameId}]/join`);
+        const joinGameUrl = `/games/${gameId}/join`;
         const response = await fetch(joinGameUrl, {
             method: 'POST'
         });
@@ -80,7 +80,7 @@
             return;
         }
 
-        if (response.status != HttpStatus.OK || response.url != joinGameUrl) {
+        if (response.status != HttpStatus.OK) {
             logger.error('error status : ', response.status, response.url);
             $flash = { type: 'error', message: 'An error occurred' };
             return;
@@ -94,11 +94,11 @@
 
         $flash = { type: 'success', message: 'Joined game' };
 
-        goto(`/games/[${gameId}]`, { invalidateAll: true });
+        goto(`/games/${gameId}`, { invalidateAll: true });
     }
 
     async function deleteGame(gameId: string) {
-        const gameUrl = $page.url.href.concat(`/[${gameId}]`);
+        const gameUrl = `/games/${gameId}`;
         const response = await fetch(gameUrl, {
             method: 'DELETE'
         });
@@ -194,7 +194,7 @@
                                             <Tooltip.Provider>
                                                 <Tooltip.Root>
                                                     <Tooltip.Trigger class={iconGhost}>
-                                                        <a href="/games/[{game.id}]">
+                                                        <a href={`/games/${game.id}`}>
                                                             <Icon
                                                                 icon="line-md:edit"
                                                                 class="text-green-600"
