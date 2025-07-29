@@ -3,7 +3,8 @@ import type { DB } from '$lib/db/db.d';
 
 declare global {
     namespace App {
-        // interface Error {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        interface Error {}
         interface Locals {
             supabase: SupabaseClient;
             db: DB;
@@ -15,9 +16,12 @@ declare global {
             session: Session | null;
             flash?: { type: 'success' | 'error'; message: string };
         }
-        // interface PageState {}
-        // interface Platform {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        interface PageState {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        interface Platform {}
     }
+    var io: import('socket.io').Server;
 }
 
 export {};

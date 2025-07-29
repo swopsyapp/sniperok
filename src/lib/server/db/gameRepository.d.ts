@@ -281,6 +281,10 @@ export async function refreshGameStatus(gameDetail: GameDetail): Promise<Status>
                 logger.error(`Error refreshing game status : ${gameDetail.gameId} - `, err);
                 return Status.UNKNOWN;
             });
+
+        if (gameDetail.status === Status.INACTIVE.toString()) {
+            await awardSnapsBoosts(gameDetail.gameId);
+        }
     }
 
     return gameDetail.status;
@@ -479,4 +483,78 @@ export async function nextRound(gameId: string): Promise<GameDetail | undefined>
         });
 
     return gameDetail;
+}
+
+export async function awardSnapsBoosts(gameId: string): Promise<void> {
+    logger.debug(`Awarding snaps boosts for game: ${gameId}`);
+
+    try {
+        await db
+            .withSchema('sniperok')
+            .transaction()
+            .execute(async (trx: Transaction<DB>) => {
+                // 1. Get all players for the game and check for anonymous players
+                const players = await trx
+                    .selectFrom('game_player as gp')
+                    .innerJoin('user as u', 'u.id', 'gp.player_uuid')
+                    .select(['gp.player_uuid', 'u.email']) // email is null for anonymous users
+                    .where('gp.game_id', '=', gameId)
+                    .execute();
+
+                const hasAnonymousPlayers = players.some((player) => player.email === null);
+
+                if (hasAnonymousPlayers) {
+                    logger.info(
+                        `Game ${gameId} has anonymous players. No snaps boosts will be awarded.`
+                    );
+                    return; // Exit if anonymous players are present
+                }
+
+                // 2. Calculate total wins for each player
+                const playerScores = await trx
+                    .selectFrom('round_score as rs')
+                    .innerJoin('game_player as gp', 'gp.player_seq', 'rs.player_seq') // Join to get player_uuid
+                    .select(['gp.player_uuid', sql<number>`sum(rs.wins)`.as('total_wins')])
+                    .where('rs.game_id', '=', gameId)
+                    .groupBy('gp.player_uuid')
+                    .execute();
+
+                if (playerScores.length === 0) {
+                    logger.info(`No scores found for game ${gameId}. No snaps boosts awarded.`);
+                    return;
+                }
+
+                // Find the maximum score
+                const maxScore = Math.max(...playerScores.map((score) => score.total_wins));
+
+                // Find all players with the maximum score
+                const winners = playerScores.filter((score) => score.total_wins === maxScore);
+
+                // 3. Determine the winner (single winner only)
+                if (winners.length === 1 && maxScore > 0) {
+                    // Ensure there's a single winner and they actually won rounds
+                    const winnerUserId = winners[0].player_uuid;
+                    const boostTypeCode = 'snaps';
+
+                    // Call the stored procedure to award the boost
+                    await trx.execute(sql`SELECT award_snaps_boost_transaction(
+                        ${winnerUserId}::uuid,
+                        ${boostTypeCode},
+                        1,
+                        ${`Game win: ${gameId}`},
+                        gen_random_uuid()
+                    );`);
+
+                    logger.info(
+                        `Awarded 1 snap boost to user ${winnerUserId} for winning game ${gameId}.`
+                    );
+                } else {
+                    logger.info(
+                        `Game ${gameId} resulted in a draw or no wins. No snaps boosts awarded.`
+                    );
+                }
+            });
+    } catch (err) {
+        logger.error(`Error awarding snaps boosts for game ${gameId}: `, err);
+    }
 }
