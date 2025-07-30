@@ -5,11 +5,9 @@ import * as gameRepository from './gameRepository.d';
 vi.mock('./gameRepository.d', () => ({
     createGame: vi.fn(),
     getGameDetail: vi.fn(),
-    deleteGame: vi.fn(),
+    deleteGame: vi.fn()
 }));
 import { Status } from '$lib/model/model.d';
-
-
 
 // Mock the logger
 vi.mock('$lib/logger', () => ({
@@ -29,7 +27,9 @@ describe('gameRepository', () => {
 
     describe('createGame', () => {
         it('should return a gameId when creation is successful', async () => {
-            (gameRepository.createGame as MockedFunction<typeof gameRepository.createGame>).mockResolvedValue('a-valid-uuid');
+            (
+                gameRepository.createGame as MockedFunction<typeof gameRepository.createGame>
+            ).mockResolvedValue('a-valid-uuid');
             const result = await gameRepository.createGame(true, 2, new Date(), 'a-user-uuid');
             expect(result).toBe('a-valid-uuid');
         });
@@ -52,18 +52,21 @@ describe('gameRepository', () => {
                 currentRoundStatus: 'pending'
             };
 
-            (gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>).mockResolvedValue(mockGameRecord);
+            (
+                gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>
+            ).mockResolvedValue(mockGameRecord);
 
             const result = await gameRepository.getGameDetail(gameId);
 
             expect(result).toBeDefined();
             expect(result?.gameId).toBe(gameId);
-            
         });
 
         it('should return undefined for an invalid gameId', async () => {
             const gameId = 'an-invalid-uuid';
-            (gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>).mockResolvedValue(undefined);
+            (
+                gameRepository.getGameDetail as MockedFunction<typeof gameRepository.getGameDetail>
+            ).mockResolvedValue(undefined);
 
             const result = await gameRepository.getGameDetail(gameId);
 
@@ -73,12 +76,13 @@ describe('gameRepository', () => {
 
     describe('deleteGame', () => {
         it('should return true when deletion is successful', async () => {
-            (gameRepository.deleteGame as MockedFunction<typeof gameRepository.deleteGame>).mockResolvedValue(true);
+            (
+                gameRepository.deleteGame as MockedFunction<typeof gameRepository.deleteGame>
+            ).mockResolvedValue(true);
             const gameId = 'a-valid-uuid';
             const result = await gameRepository.deleteGame(gameId);
 
             expect(result).toBe(true);
-            
         });
     });
 });
