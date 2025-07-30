@@ -36,7 +36,7 @@ export const PUT: RequestHandler = async (requestEvent) => {
     const jsonBody = await requestEvent.request.json();
 
     const status = jsonBody.status;
-    const success: boolean = updateCurrentRoundStatus(gameId, status);
+    const success: boolean = await updateCurrentRoundStatus(gameId, status);
 
     if (success) {
         logger.debug(`Updated current round status to ${status} for game ${gameId}`);

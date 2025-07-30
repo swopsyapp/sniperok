@@ -33,7 +33,7 @@ export const PATCH: RequestHandler = async (requestEvent) => {
         error(HttpStatus.NOT_FOUND, 'Game not found');
     }
 
-    const newStatus: Status = refreshGameStatus(gameDetail);
+    const newStatus: Status = await refreshGameStatus(gameDetail);
 
     if (Status.UNKNOWN.equals(newStatus)) {
         error(HttpStatus.INTERNAL_SERVER_ERROR, 'Error occurred');
