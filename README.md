@@ -2,18 +2,47 @@
 
 sniperok is a game of rock-paper-scissors.
 
-## Description
+## Application Features
+### Login
+The application provides user registration and login implemented via supabase.
+It allows verified user registration/sign-up and login/sign-in via email and also guest login.
+Guests are users which have limited funtionality.
 
-A simple SvelteKit app that uses Supabase for authentication via GitHub authentication.  
-From https://sveltethemes.dev/engageintellect/sveltekit-supabase  
-and https://github.com/engageintellect/sveltekit-supabase
+### Buddies
+Registered users can add buddies.
+Registered users can receive buddy reuests and choose to accept or decline.
 
-## Features
+### Boosts
+Registered players can earn boosts and trade them and use them.
+Boost types are swappable or playable
+- Snaps    are swappable
+- Shotgun  is playable
+- Dynamite is playable
+- Bazooka  is playable
 
-- Register and Sign in with email
-- Sign out
-- Display user information
-- Update user information
+Users can swap 3 Snaps for a Shotgun, Dynamite or Bazooka.
+
+### Games
+All users can list public games, whether they are registered users, guest users or unauthenticated visitors.
+Registered and guest users can join public games.
+Registered users can also see non-public games to which they have been invited, and can choose to join the game.
+Registered users can create games which they will automatically join and will become the game curator.
+Registered users can invite their buddies to the game.
+The game consists of an odd number of rounds.
+At the end of each round a round summary is displayed showing the users actions and scores.
+After the last round an additional summary is shown displaying the overall player scores in descending order by score.
+When a player wins a game i.e. has the single highest overall score and if there are no guest users in the game,
+then the player wins a boost of type snap.
+Within the round the curator starts the play which triggers a 3 second countdown for the player to play their weapon,
+- Rock
+- Paper
+- Scissors
+Normal rules apply i.e. Rock beats Scissors, Scissors beats Paper, Paper beats Rock.
+If the user has any playable boosts, they can spend them to play
+- Shotgun  beats Dynamite and Rock and Scissors
+- Dynamite beats Bazooka and Rock and Paper
+- Bazooka  beats Shotgun and Paper and Scissors
+
 
 ## Technologies
 
