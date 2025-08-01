@@ -79,4 +79,5 @@ To ensure consistent and reliable commits, use the following method:
 - `static`: Static assets like images and fonts.
 
 ## Schema Structure
+
 The main appliction schema is sniperok, all entities related to the game app are to be dined in this schema.
