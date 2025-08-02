@@ -15,6 +15,7 @@ export default [
             '.DS_Store',
             'node_modules/',
             'build/**',
+            '.pnpm-store/**',
             '.svelte-kit/**',
             '/package/',
             '.env',
