@@ -37,7 +37,7 @@
     const roundStatusPlayed = 'Played ...';
     const roundStatusScoring = 'Scoring ...';
     // svelte-ignore state_referenced_locally
-    const roundStatusDone = game.currentRound < game.maxRounds ? 'Next' : 'Done';
+    let roundStatusDone = $derived(game.currentRound < game.maxRounds ? 'Next' : 'Done');
 
     // svelte-ignore state_referenced_locally
     let timeDifference = $state(calculateTimeDifference(game.startTime));
@@ -455,7 +455,7 @@
         <br />
         <Button
             id="roundStart"
-            disabled={(!isUserGameCurator && roundStatus != roundStatusDone) ||
+            disabled={(game.currentRound < game.maxRounds && !isUserGameCurator && roundStatus != roundStatusDone) ||
                 (isUserGameCurator &&
                     roundStatus != roundStatusReady &&
                     roundStatus != roundStatusDone)}
@@ -476,10 +476,10 @@
                             <Table.Row>
                                 <Table.Head class="px-1">Player</Table.Head>
                                 <Table.Head class="px-1">Weapon</Table.Head>
-                                <Table.Head class="px-1">Wins</Table.Head>
-                                <Table.Head class="px-1">Losses</Table.Head>
-                                <Table.Head class="px-1">Ties</Table.Head>
-                                <Table.Head class="px-1">score</Table.Head>
+                                <Table.Head class="px-1 text-right">Wins</Table.Head>
+                                <Table.Head class="px-1 text-right">Losses</Table.Head>
+                                <Table.Head class="px-1 text-right">Ties</Table.Head>
+                                <Table.Head class="px-1 text-right">score</Table.Head>
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
@@ -491,16 +491,16 @@
                                     <Table.Cell class="px-1 font-medium"
                                         >{playerScore.weapon}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium"
+                                    <Table.Cell class="px-1 font-medium text-right"
                                         >{playerScore.wins}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium"
+                                    <Table.Cell class="px-1 font-medium text-right"
                                         >{playerScore.losses}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium"
+                                    <Table.Cell class="px-1 font-medium text-right"
                                         >{playerScore.ties}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium"
+                                    <Table.Cell class="px-1 font-medium text-right"
                                         >{playerScore.score}</Table.Cell
                                     >
                                 </Table.Row>
@@ -511,8 +511,8 @@
                         <Table.Root class="mt-4 w-full">
                             <Table.Header>
                                 <Table.Row>
-                                    <Table.Head class="px-1">Game Summary</Table.Head>
-                                    <Table.Head class="px-1"></Table.Head>
+                                    <Table.Head class="px-1">Overall Game Results</Table.Head>
+                                    <Table.Head class="px-1 text-right">Total Score</Table.Head>
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
@@ -521,7 +521,7 @@
                                         <Table.Cell class="px-1 font-medium"
                                             >{playerSummary.username}</Table.Cell
                                         >
-                                        <Table.Cell class="px-1 font-medium"
+                                        <Table.Cell class="px-1 font-medium text-right"
                                             >{playerSummary.total_wins}</Table.Cell
                                         >
                                     </Table.Row>

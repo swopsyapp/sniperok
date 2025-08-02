@@ -460,7 +460,7 @@ export async function getGameSummary(
     const playerScores = await db
         .withSchema('sniperok')
         .selectFrom('round_score as rs')
-        .innerJoin('game_player as gp', 'gp.player_seq', 'rs.player_seq') // Join to get player_uuid
+        .innerJoin('game_player as gp', (join) => join.onRef('gp.game_id', '=', 'rs.game_id').onRef('gp.player_seq', '=', 'rs.player_seq'))
         .select(['gp.player_uuid', 'rs.username', sql<number>`sum(rs.wins)`.as('total_wins')])
         .where('rs.game_id', '=', gameId)
         .groupBy(['gp.player_uuid', 'rs.username'])
