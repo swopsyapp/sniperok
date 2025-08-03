@@ -12,8 +12,6 @@ export type Generated<T> =
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
-export type Numeric = ColumnType<string, number | string, number | string>;
-
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface BoostType {
@@ -92,7 +90,7 @@ export interface User {
 export interface UserBoost {
     boost_type_code: string;
     period: number;
-    quantity: Generated<Numeric>;
+    quantity: Generated<Int8>;
     user_uuid: string;
 }
 
@@ -100,7 +98,7 @@ export interface UserBoostJournal {
     boost_type_code: string;
     journal_timestamp: Generated<Timestamp>;
     period: number;
-    quantity: Generated<Numeric>;
+    quantity: Generated<Int8>;
     reference: string;
     transaction_uuid: string;
     user_uuid: string;

@@ -21,7 +21,7 @@ declare global {
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         interface Platform {}
     }
-    var io: import('socket.io').Server;
+    let io: import('socket.io').Server;
 }
 
 export {};

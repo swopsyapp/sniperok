@@ -1,19 +1,19 @@
-CREATE OR REPLACE FUNCTION award_snaps_boost_transaction(
+CREATE OR REPLACE FUNCTION sniperok.award_snaps_boost_transaction(
     p_user_uuid UUID,
     p_boost_type_code VARCHAR,
     p_quantity NUMERIC,
-    p_reference VARCHAR,
-    p_transaction_uuid UUID
+    p_reference VARCHAR
 )
-    returns void
+    returns UUID
     set search_path = ''
 AS $$
 DECLARE
+    v_transaction_uuid UUID := gen_random_uuid();
     v_current_period INTEGER;
     v_previous_period INTEGER;
-    v_previous_period_balance NUMERIC;
-    v_current_period_journal_sum NUMERIC;
-    v_new_total_quantity NUMERIC;
+    v_previous_period_balance bigint;
+    v_current_period_journal_sum bigint;
+    v_new_total_quantity bigint;
 BEGIN
     -- Get current period (YYYYMM) from DB server clock
     SELECT TO_CHAR(NOW(), 'YYYYMM')::INT INTO v_current_period;
@@ -32,7 +32,7 @@ BEGIN
         p_quantity,
         v_current_period,
         p_reference,
-        p_transaction_uuid
+        v_transaction_uuid
     );
 
     -- Calculate previous period (YYYYMM)
@@ -71,5 +71,7 @@ BEGIN
     )
     ON CONFLICT (user_uuid, boost_type_code, period) DO UPDATE SET
         quantity = EXCLUDED.quantity; -- Update with the newly calculated total
+    
+    return v_transaction_uuid; -- Return the transaction UUID
 END;
 $$ LANGUAGE plpgsql;

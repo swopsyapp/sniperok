@@ -36,7 +36,6 @@
     const roundStatusPlaying = 'Playing ...';
     const roundStatusPlayed = 'Played ...';
     const roundStatusScoring = 'Scoring ...';
-    // svelte-ignore state_referenced_locally
     let roundStatusDone = $derived(game.currentRound < game.maxRounds ? 'Next' : 'Done');
 
     // svelte-ignore state_referenced_locally
@@ -455,7 +454,9 @@
         <br />
         <Button
             id="roundStart"
-            disabled={(game.currentRound < game.maxRounds && !isUserGameCurator && roundStatus != roundStatusDone) ||
+            disabled={(game.currentRound < game.maxRounds &&
+                !isUserGameCurator &&
+                roundStatus != roundStatusDone) ||
                 (isUserGameCurator &&
                     roundStatus != roundStatusReady &&
                     roundStatus != roundStatusDone)}
@@ -491,16 +492,16 @@
                                     <Table.Cell class="px-1 font-medium"
                                         >{playerScore.weapon}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium text-right"
+                                    <Table.Cell class="px-1 text-right font-medium"
                                         >{playerScore.wins}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium text-right"
+                                    <Table.Cell class="px-1 text-right font-medium"
                                         >{playerScore.losses}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium text-right"
+                                    <Table.Cell class="px-1 text-right font-medium"
                                         >{playerScore.ties}</Table.Cell
                                     >
-                                    <Table.Cell class="px-1 font-medium text-right"
+                                    <Table.Cell class="px-1 text-right font-medium"
                                         >{playerScore.score}</Table.Cell
                                     >
                                 </Table.Row>
@@ -521,7 +522,7 @@
                                         <Table.Cell class="px-1 font-medium"
                                             >{playerSummary.username}</Table.Cell
                                         >
-                                        <Table.Cell class="px-1 font-medium text-right"
+                                        <Table.Cell class="px-1 text-right font-medium"
                                             >{playerSummary.total_wins}</Table.Cell
                                         >
                                     </Table.Row>

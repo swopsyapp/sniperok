@@ -283,6 +283,9 @@ export async function refreshGameStatus(gameDetail: GameDetail): Promise<Status>
             });
 
         if (gameDetail.status === Status.INACTIVE.toString()) {
+            logger.debug(
+                `Game ${gameDetail.gameId} is now inactive, awarding snaps boosts if applicable.`
+            );
             await awardSnapsBoosts(gameDetail.gameId);
         }
     }
@@ -379,6 +382,11 @@ export async function updateCurrentRoundStatus(gameId: string, status: string): 
                 .where('gr.game_id', '=', gameId)
                 .where('gr.round_seq', '=', currentRound.current_round)
                 .executeTakeFirst();
+
+            if (status === Status.INACTIVE.toString()) {
+                const gameDetail = await getGameDetail(gameId);
+                refreshGameStatus(gameDetail);
+            }
         })
         .catch(function (err) {
             logger.error(
@@ -460,7 +468,9 @@ export async function getGameSummary(
     const playerScores = await db
         .withSchema('sniperok')
         .selectFrom('round_score as rs')
-        .innerJoin('game_player as gp', (join) => join.onRef('gp.game_id', '=', 'rs.game_id').onRef('gp.player_seq', '=', 'rs.player_seq'))
+        .innerJoin('game_player as gp', (join) =>
+            join.onRef('gp.game_id', '=', 'rs.game_id').onRef('gp.player_seq', '=', 'rs.player_seq')
+        )
         .select(['gp.player_uuid', 'rs.username', sql<number>`sum(rs.wins)`.as('total_wins')])
         .where('rs.game_id', '=', gameId)
         .groupBy(['gp.player_uuid', 'rs.username'])
@@ -539,8 +549,12 @@ export async function awardSnapsBoosts(gameId: string): Promise<void> {
                 // 2. Calculate total wins for each player
                 const playerScores = await trx
                     .selectFrom('round_score as rs')
-                    .innerJoin('game_player as gp', 'gp.player_seq', 'rs.player_seq') // Join to get player_uuid
-                    .select(['gp.player_uuid', sql<number>`sum(rs.wins)`.as('total_wins')])
+                    .innerJoin('game_player as gp', (join) =>
+                        join
+                            .onRef('gp.game_id', '=', 'rs.game_id')
+                            .onRef('gp.player_seq', '=', 'rs.player_seq')
+                    )
+                    .select(['gp.player_uuid', sql<number>`sum(rs.wins)::integer`.as('total_wins')])
                     .where('rs.game_id', '=', gameId)
                     .groupBy('gp.player_uuid')
                     .execute();
@@ -552,9 +566,11 @@ export async function awardSnapsBoosts(gameId: string): Promise<void> {
 
                 // Find the maximum score
                 const maxScore = Math.max(...playerScores.map((score) => score.total_wins));
+                logger.debug(`Maximum score for game ${gameId}: ${maxScore}`);
 
                 // Find all players with the maximum score
                 const winners = playerScores.filter((score) => score.total_wins === maxScore);
+                logger.debug(`Winners for game ${gameId}:`, winners.length);
 
                 // 3. Determine the winner (single winner only)
                 if (winners.length === 1 && maxScore > 0) {
@@ -563,12 +579,11 @@ export async function awardSnapsBoosts(gameId: string): Promise<void> {
                     const boostTypeCode = 'snaps';
 
                     // Call the stored procedure to award the boost
-                    await trx.execute(sql`SELECT award_snaps_boost_transaction(
+                    await trx.executeQuery(sql`SELECT sniperok.award_snaps_boost_transaction(
                         ${winnerUserId}::uuid,
                         ${boostTypeCode},
                         1,
-                        ${`Game win: ${gameId}`},
-                        gen_random_uuid()
+                        ${`Game win: ${gameId}`}
                     );`);
 
                     logger.info(

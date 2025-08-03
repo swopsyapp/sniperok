@@ -28,9 +28,11 @@ export const load = (async (eventFromServer) => {
     gameDetail.connected = sockets.length;
 
     let gameSummary = undefined;
-    if (Status.INACTIVE.equals(gameDetail.status) || 
-        (gameDetail.currentRound === gameDetail.maxRounds && 
-         Status.INACTIVE.equals(gameDetail.currentRoundStatus))) {
+    if (
+        Status.INACTIVE.equals(gameDetail.status) ||
+        (gameDetail.currentRound === gameDetail.maxRounds &&
+            Status.INACTIVE.equals(gameDetail.currentRoundStatus))
+    ) {
         const summaryResult = await getGameSummary(gameId);
         gameSummary = summaryResult.playerScores;
         if (gameSummary && gameSummary.length > 0 && user) {

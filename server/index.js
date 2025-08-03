@@ -260,6 +260,10 @@ class Polka extends Trouter {
                     req.params[k] = decodeURIComponent(req.params[k]);
                 } catch (_e) {
                     /* malform uri segment */
+                    console.log(
+                        `Ignoring exception : ${req.params[k]} in ${path} for ${req.method} ${req.url} - ` +
+                            _e.message
+                    );
                 }
             }
         }
