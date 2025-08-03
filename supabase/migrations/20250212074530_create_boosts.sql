@@ -5,6 +5,7 @@
 -- ----------------------------------------------------------------------------
 create table sniperok.boost_type (
     code text not null,
+    icon text not null,
     description text not null,
     CONSTRAINT boost_type_pk
         PRIMARY KEY (code)
@@ -25,6 +26,19 @@ create table sniperok.user_boost (
     CONSTRAINT user_boost_boost_type_fk
         FOREIGN KEY (boost_type_code) REFERENCES sniperok.boost_type(code)
 );
+
+create view sniperok.user_boost_vw as 
+    select
+        ub.period,
+        ub.user_uuid,
+        ub.boost_type_code,
+        ub.quantity,
+        bt.icon,
+        bt.description
+    from
+        sniperok.user_boost ub
+    join
+        sniperok.boost_type bt on bt.code = ub.boost_type_code;
 
 -- ----------------------------------------------------------------------------
 --          USER_BOOST_JOURNAL

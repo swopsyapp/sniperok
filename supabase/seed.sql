@@ -60,9 +60,9 @@ insert into sniperok.weapon_victory (winner_weapon_code, loser_weapon_code) VALU
 ('shotgun', 'scissors'), ('shotgun', 'rock'), ('shotgun', 'dynamite')
 ;
 
-insert into sniperok.boost_type (code, description) values
-('snaps', 'Can be swapped for power-ups'),
-('dynamite', 'Beats rock, paper and bazooka'),
-('bazooka', 'Beats paper, scissors and shotgun'),
-('shotgun', 'Beats scissors, rock and dynamite')
+insert into sniperok.boost_type (code, icon, description) values
+('snaps'   , 'streamline-flex:finger-snapping'              , 'Can be swapped for power-ups'),
+('dynamite', 'fluent-emoji-high-contrast:thumbs-up'         , 'Beats rock, paper and bazooka'),
+('bazooka' , 'fluent-emoji-high-contrast:pinched-fingers'   , 'Beats paper, scissors and shotgun'),
+('shotgun' , 'fluent-emoji-high-contrast:sign-of-the-horns' , 'Beats scissors, rock and dynamite')
 ;

@@ -17,6 +17,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export interface BoostType {
     code: string;
     description: string;
+    icon: string;
 }
 
 export interface Buddy {
@@ -104,6 +105,15 @@ export interface UserBoostJournal {
     user_uuid: string;
 }
 
+export interface UserBoostVw {
+    boost_type_code: string | null;
+    description: string | null;
+    icon: string | null;
+    period: number | null;
+    quantity: Int8 | null;
+    user_uuid: string | null;
+}
+
 export interface Weapon {
     code: string;
     level: Generated<number>;
@@ -127,6 +137,7 @@ export interface DB {
     user: User;
     user_boost: UserBoost;
     user_boost_journal: UserBoostJournal;
+    user_boost_vw: UserBoostVw;
     weapon: Weapon;
     weapon_victory: WeaponVictory;
 }

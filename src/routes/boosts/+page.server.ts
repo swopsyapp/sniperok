@@ -13,7 +13,7 @@ export const load = (async ({ locals }) => {
 
     const userBoosts = await db
         .withSchema('sniperok')
-        .selectFrom('user_boost')
+        .selectFrom('user_boost_vw')
         .selectAll()
         .where('user_uuid', '=', userId)
         .orderBy('period desc')
@@ -22,6 +22,7 @@ export const load = (async ({ locals }) => {
     const boostsList = userBoosts.map((boost) => {
         return {
             boostType: boost.boost_type_code,
+            icon: boost.icon,
             period: boost.period,
             quantity: boost.quantity
         };
