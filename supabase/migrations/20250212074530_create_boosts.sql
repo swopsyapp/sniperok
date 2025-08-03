@@ -14,7 +14,7 @@ create table sniperok.boost_type (
 --          USER_BOOST
 -- ----------------------------------------------------------------------------
 create table sniperok.user_boost (
-    period smallint not null,
+    period integer not null,
     user_uuid uuid not null,
     boost_type_code text not null,
     quantity bigint not null default 0,

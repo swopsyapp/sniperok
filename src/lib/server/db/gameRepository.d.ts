@@ -579,12 +579,16 @@ export async function awardSnapsBoosts(gameId: string): Promise<void> {
                     const boostTypeCode = 'snaps';
 
                     // Call the stored procedure to award the boost
-                    await trx.executeQuery(sql`SELECT sniperok.award_snaps_boost_transaction(
+                    await trx
+                        .selectNoFrom(
+                            sql`sniperok.award_snaps_boost_transaction(
                         ${winnerUserId}::uuid,
                         ${boostTypeCode},
                         1,
                         ${`Game win: ${gameId}`}
-                    );`);
+                    );`
+                        )
+                        .executeTakeFirstOrThrow();
 
                     logger.info(
                         `Awarded 1 snap boost to user ${winnerUserId} for winning game ${gameId}.`
@@ -596,6 +600,6 @@ export async function awardSnapsBoosts(gameId: string): Promise<void> {
                 }
             });
     } catch (err) {
-        logger.error(`Error awarding snaps boosts for game ${gameId}: `, err);
+        logger.error(`Error awarding snaps boosts for game ${gameId}: `, err, err.message);
     }
 }
