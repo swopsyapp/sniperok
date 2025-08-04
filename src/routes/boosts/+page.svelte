@@ -27,16 +27,11 @@
                 <Table.Body>
                     {#each boosts as boost}
                         <Table.Row>
-                            <Table.Cell class="font-medium">{boost.boostType}
-                            </Table.Cell>
-                            <Table.Cell class="font-medium pb-10">
+                            <Table.Cell class="font-medium">{boost.boostType}</Table.Cell>
+                            <Table.Cell class="pb-10 font-medium">
                                 <span class="ml-2">
-                                    <Icon
-                                        icon={boost.icon ?? ''}
-                                        class="h-6 w-6 text-gray-200"
-                                    />
+                                    <Icon icon={boost.icon ?? ''} class="h-6 w-6 text-gray-200" />
                                 </span>
-
                             </Table.Cell>
 
                             <Table.Cell class="text-right font-medium">{boost.quantity}</Table.Cell>

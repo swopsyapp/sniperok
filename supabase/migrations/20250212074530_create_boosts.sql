@@ -29,16 +29,18 @@ create table sniperok.user_boost (
 
 create view sniperok.user_boost_vw as 
     select
-        ub.period,
-        ub.user_uuid,
-        ub.boost_type_code,
-        ub.quantity,
+        TO_CHAR(NOW(), 'YYYYMM')::INT as period,
+        u.id as user_uuid,
+        bt.code as boost_type_code,
         bt.icon,
-        bt.description
-    from
-        sniperok.user_boost ub
-    join
-        sniperok.boost_type bt on bt.code = ub.boost_type_code;
+        bt.description,
+        coalesce(ub.quantity, 0) as quantity
+    from sniperok.boost_type bt
+    cross join sniperok.user u
+    left join sniperok.user_boost ub
+      on ub.boost_type_code = bt.code
+     and ub.period = TO_CHAR(NOW(), 'YYYYMM')::INT
+     and ub.user_uuid = u.id;
 
 -- ----------------------------------------------------------------------------
 --          USER_BOOST_JOURNAL
