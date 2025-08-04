@@ -1,3 +1,8 @@
+export class Boost {
+    public static readonly BOOST_BUY_PRICE = 10;
+    public static readonly BOOST_SELL_PRICE = 5;
+}
+
 export class Status {
     public static readonly UNKNOWN = new Status(0, 'unknown');
     public static readonly PENDING = new Status(1, 'pending');

@@ -91,7 +91,7 @@ export interface User {
 export interface UserBoost {
     boost_type_code: string;
     period: number;
-    quantity: Generated<Int8>;
+    quantity: Generated<number>;
     user_uuid: string;
 }
 
@@ -99,7 +99,7 @@ export interface UserBoostJournal {
     boost_type_code: string;
     journal_timestamp: Generated<Timestamp>;
     period: number;
-    quantity: Generated<Int8>;
+    quantity: Generated<number>;
     reference: string;
     transaction_uuid: string;
     user_uuid: string;
@@ -110,7 +110,7 @@ export interface UserBoostVw {
     description: string | null;
     icon: string | null;
     period: number | null;
-    quantity: Int8 | null;
+    quantity: number | null;
     user_uuid: string | null;
 }
 

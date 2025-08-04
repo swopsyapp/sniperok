@@ -18,7 +18,7 @@ create table sniperok.user_boost (
     period integer not null,
     user_uuid uuid not null,
     boost_type_code text not null,
-    quantity bigint not null default 0,
+    quantity integer not null default 0,
     CONSTRAINT user_boost_pk
         PRIMARY KEY (period, user_uuid, boost_type_code),
     CONSTRAINT user_boost_user_fk
@@ -50,7 +50,7 @@ create table sniperok.user_boost_journal (
     user_uuid uuid not null,
     boost_type_code text not null,
     transaction_uuid uuid not null,
-    quantity bigint not null default 0,
+    quantity integer not null default 0,
     journal_timestamp timestamp with time zone not null default now(),
     reference text not null,
     CONSTRAINT user_boost_journal_pk
