@@ -1,4 +1,4 @@
-import { db } from '$lib/server/db/db.d';
+import { getUserBoosts } from '$lib/server/db/gameRepository.d';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals }) => {
@@ -11,13 +11,7 @@ export const load = (async ({ locals }) => {
         };
     }
 
-    const userBoosts = await db
-        .withSchema('sniperok')
-        .selectFrom('user_boost_vw')
-        .selectAll()
-        .where('user_uuid', '=', userId)
-        .orderBy('period desc')
-        .execute();
+    const userBoosts = await getUserBoosts(userId);
 
     const boostsList = userBoosts.map((boost) => {
         return {

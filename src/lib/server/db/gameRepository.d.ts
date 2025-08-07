@@ -576,7 +576,7 @@ export async function awardSnapsBoosts(trx: Transaction<DB>, gameId: string): Pr
             // Call the stored procedure to award the boost
             await trx
                 .selectNoFrom(
-                    sql`sniperok.award_snaps_boost_transaction(
+                    sql`sniperok.award_snaps(
                     ${winnerUserId}::uuid,
                     ${boostTypeCode},
                     1,
@@ -594,5 +594,97 @@ export async function awardSnapsBoosts(trx: Transaction<DB>, gameId: string): Pr
     } catch (err) {
         logger.error(`Error awarding snaps boosts for game ${gameId}: `, err, err.message);
         throw err;
+    }
+}
+
+export async function getUserBoosts(userId: string): Promise<UserBoostVw[]> {
+    logger.debug(`getting boosts for user: ${userId}`);
+
+    try {
+        // 1. Get all boosts for the player
+        const userBoosts = await db
+            .withSchema('sniperok')
+            .selectFrom('user_boost_vw')
+            .selectAll()
+            .where('user_uuid', '=', userId)
+            .orderBy('period desc')
+            .execute();
+
+        return userBoosts;
+    } catch (err) {
+        logger.error(`Error awarding snaps boosts for game ${gameId}: `, err, err.message);
+        throw err;
+    }
+}
+
+export async function sellBoost(
+    userId: string,
+    boostTypeCode: string,
+    quantity: number
+): Promise<boolean> {
+    logger.debug(
+        `selling boost for user: ${userId}, type: ${boostTypeCode}, quantity: ${quantity}`
+    );
+
+    try {
+        // 1. Call the stored procedure to sell the boost
+        const txUUid = await db
+            .withSchema('sniperok')
+            .selectNoFrom(
+                sql`sniperok.sell_boost(
+                    ${userId}::uuid,
+                    ${boostTypeCode},
+                    ${quantity}
+                );`
+            )
+            .executeTakeFirstOrThrow();
+
+        logger.info(
+            `Sold ${quantity} of boost type ${boostTypeCode} for user ${userId}. Transaction UUID: ${txUUid}`
+        );
+
+        return true;
+    } catch (err) {
+        logger.error(
+            `Error selling boost '${boostTypeCode}' for user ${userId}: `,
+            err,
+            err.message
+        );
+        return false;
+    }
+}
+
+export async function buyBoost(
+    userId: string,
+    boostTypeCode: string,
+    quantity: number
+): Promise<boolean> {
+    logger.debug(`buying boost for user: ${userId}, type: ${boostTypeCode}, quantity: ${quantity}`);
+
+    try {
+        // 1. Call the stored procedure to buy the boost
+        const txUUid = await db
+            .withSchema('sniperok')
+            .selectNoFrom(
+                sql`sniperok.buy_boost(
+                    ${userId}::uuid,
+                    ${boostTypeCode},
+                    ${quantity}
+                );`
+            )
+            .executeTakeFirstOrThrow();
+
+        logger.info(
+            `Bought ${quantity} of boost type ${boostTypeCode} for user ${userId}. Transaction UUID: ${txUUid}`
+        );
+
+        return true;
+    } catch (err) {
+        logger.error(
+            `Error buying boost '${boostTypeCode}' for user ${userId}: `,
+            err,
+            err.message
+        );
+        return false;
     }
 }

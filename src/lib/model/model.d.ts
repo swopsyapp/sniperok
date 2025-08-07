@@ -1,6 +1,9 @@
 export class Boost {
     public static readonly BOOST_BUY_PRICE = 10;
     public static readonly BOOST_SELL_PRICE = 5;
+
+    public static readonly PLAYABLE_BOOSTS = ['bazooka', 'dynamite', 'shotgun'];
+    public static readonly SNAPS_BOOST = 'snaps';
 }
 
 export class Status {
