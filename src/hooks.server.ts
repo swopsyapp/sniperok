@@ -7,6 +7,8 @@ import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/publi
 
 import { logger } from '$lib/logger';
 
+logger.debug('See supabase console at http://localhost:54323');
+
 const supabase: Handle = async ({ event, resolve }) => {
     /**
      * Creates a Supabase client specific to this server request.

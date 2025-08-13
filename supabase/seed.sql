@@ -66,3 +66,12 @@ insert into sniperok.boost_type (code, icon, description) values
 ('bazooka' , 'fluent-emoji-high-contrast:pinched-fingers'   , 'Beats paper, scissors and shotgun'),
 ('shotgun' , 'fluent-emoji-high-contrast:sign-of-the-horns' , 'Beats scissors, rock and dynamite')
 ;
+
+DO $$
+BEGIN
+    FOR i IN 1..12 LOOP
+        PERFORM sniperok.award_snaps(u.id, 'snaps', 1, 'test1 snap' || i)
+          from sniperok.user u  where email = 'test1@test.com';
+    END LOOP;
+END $$;
+

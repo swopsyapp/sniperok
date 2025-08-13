@@ -20,19 +20,19 @@ BEGIN
 
     -- Insert into user_boost_journal
     INSERT INTO sniperok.user_boost_journal (
+        period,
+        transaction_uuid,
         user_uuid,
         boost_type_code,
         quantity,
-        period,
-        reference,
-        transaction_uuid
+        reference
     ) VALUES (
+        v_current_period,
+        v_transaction_uuid,
         p_user_uuid,
         p_boost_type_code,
         p_quantity,
-        v_current_period,
-        p_reference,
-        v_transaction_uuid
+        p_reference
     );
 
     -- Calculate previous period (YYYYMM)
