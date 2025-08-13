@@ -12,7 +12,7 @@
     import { HttpStatus } from '$lib/utils';
 
     import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
+    import { goto, invalidateAll } from '$app/navigation';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -38,7 +38,7 @@
             $flash = { type: 'error', message: 'Invalid boost type : ' + boostType };
             return;
         }
-        const tradeBoostUrl = `/games/[${boostType}]`;
+        const tradeBoostUrl = `/boosts/[${boostType}]`;
         const response = await fetch(tradeBoostUrl, {
             method: 'POST'
         });
@@ -74,6 +74,7 @@
         logger.debug('buyBoost response.json : ', json);
 
         $flash = { type: 'success', message: 'Bought ' + boostType };
+        await invalidateAll();
     }
 
     async function sellBoost(boostType: string) {
@@ -85,7 +86,7 @@
             $flash = { type: 'error', message: 'Invalid boost type : ' + boostType };
             return;
         }
-        const tradeBoostUrl = `/games/[${boostType}]`;
+        const tradeBoostUrl = `/boosts/[${boostType}]`;
         const response = await fetch(tradeBoostUrl, {
             method: 'DELETE'
         });
@@ -121,6 +122,7 @@
         logger.debug('buyBoost response.json : ', json);
 
         $flash = { type: 'success', message: 'Sold ' + boostType };
+        await invalidateAll();
     }
 </script>
 

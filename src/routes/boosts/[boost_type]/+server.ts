@@ -53,9 +53,12 @@ export const DELETE: RequestHandler = async (requestEvent) => {
     }
 
     const result = await sellBoost(userId, boostType, 1);
-    const response = result ? 'ok' : 'error';
+    if (!result) {
+        logger.error(`Failed to sell boost of type: ${boostType}`);
+        error(HttpStatus.INTERNAL_SERVER_ERROR, `Failed to sell boost of type: ${boostType}`);
+    }
 
-    return json({ success: response });
+    return json({ result: 'ok' });
 };
 
 /**
@@ -102,7 +105,10 @@ export const POST: RequestHandler = async (requestEvent) => {
     }
 
     const result = await buyBoost(userId, boostType, 1);
-    const response = result ? 'ok' : 'error';
+    if (!result) {
+        logger.error(`Failed to buy boost of type: ${boostType}`);
+        error(HttpStatus.INTERNAL_SERVER_ERROR, `Failed to buy boost of type: ${boostType}`);
+    }
 
-    return json({ success: response });
+    return json({ result: 'ok' });
 };

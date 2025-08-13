@@ -48,13 +48,14 @@ create view sniperok.user_boost_vw as
 create table sniperok.user_boost_journal (
     period integer not null,
     transaction_uuid uuid not null,
+    entry_sequence smallint not null,
     user_uuid uuid not null,
     boost_type_code text not null,
     quantity integer not null default 0,
     journal_timestamp timestamp with time zone not null default now(),
     reference text not null,
     CONSTRAINT user_boost_journal_pk
-        PRIMARY KEY (transaction_uuid),
+        PRIMARY KEY (transaction_uuid, entry_sequence),
     CONSTRAINT user_boost_journal_uk
         UNIQUE (period, user_uuid, boost_type_code, reference),
     CONSTRAINT user_boost_journal_user_fk

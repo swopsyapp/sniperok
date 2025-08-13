@@ -69,7 +69,7 @@ insert into sniperok.boost_type (code, icon, description) values
 
 DO $$
 BEGIN
-    FOR i IN 1..12 LOOP
+    FOR i IN 1..55 LOOP
         PERFORM sniperok.award_snaps(u.id, 'snaps', 1, 'test1 snap' || i)
           from sniperok.user u  where email = 'test1@test.com';
     END LOOP;

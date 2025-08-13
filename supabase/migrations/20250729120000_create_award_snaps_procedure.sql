@@ -22,6 +22,7 @@ BEGIN
     INSERT INTO sniperok.user_boost_journal (
         period,
         transaction_uuid,
+        entry_sequence,
         user_uuid,
         boost_type_code,
         quantity,
@@ -29,6 +30,7 @@ BEGIN
     ) VALUES (
         v_current_period,
         v_transaction_uuid,
+        1,
         p_user_uuid,
         p_boost_type_code,
         p_quantity,
@@ -122,36 +124,40 @@ BEGIN
 
     -- Insert debit boost into user_boost_journal
     INSERT INTO sniperok.user_boost_journal (
+        period,
+        transaction_uuid,
+        entry_sequence,
         user_uuid,
         boost_type_code,
         quantity,
-        period,
-        reference,
-        transaction_uuid
+        reference
     ) VALUES (
+        v_current_period,
+        v_transaction_uuid,
+        1,
         p_user_uuid,
         p_boost_type_code,
         p_quantity * -1,
-        v_current_period,
-        v_reference,
-        v_transaction_uuid
+        v_reference
     );
 
     -- Insert credit snaps into user_boost_journal
     INSERT INTO sniperok.user_boost_journal (
+        period,
+        transaction_uuid,
+        entry_sequence,
         user_uuid,
         boost_type_code,
         quantity,
-        period,
-        reference,
-        transaction_uuid
+        reference
     ) VALUES (
+        v_current_period,
+        v_transaction_uuid,
+        2,
         p_user_uuid,
         K_BOOST_SNAPS,
         p_quantity * K_BOOST_SELL_PRICE,
-        v_current_period,
-        v_reference,
-        v_transaction_uuid
+        v_reference
     );
 
     -- Calculate previous period (YYYYMM)
@@ -279,36 +285,40 @@ BEGIN
 
     -- Insert debit snaps into user_boost_journal
     INSERT INTO sniperok.user_boost_journal (
+        period,
+        transaction_uuid,
+        entry_sequence,
         user_uuid,
         boost_type_code,
         quantity,
-        period,
-        reference,
-        transaction_uuid
+        reference
     ) VALUES (
+        v_current_period,
+        v_transaction_uuid,
+        1,
         p_user_uuid,
         K_BOOST_SNAPS,
         p_quantity * K_BOOST_BUY_PRICE * -1,
-        v_current_period,
-        v_reference,
-        v_transaction_uuid
+        v_reference
     );
 
     -- Insert credit snaps into user_boost_journal
     INSERT INTO sniperok.user_boost_journal (
+        period,
+        transaction_uuid,
+        entry_sequence,
         user_uuid,
         boost_type_code,
         quantity,
-        period,
-        reference,
-        transaction_uuid
+        reference
     ) VALUES (
+        v_current_period,
+        v_transaction_uuid,
+        2,
         p_user_uuid,
         p_boost_type_code,
         p_quantity,
-        v_current_period,
-        v_reference,
-        v_transaction_uuid
+        v_reference
     );
 
     -- Calculate previous period (YYYYMM)
